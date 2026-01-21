@@ -1,5 +1,4 @@
 import asyncio
-import selectors
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -8,10 +7,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from app.core import Base
+from app.core import Base, UsersModel, UserIdentitiesModel
 from app.core.env_conf import stg
 
-# (models are) REQUIRED for class `Base`
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -88,11 +86,7 @@ async def run_async_migrations() -> None:
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
 
-    loop = asyncio.SelectorEventLoop(selectors.SelectSelector())
-    try:
-        loop.run_until_complete(run_async_migrations())
-    finally:
-        loop.close()
+    asyncio.run(run_async_migrations())
 
 
 if context.is_offline_mode():
