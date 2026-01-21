@@ -1,0 +1,74 @@
+from datetime import datetime, timezone
+
+from authlib.integrations.starlette_client import OAuthError
+from fastapi import Request, HTTPException
+from starlette.responses import RedirectResponse
+from sqlalchemy import select
+
+from app.api.auth.google_oauth2.client import oauth
+from app.core import UsersModel, UserIdentitiesModel
+from app.core.db.database import async_session_maker
+
+
+async def get_identity(session, provider: str, provider_user_id: str):
+    stmt = select(UserIdentitiesModel).where(
+        UserIdentitiesModel.provider == provider,
+        UserIdentitiesModel.provider_user_id == provider_user_id
+    )
+    return (await session.execute(stmt)).scalar_one_or_none()
+
+
+async def get_email(session, email: str):
+    stmt = select(UsersModel).where(UsersModel.email == email)
+    return (await session.execute(stmt)).scalar_one_or_none()
+
+
+async def get_user_id(user_info: dict):
+    async with async_session_maker() as session:
+        async with session.begin():
+            identity = await get_identity(session, "google", user_info["sub"])
+            if identity:
+                return str(identity.user_id)
+
+            user = await get_email(session, user_info["email"])
+            email_verification = datetime.now(timezone.utc) if user_info.get("email_verified", False) else None
+            if not user:
+                user = UsersModel(
+                    email=user_info["email"], full_name=user_info["name"],
+                    email_verification_at=email_verification
+                )
+                session.add(user)
+                await session.flush()  # перестраховка - отправляем изменения как в коммите, но не завершаем транзакцию
+            else:
+                if not user.email_verification_at and email_verification:
+                    user.email_verification_at = email_verification
+
+            new_identity = UserIdentitiesModel(
+                user_id=user.id, provider="google",  # wb special class with constants (providers)
+                provider_user_id=user_info["sub"]
+            )
+            session.add(new_identity)
+            return str(user.id)
+
+
+async def callback_handling(request: Request) -> RedirectResponse:
+    print("DEBUG: Callback started")  # Увидишь в консоли
+    if request.query_params.get("error"):
+        return RedirectResponse(url="/?msg=access_denied")
+
+    try:
+        token = await oauth.google.authorize_access_token(request)
+        print("DEBUG: Token received")
+
+        user_info = token.get("userinfo")
+        if user_info:
+            user_id = await get_user_id(user_info=user_info)
+            request.session['user_id'] = user_id
+            request.session['full_name'] = user_info["name"]
+            print(f"DEBUG: User logged in: {user_id}")
+
+        return RedirectResponse(url='/')
+
+    except OAuthError as e:
+        print(f"DEBUG: OAuthError: {e.error}")
+        return RedirectResponse(url="/?msg=session_expired")

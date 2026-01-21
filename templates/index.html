@@ -10,10 +10,10 @@
 
     {% if user %}
         <div class="glow-text">Welcome, {{ user.name }}</div>
-        <a href="{{ url_for('auth_google_logout') }}" class="login-btn">Log out</a>
+        <a href="{{ url_for('logout') }}" class="login-btn">Log out</a>
     {% else %}
         <div class="glow-text">Auth-P</div>
-        <a href="{{ url_for('auth_google_login') }}"
+        <a href="{{ url_for('login') }}"
            onclick="this.classList.add('htmx-request'); this.innerHTML='Loading...'"
            class="login-btn">Log in via Google
         </a>
