@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    {% if msg == "access_denied" %}
+        <div class="error-msg">You refused authorization</div>
+    {% endif %}
+    {% if msg == "session_expired" %}
+        <div class="error-msg">Your session has expired</div>
+    {% endif %}
+
+    {% if user %}
+        <div class="glow-text">Welcome, {{ user.name }}</div>
+        <a href="{{ url_for('auth_google_logout') }}" class="login-btn">Log out</a>
+    {% else %}
+        <div class="glow-text">Auth-P</div>
+        <a href="{{ url_for('auth_google_login') }}"
+           onclick="this.classList.add('htmx-request'); this.innerHTML='Loading...'"
+           class="login-btn">Log in via Google
+        </a>
+    {% endif %}
+{% endblock %}
