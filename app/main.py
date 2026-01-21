@@ -65,3 +65,12 @@ if __name__ == "__main__":
         app="app.main:app", port=8000,
         host="127.0.0.1", reload=False, use_colors=True
     )
+# local https:
+# install mkcret (eg choco install mkcert)
+# mkcert -install
+# cd <path 2da proj>
+# mkcert localhost 127.0.0.1
+# uvicorn.run:
+# ssl_keyfile=r"<path 2da proj>localhost+1-key.pem",
+# ssl_certfile=r"<path 2da proj>localhost+1.pem"
+# well done
