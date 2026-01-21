@@ -1,4 +1,5 @@
 import asyncio
+import selectors
 from logging.config import fileConfig
 
 from sqlalchemy import pool
@@ -87,7 +88,11 @@ async def run_async_migrations() -> None:
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
 
-    asyncio.run(run_async_migrations())
+    loop = asyncio.SelectorEventLoop(selectors.SelectSelector())
+    try:
+        loop.run_until_complete(run_async_migrations())
+    finally:
+        loop.close()
 
 
 if context.is_offline_mode():
