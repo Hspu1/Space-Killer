@@ -6,18 +6,12 @@ from app.core.templates_conf import templates
 welcome_router = APIRouter(tags=["UI"])
 
 
-async def get_full_name(request: Request) -> dict[str, str] | None:
-    # wb redis huh
-    user_id = request.session.get("user_id")
-    user_name = request.session.get("full_name")
-
-    if user_id and user_name:
-        return {"name": user_name}
-    return None
+async def get_full_name(request: Request) -> str | None:
+    return request.session.get("full_name") if request.session.get("user_id") else None
 
 
-@welcome_router.get("/welcome", response_class=HTMLResponse)
-async def welcome(request: Request):
+@welcome_router.get("/welcome", response_class=HTMLResponse, response_model=None)
+async def welcome(request: Request) -> RedirectResponse | HTMLResponse:
     user = await get_full_name(request=request)
     if not user:
         return RedirectResponse(url="/?msg=session_expired")

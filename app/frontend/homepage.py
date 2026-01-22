@@ -6,12 +6,8 @@ from app.core.templates_conf import templates
 homepage_router = APIRouter(tags=["UI"])
 
 
-@homepage_router.get("/", response_class=HTMLResponse)
-async def homepage(request: Request):
-    msg = request.query_params.get("msg")
-
-    response = templates.TemplateResponse(
-        "index.html", {"request": request, "msg": msg}
+@homepage_router.get("/", response_class=HTMLResponse, response_model=None)
+async def homepage(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(
+        "index.html", {"request": request, "msg": request.query_params.get("msg")}
     )
-
-    return response

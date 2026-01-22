@@ -16,3 +16,76 @@ dependencies = [
     "uuid6>=2025.0.1",
     "uvicorn[standard]>=0.40.0",
 ]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.19.1",
+    "ruff>=0.14.13",
+]
+[tool.mypy]  #  uv run mypy .
+python_version = "3.13"
+strict = true
+# disallow_any_generics = true        запрещает List вместо List[int]
+# disallow_any_unimported = true      запрещает типы из неимпортированных модулей
+# disallow_incomplete_defs = true     все аргументы должны иметь типы
+# disallow_subclassing_any = true     запрещает наследование от Any
+# disallow_untyped_calls = true       нельзя вызывать нетипизированные функции
+# disallow_untyped_defs = true        все функции должны иметь типы
+# disallow_untyped_decorators = true  декораторы должны быть типизированы
+# no_implicit_optional = true         нельзя x: int = None, только Optional[int]
+# warn_redundant_casts = true         предупреждает о лишних cast()
+# warn_return_any = true              предупреждает о возврате Any
+# warn_unused_ignores = true          предупреждает о лишних type: ignore
+# warn_unused_configs = true          предупреждает о неиспользуемых конфигах
+# check_untyped_defs = true           проверяет даже нетипизированные функции
+
+[tool.ruff]  #  uv run ruff check .
+fix = false
+line-length = 111
+exclude = ["alembic"]
+lint.select = [
+    "E",   # Pycodestyle errors
+    "F",   # Pyflakes
+    "I",   # Isort
+    "UP",  # Pyupgrade
+    "N",   # PEP8 naming
+    "B",   # Bugbear
+    "C4",  # Comprehensions
+    "RUF", # Ruff-specific
+    "A",   # Builtins
+    "ASYNC", # Flake8-async
+    "S",   # Security
+    "T10", # Debugger
+    "EM",  # Error messages
+    "YTT", # Python 3.10+ features
+    "PL",  # Pylint
+    "W",  # Pycodestyle warnings
+
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]  # name of the project
+
+[tool.ruff.format]
+quote-style = "double"  # двойные кавычки вместо одинарных
+indent-style = "space"  # пробелы вместо табов
+# Автоматическое определение переносов строк
+line-ending = "auto"  # автоматически определяет LF (Unix) или CRLF (Windows)
+
+[tool.ruff.lint.flake8-quotes]
+# Везде двойные кавычки
+avoid-escape = true
+docstring-quotes = "double"
+
+[tool.ruff.lint.per-file-ignores]
+"alembic/versions/*.py" = [
+    "F401",  # unused import - в миграциях много неиспользуемых импортов
+    "E402",  # module import not at top of file - миграции нарушают этот порядок
+    "N802",  # function name should be lowercase - в миграциях camelCase
+    "N806",  # variable in function should be lowercase - имена таблиц в UPPERCASE
+]
+"tests/*.py" = [
+    "S101",    # use of assert - в тестах assert нормально
+    "PLR2004", # magic value - в тестах много "магических" значений
+    "ARG001",  # unused argument - в фикстурах аргументы могут не использоваться
+]

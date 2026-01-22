@@ -4,13 +4,17 @@ from authlib.integrations.starlette_client import OAuthError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.auth.google_oauth2.client import oauth
 from app.core import UsersModel, UserIdentitiesModel
 from app.core.db.database import async_session_maker
 
 
-async def get_identity(session, provider: str, provider_user_id: str):
+async def get_identity(
+        session: AsyncSession, provider: str, provider_user_id: str
+) -> UserIdentitiesModel | None:
+
     stmt = select(UserIdentitiesModel).where(
         UserIdentitiesModel.provider == provider,
         UserIdentitiesModel.provider_user_id == provider_user_id
@@ -18,12 +22,12 @@ async def get_identity(session, provider: str, provider_user_id: str):
     return (await session.execute(stmt)).scalar_one_or_none()
 
 
-async def get_email(session, email: str):
+async def get_email(session: AsyncSession, email: str) -> UsersModel | None:
     stmt = select(UsersModel).where(UsersModel.email == email)
     return (await session.execute(stmt)).scalar_one_or_none()
 
 
-async def get_user_id(user_info: dict):
+async def get_user_id(user_info: dict) -> str:
     async with async_session_maker() as session:
         async with session.begin():
             identity = await get_identity(session, "google", user_info["sub"])
@@ -38,13 +42,14 @@ async def get_user_id(user_info: dict):
                     email_verification_at=email_verification
                 )
                 session.add(user)
-                await session.flush()  # перестраховка - отправляем изменения как в коммите, но не завершаем транзакцию
+                await session.flush()  # перестраховка
+                # отправляем изменения как в коммите, но не завершаем транзакцию
             else:
                 if not user.email_verification_at and email_verification:
                     user.email_verification_at = email_verification
 
             new_identity = UserIdentitiesModel(
-                user_id=user.id, provider="google",  # wb special class with constants (providers)
+                user_id=user.id, provider="google",
                 provider_user_id=user_info["sub"]
             )
             session.add(new_identity)
@@ -52,23 +57,19 @@ async def get_user_id(user_info: dict):
 
 
 async def callback_handling(request: Request) -> RedirectResponse:
-    print("DEBUG: Callback started")  # Увидишь в консоли
     if request.query_params.get("error"):
         return RedirectResponse(url="/?msg=access_denied")
 
     try:
         token = await oauth.google.authorize_access_token(request)
-        print("DEBUG: Token received")
-
         user_info = token.get("userinfo")
+
         if user_info:
             user_id = await get_user_id(user_info=user_info)
             request.session['user_id'] = user_id
             request.session['full_name'] = user_info["name"]
-            print(f"DEBUG: User logged in: {user_id}")
 
         return RedirectResponse(url='/welcome')
 
     except OAuthError as e:
-        print(f"DEBUG: OAuthError: {e.error}")
         return RedirectResponse(url="/?msg=session_expired")
