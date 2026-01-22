@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from starlette.responses import RedirectResponse
+from fastapi.responses import RedirectResponse
 
 from app.api.auth.google_oauth2.client import oauth
 from app.api.auth.google_oauth2.service import callback_handling

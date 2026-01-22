@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
 from authlib.integrations.starlette_client import OAuthError
-from fastapi import Request, HTTPException
-from starlette.responses import RedirectResponse
+from fastapi import Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 
 from app.api.auth.google_oauth2.client import oauth
@@ -67,7 +67,7 @@ async def callback_handling(request: Request) -> RedirectResponse:
             request.session['full_name'] = user_info["name"]
             print(f"DEBUG: User logged in: {user_id}")
 
-        return RedirectResponse(url='/')
+        return RedirectResponse(url='/welcome')
 
     except OAuthError as e:
         print(f"DEBUG: OAuthError: {e.error}")

@@ -7,7 +7,7 @@ from fastapi.openapi.docs import (
 from uvicorn import run
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.frontend.homepage import homepage_router
+from app.frontend import homepage_router, welcome_router
 from app.api.auth.google_oauth2 import google_oauth2_router
 from app.core.env_conf import stg
 
@@ -40,7 +40,7 @@ def static_docs_urls(app: FastAPI):
 def create_app(testing: bool = False) -> FastAPI:
     """Фабрика для создания приложения"""
     app = FastAPI(
-        title="Auth-P",
+        title="Smth-P",
         default_response_class=ORJSONResponse,
         docs_url=None, redoc_url=None,
         swagger_ui_oauth2_redirect_url="/oauth2-redirect"
@@ -50,9 +50,13 @@ def create_app(testing: bool = False) -> FastAPI:
         app.state.testing = True
 
     static_docs_urls(app=app)
+
     app.add_middleware(SessionMiddleware, secret_key=stg.session_secret_key, same_site="lax")
+
     app.include_router(google_oauth2_router)
+
     app.include_router(homepage_router)
+    app.include_router(welcome_router)
 
     return app
 

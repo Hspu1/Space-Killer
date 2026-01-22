@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    {% if user %}
+        <div class="glow-text">Welcome, {{ user.name }}</div>
+        <a href="{{ url_for('logout') }}" class="login-btn">Log out</a>
+    {% endif %}
+{% endblock %}
