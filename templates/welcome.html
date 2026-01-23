@@ -1,8 +1,12 @@
 {% extends 'base.html' %}
 
+{% block title %}Welcome - Smth-P{% endblock %}
 {% block body %}
     {% if user %}
-        <div class="glow-text">Welcome, {{ user }}</div>
-        <a href="{{ url_for('logout') }}" class="login-btn">Log out</a>
+        <h1 class="glow-text">Welcome, {{ user }}</h1>
+        <button hx-post="{{ url_for('logout') }}"
+                hx-target="body" hx-push-url="true"
+                class="login-btn"> Log out
+        </button>
     {% endif %}
 {% endblock %}

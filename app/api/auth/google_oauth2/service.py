@@ -71,5 +71,5 @@ async def callback_handling(request: Request) -> RedirectResponse:
 
         return RedirectResponse(url='/welcome')
 
-    except OAuthError as e:
+    except OAuthError:
         return RedirectResponse(url="/?msg=session_expired")

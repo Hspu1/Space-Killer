@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Auth-P{% endblock %}</title>
+    <title>{% block title %}Smth-P{% endblock %}</title>
     <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
     <style>
     :root {
@@ -22,12 +22,13 @@
     body {
         background-color: var(--bg-dark);
         color: #fff;
-        display: grid;
-        place-items: center;
-        min-height: 100vh;
         margin: 0;
         font-family: 'Inter', system-ui, sans-serif;
         -webkit-font-smoothing: antialiased;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
     }
 
     .center-container {
@@ -35,9 +36,11 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
         gap: 30px;
-        padding: 20px;
+        padding: 40px 20px;
         width: 100%;
+        max-width: 600px;
     }
 
     .glow-text {
@@ -47,20 +50,9 @@
         text-shadow: 0 0 10px var(--neon-green-alpha), 0 0 20px var(--neon-green-glow);
         margin: 0;
         letter-spacing: -0.02em;
-    }
-
-    .action-row {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .welcome-text {
-        font-size: clamp(18px, 4vw, 24px);
-        font-weight: 670;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .login-btn {
@@ -87,19 +79,27 @@
         box-shadow: 0 0 15px var(--neon-green-soft);
     }
 
-    .htmx-indicator {
-        display: none;
-        margin-left: 10px;
-    }
-
-    .htmx-request .htmx-indicator {
-        display: inline-block;
+    .login-btn:focus-visible {
+        outline: 2px solid var(--neon-green);
+        outline-offset: 4px;
+        box-shadow: 0 0 15px var(--neon-green-soft);
     }
 
     .htmx-request.login-btn {
         pointer-events: none;
         opacity: 0.8;
         filter: grayscale(0.5);
+        font-size: 0;
+    }
+
+    .htmx-request.login-btn::after {
+        content: "Loading...";
+        font-size: 18px;
+        opacity: 0.6;
+    }
+
+    .error-container {
+        min-height: 24px;
     }
 
     .error-msg {
@@ -113,11 +113,10 @@
         to { opacity: 1; transform: translateY(0); }
     }
 </style>
-
 </head>
 <body>
-    <div class="center-container">
+    <main class="center-container">
         {% block body %}{% endblock %}
-    </div>
+    </main>
 </body>
 </html>
