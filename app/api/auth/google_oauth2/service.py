@@ -5,6 +5,7 @@ from fastapi import Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from app.api.auth.google_oauth2.client import oauth
 from app.core import UsersModel, UserIdentitiesModel
@@ -28,32 +29,38 @@ async def get_email(session: AsyncSession, email: str) -> UsersModel | None:
 
 
 async def get_user_id(user_info: dict) -> str:
-    async with async_session_maker() as session:
-        async with session.begin():
-            identity = await get_identity(session, "google", user_info["sub"])
-            if identity:
-                return str(identity.user_id)
+    async with (async_session_maker.begin() as session):
+        identity = await get_identity(
+            session=session, provider="google",
+            provider_user_id=user_info["sub"]
+        )
+        if identity:
+            return str(identity.user_id)
 
-            user = await get_email(session, user_info["email"])
-            email_verification = datetime.now(timezone.utc) if user_info.get("email_verified", False) else None
-            if not user:
-                user = UsersModel(
-                    email=user_info["email"], full_name=user_info["name"],
-                    email_verification_at=email_verification
-                )
-                session.add(user)
-                await session.flush()  # перестраховка
-                # отправляем изменения как в коммите, но не завершаем транзакцию
-            else:
-                if not user.email_verification_at and email_verification:
-                    user.email_verification_at = email_verification
+        user = await get_email(session=session, email=user_info["email"])
+        email_verification = datetime.now(timezone.utc) \
+            if user_info.get("email_verified") else None
 
-            new_identity = UserIdentitiesModel(
-                user_id=user.id, provider="google",
-                provider_user_id=user_info["sub"]
-            )
-            session.add(new_identity)
-            return str(user.id)
+        if not user:
+            try:
+                async with session.begin_nested():  # SAVEPOINT
+                    user = UsersModel(
+                        email=user_info["email"],  full_name=user_info.get("name"),
+                        email_verification_at=email_verification
+                    )
+                    session.add(user)
+                    await session.flush()
+
+            except IntegrityError:
+                user = await get_email(session=session, email=user_info["email"])
+
+        new_identity = UserIdentitiesModel(
+            user_id=user.id, provider="google",
+            provider_user_id=user_info["sub"]
+        )
+        session.add(new_identity)
+
+        return str(user.id)
 
 
 async def callback_handling(request: Request) -> RedirectResponse:
@@ -65,9 +72,10 @@ async def callback_handling(request: Request) -> RedirectResponse:
         user_info = token.get("userinfo")
 
         if user_info:
+            request.session.clear()
             user_id = await get_user_id(user_info=user_info)
             request.session['user_id'] = user_id
-            request.session['full_name'] = user_info["name"]
+            request.session['given_name'] = user_info.get("given_name", "User")
 
         return RedirectResponse(url='/welcome')
 

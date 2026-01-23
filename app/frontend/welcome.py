@@ -6,19 +6,12 @@ from app.core.templates_conf import templates
 welcome_router = APIRouter(tags=["UI"])
 
 
-async def get_full_name(request: Request) -> str | None:
-    return request.session.get("full_name") \
-        if request.session.get("user_id") else None
-
-
-@welcome_router.get("/welcome", response_class=HTMLResponse, response_model=None)
+@welcome_router.get("/welcome", response_class=HTMLResponse)
 async def welcome(request: Request) -> Response:
-    user = await get_full_name(request=request)
-    if not user:
-        return RedirectResponse(url="/?msg=session_expired")
+    full_name, user_id = request.session.get("given_name"), request.session.get("user_id")
 
-    response = templates.TemplateResponse(
-        "welcome.html", {"request": request, "user": user}
+    return RedirectResponse(url="/?msg=session_expired") \
+        if not full_name or not user_id \
+        else templates.TemplateResponse(
+        "welcome.html", {"request": request, "user": {"name": full_name}}
     )
-
-    return response

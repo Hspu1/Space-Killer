@@ -6,7 +6,7 @@ from app.core.templates_conf import templates
 homepage_router = APIRouter(tags=["UI"])
 
 
-@homepage_router.get("/", response_class=HTMLResponse, response_model=None)
+@homepage_router.get("/", response_class=HTMLResponse)
 async def homepage(request: Request) -> Response:
     return templates.TemplateResponse(
         "index.html",
