@@ -6,116 +6,99 @@
     <title>{% block title %}Smth-P{% endblock %}</title>
     <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
     <style>
-    :root {
-        --bg-dark: #121212;
-        --neon-green: #32d69f;
-        --neon-green-alpha: rgba(50, 214, 159, 0.5);
-        --neon-green-glow: rgba(50, 214, 159, 0.3);
-        --neon-green-soft: rgba(50, 214, 159, 0.2);
-        --accent-hover: #1a1a1a;
-        --error-red: #ff4c4c;
-        --white-alpha: rgba(255, 255, 255, 0.2);
-    }
+        :root {
+            --bg-dark: #121212; --neon-green: #32d69f;
+            --neon-alpha: rgba(50, 214, 159, 0.5);
+            --neon-glow: rgba(50, 214, 159, 0.3);
+            --white-alpha: rgba(255, 255, 255, 0.2);
+            --error-red: #ff4c4c;
+        }
 
-    *, *::before, *::after { box-sizing: border-box; }
+        *, *::before, *::after {box-sizing: border-box;}
 
-    body {
-        background-color: var(--bg-dark);
-        color: #fff;
-        margin: 0;
-        font-family: 'Inter', system-ui, sans-serif;
-        -webkit-font-smoothing: antialiased;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-    }
+        body {
+            background-color: var(--bg-dark); color: #ffffff;
+            margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased; display: flex;
+            flex-direction: column; min-height: 100vh;
+        }
 
-    .center-container {
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 30px;
-        padding: 40px 20px;
-        width: 100%;
-        max-width: 600px;
-    }
+        main {
+            flex: 1; display: flex; justify-content: center;
+            align-items: center; padding: 20px;
+        }
 
-    .glow-text {
-        font-size: clamp(32px, 8vw, 64px);
-        font-weight: 760;
-        color: var(--neon-green);
-        text-shadow: 0 0 10px var(--neon-green-alpha), 0 0 20px var(--neon-green-glow);
-        margin: 0;
-        letter-spacing: -0.02em;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+        .center-container {
+            text-align: center; display: flex; flex-direction: column;
+            align-items: center; gap: 32px; width: 100%; max-width: 600px;
+        }
 
-    .login-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background-color: var(--bg-dark);
-        color: #fff;
-        border: 1px solid var(--white-alpha);
-        padding: 17px 30px;
-        border-radius: 4px;
-        font-size: 18px;
-        font-weight: 670;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        cursor: pointer;
-        position: relative;
-    }
+        .glow-text {
+            font-size: clamp(32px, 8vw, 64px); font-weight: 800;
+            color: var(--neon-green); margin: 0; letter-spacing: -0.02em;
+            text-shadow: 0 0 10px var(--neon-alpha), 0 0 20px var(--neon-glow);
+        }
 
-    .login-btn:hover {
-        border-color: var(--neon-green);
-        color: var(--neon-green);
-        box-shadow: 0 0 15px var(--neon-green-soft);
-    }
+        .login-btn {
+            all: unset; display: inline-flex; align-items: center;
+            justify-content: center; background-color: var(--bg-dark);
+            color: #ffffff; border: 1px solid var(--white-alpha);
+            padding: 16px 32px; border-radius: 4px; font-size: 18px;
+            font-weight: 600;transition: all 0.25s ease;
+            cursor: pointer; position: relative;
+        }
 
-    .login-btn:focus-visible {
-        outline: 2px solid var(--neon-green);
-        outline-offset: 4px;
-        box-shadow: 0 0 15px var(--neon-green-soft);
-    }
+        .login-btn:hover {
+            border-color: var(--neon-green); color: var(--neon-green);
+            box-shadow: 0 0 15px rgba(50, 214, 159, 0.15);
+        }
 
-    .htmx-request.login-btn {
-        pointer-events: none;
-        opacity: 0.8;
-        filter: grayscale(0.5);
-        font-size: 0;
-    }
+        .htmx-request.login-btn {
+            color: transparent !important;
+            pointer-events: none;
+        }
 
-    .htmx-request.login-btn::after {
-        content: "Loading...";
-        font-size: 18px;
-        opacity: 0.6;
-    }
+        .htmx-request.login-btn::after {
+            content: "Loading..."; position: absolute; left: 50%;
+            transform: translateX(-50%); font-size: 18px;
+            color: var(--neon-green); opacity: 0.7;
+        }
 
-    .error-container {
-        min-height: 24px;
-    }
+        .error-msg {
+            color: var(--error-red); font-weight: 500;
+            cursor: pointer; padding: 8px;
+            animation: fadeIn 0.3s ease-out;
+        }
 
-    .error-msg {
-        color: var(--error-red);
-        font-weight: 555;
-        animation: fade-in 0.3s ease-out;
-    }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-    @keyframes fade-in {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-</style>
+        footer {
+            padding: 24px; text-align: center; font-size: 14px;
+            color: #777; border-top: 1px solid var(--white-alpha);
+            display: flex; justify-content: center;
+            align-items: center; gap: 16px;
+        }
+
+        footer a {
+            color: inherit; text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        footer a:hover {color: var(--neon-green);}
+    </style>
 </head>
 <body>
-    <main class="center-container">
-        {% block body %}{% endblock %}
+    <main>
+        <section class="center-container">
+            {% block body %}{% endblock %}
+        </section>
     </main>
+    <footer>
+        <span>© 2026 Smth-P</span>
+        <a href="https://github.com/Hspu1/Smth-P" target="_blank">Repo</a>
+    </footer>
 </body>
 </html>

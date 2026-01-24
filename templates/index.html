@@ -2,17 +2,16 @@
 
 {% block title %}Login - Smth-P{% endblock %}
 {% block body %}
-    <div class="error-container">
+    <div id="errors">
         {% if msg %}
-            <div class="error-msg">
-                {% if msg == "access_denied" %}You refused authorization{% endif %}
-                {% if msg == "session_expired" %}Your session has expired{% endif %}
+            <div class="error-msg" onclick="this.remove()" title="Click to close">
+                {% if msg == "access_denied" %}You refused authorization
+                {% elif msg == "session_expired" %}Your session has expired
+                {% else %}Error occurred{% endif %}
             </div>
         {% endif %}
     </div>
-
     <h1 class="glow-text">Smth-P</h1>
     <button hx-get="{{ url_for('login') }}"
-            class="login-btn"> Log in via Google
-    </button>
+            class="login-btn">Log in via Google</button>
 {% endblock %}
