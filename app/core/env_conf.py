@@ -9,10 +9,12 @@ class Settings(BaseSettings):
         env_file_encoding='utf-8', extra="ignore"
     )
 
-    client_id: str
-    client_secret: str
     session_secret_key: str
     db_url: str
+    google_client_id: str
+    google_client_secret: str
+    github_client_id: str
+    github_client_secret: str
 
 
 stg = Settings()

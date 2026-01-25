@@ -7,8 +7,10 @@ from fastapi.openapi.docs import (
 from uvicorn import run
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.frontend import homepage_router, welcome_router
 from app.api.auth.google_oauth2 import google_oauth2_router
+# from app.api.auth.github_oauth2 import github_oauth2_router
+from app.api.auth.auth_logout import auth_logout_router
+from app.frontend import homepage_router, welcome_router
 from app.core.env_conf import stg
 
 
@@ -54,10 +56,12 @@ def create_app(testing: bool = False) -> FastAPI:
     app.add_middleware(
         SessionMiddleware,
         secret_key=stg.session_secret_key,
-        same_site="lax", max_age=2592000
+        same_site="lax", max_age=2592000, https_only=False
     )
 
     app.include_router(google_oauth2_router)
+    # app.include_router(github_oauth2_router)
+    app.include_router(auth_logout_router)
 
     app.include_router(homepage_router)
     app.include_router(welcome_router)
@@ -71,14 +75,5 @@ app = create_app()
 if __name__ == "__main__":
     run(
         app="app.main:app", port=8000,
-        host="127.0.0.1", reload=False, use_colors=True
+        host="localhost", reload=False, use_colors=True
     )
-# local https:
-# install mkcret (eg choco install mkcert)
-# mkcert -install
-# cd <path 2da proj>
-# mkcert localhost 127.0.0.1
-# uvicorn.run:
-# ssl_keyfile=r"<path 2da proj>localhost+1-key.pem",
-# ssl_certfile=r"<path 2da proj>localhost+1.pem"
-# well done

@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from app.api.auth.google_oauth2.client import oauth
+from app.api.auth.google_oauth2.client import google_oauth
 from app.core import UsersModel, UserIdentitiesModel
 from app.core.db.database import async_session_maker
 
@@ -29,7 +29,7 @@ async def get_email(session: AsyncSession, email: str) -> UsersModel | None:
 
 
 async def get_user_id(user_info: dict) -> str:
-    async with (async_session_maker.begin() as session):
+    async with async_session_maker.begin() as session:
         identity = await get_identity(
             session=session, provider="google",
             provider_user_id=user_info["sub"]
@@ -68,7 +68,7 @@ async def callback_handling(request: Request) -> RedirectResponse:
         return RedirectResponse(url="/?msg=access_denied")
 
     try:
-        token = await oauth.google.authorize_access_token(request)
+        token = await google_oauth.google.authorize_access_token(request)
         user_info = token.get("userinfo")
 
         if user_info:
