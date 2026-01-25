@@ -1,8 +1,6 @@
 from authlib.integrations.starlette_client import OAuth
 
 from app.core.env_conf import stg
-import os
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 google_oauth = OAuth()
 google_oauth.register(
