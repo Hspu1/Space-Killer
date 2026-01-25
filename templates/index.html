@@ -17,8 +17,8 @@
                 hx-target="body" class="login-btn"> Log in via Google
         </button>
 
-        <button hx-get="{{ url_for('github_login') }}"
-                hx-target="body" class="login-btn"> Log in via Github
+        <button class="login-btn dev-mode">
+            Log in via Github <span class="badge">In Dev</span>
         </button>
     </div>
 {% endblock %}

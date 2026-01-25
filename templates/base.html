@@ -44,11 +44,11 @@
             justify-content: center; background-color: var(--bg-dark);
             color: #ffffff; border: 1px solid var(--white-alpha);
             padding: 16px 32px; border-radius: 4px; font-size: 18px;
-            font-weight: 600;transition: all 0.25s ease;
+            font-weight: 600; transition: all 0.25s ease;
             cursor: pointer; position: relative;
         }
 
-        .login-btn:hover {
+        .login-btn:hover:not(:disabled):not(.dev-mode) {
             border-color: var(--neon-green); color: var(--neon-green);
             box-shadow: 0 0 15px rgba(50, 214, 159, 0.15);
         }
@@ -64,10 +64,28 @@
             color: var(--neon-green); opacity: 0.7;
         }
 
+        .login-btn:disabled, .login-btn.dev-mode {
+            opacity: 0.67; cursor: default !important;
+            pointer-events: none; box-shadow: none !important;
+            border-color: var(--white-alpha) !important;
+            color: #ffffff !important;
+        }
+
+        .badge {
+            font-size: 10px; background: var(--error-red);
+            color: #fff; padding: 2px 6px; border-radius: 3px;
+            margin-left: 8px; box-shadow: 0 0 10px rgba(255, 76, 76, 0.3);
+        }
+
+        .row-group {
+            display: flex; flex-direction: row;
+            justify-content: center; align-items: center;
+            gap: 16px; width: 100%; flex-wrap: wrap;
+        }
+
         .error-msg {
             color: var(--error-red); font-weight: 500;
-            cursor: pointer; padding: 8px;
-            animation: fadeIn 0.3s ease-out;
+            cursor: pointer; padding: 8px; animation: fadeIn 0.3s ease-out;
         }
 
         @keyframes fadeIn {
@@ -81,18 +99,8 @@
             display: flex; justify-content: center;
             align-items: center; gap: 16px;
         }
-
-        footer a {
-            color: inherit; text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        footer a:hover {color: var(--neon-green);}
-        .row-group {
-            display: flex; flex-direction: row;
-            justify-content: center; align-items: center;
-            gap: 16px; width: 100%; flex-wrap: wrap;
-        }
+        footer a { color: inherit; text-decoration: none; transition: color 0.2s; }
+        footer a:hover { color: var(--neon-green); }
     </style>
 </head>
 <body>
