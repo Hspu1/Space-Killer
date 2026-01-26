@@ -78,5 +78,5 @@ app = create_app()
 if __name__ == "__main__":
     run(
         app="app.main:app", port=8000,
-        host="localhost", reload=False, use_colors=True
+        host="127.0.0.1", reload=False, use_colors=True
     )
