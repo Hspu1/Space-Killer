@@ -9,7 +9,7 @@ github_oauth2_router = APIRouter(tags=["github_oauth2"], prefix="/auth/github")
 
 @github_oauth2_router.get('/login')
 async def github_login(request: Request) -> Response:
-    redirect_uri = "http://localhost:8000/auth/github/callback"
+    redirect_uri = request.url_for('github_callback')
     github_url = await github_oauth.github.authorize_redirect(request, redirect_uri)
     url = github_url.headers.get("location")
 

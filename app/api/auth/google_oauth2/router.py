@@ -10,7 +10,7 @@ google_oauth2_router = APIRouter(tags=["google_oauth2"], prefix="/auth/google")
 
 @google_oauth2_router.get("/login")
 async def google_login(request: Request) -> Response:
-    redirect_uri = "http://localhost:8000/auth/google/callback"
+    redirect_uri = request.url_for('google_callback')
     google_url = await google_oauth.google.authorize_redirect(request, redirect_uri)
     url = google_url.headers.get("location")
 

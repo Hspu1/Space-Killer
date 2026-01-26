@@ -60,7 +60,7 @@ def create_app(testing: bool = False) -> FastAPI:
     app.add_middleware(
         SessionMiddleware,
         secret_key=stg.session_secret_key, max_age=2592000,
-        same_site="lax", https_only=False,
+        same_site="lax", https_only=True,
     )
 
     app.include_router(google_oauth2_router)
