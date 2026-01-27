@@ -15,5 +15,6 @@ github_oauth.register(
         'scope': 'user:email',
         'timeout': 10.0,  # sec
         'verify': False,  # ONLY FOR DEVELOPMENT
+        'proxy': 'http://127.0.0.1:2080'
     }
 )

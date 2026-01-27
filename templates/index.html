@@ -12,13 +12,14 @@
         {% endif %}
     </div>
     <h1 class="glow-text">Smth-P</h1>
-    <div class="row-group">
-        <button hx-get="{{ url_for('google_login') }}"
-                hx-target="body" class="login-btn"> Log in via Google
-        </button>
+<!--    <div class="row-group">-->
+<!--        <a href="{{ url_for('google_login') }}" class="login-btn">-->
+<!--            Log in via Google-->
+<!--        </a>-->
 
-        <button class="login-btn dev-mode">
-            Log in via Github <span class="badge">In Dev</span>
-        </button>
-    </div>
+<!--        <a href="{{ url_for('github_login') }}" class="login-btn">-->
+<!--            Log in via Github-->
+<!--        </a>-->
+<!--    </div>-->
+
 {% endblock %}
