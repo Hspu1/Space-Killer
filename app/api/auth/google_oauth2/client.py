@@ -2,6 +2,7 @@ from authlib.integrations.starlette_client import OAuth
 
 from app.core.env_conf import stg
 
+
 google_oauth = OAuth()
 google_oauth.register(
     name='google',
