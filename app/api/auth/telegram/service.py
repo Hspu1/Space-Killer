@@ -64,7 +64,7 @@ async def get_user_id(user_info: dict) -> str:
         return str(user.id)
 
 
-async def telegram_callback_handling(request: Request):
+async def telegram_callback_handling(request: Request) -> RedirectResponse:
     if request.query_params.get("error"):
         return RedirectResponse(url="/?msg=access_denied")
 

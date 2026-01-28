@@ -3,6 +3,15 @@ from authlib.integrations.starlette_client import OAuth
 from app.core.env_conf import stg
 
 
+client_params = {
+    'scope': 'user:email',
+    'timeout': 10.0,
+    'verify': stg.ssl_check
+}
+if stg.proxy:
+    client_params['proxy'] = stg.proxy
+
+
 github_oauth = OAuth()
 github_oauth.register(
     name='github',
@@ -11,10 +20,5 @@ github_oauth.register(
     access_token_url='https://github.com/login/oauth/access_token',
     authorize_url='https://github.com/login/oauth/authorize',
     api_base_url='https://api.github.com/',
-    client_kwargs={
-        'scope': 'user:email',
-        'timeout': 10.0,  # sec
-        'verify': False,  # ONLY FOR DEVELOPMENT
-        'proxy': 'http://127.0.0.1:2080'
-    }
+    client_kwargs=client_params
 )

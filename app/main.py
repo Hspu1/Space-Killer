@@ -17,7 +17,7 @@ from app.core.env_conf import stg
 
 
 def static_docs_urls(app: FastAPI):
-    # wb statics in base.html
+    # статика через более стабильный unpkg
     @app.get("/docs", include_in_schema=False)
     async def custom_swagger_ui_html():
         return get_swagger_ui_html(
@@ -55,18 +55,20 @@ def create_app(testing: bool = False) -> FastAPI:
 
     static_docs_urls(app=app)
 
+    # middlewares
     app.add_middleware(
-        SessionMiddleware,
-        secret_key=stg.session_secret_key, max_age=2592000,
-        same_site="none", https_only=True,
+        SessionMiddleware, secret_key=stg.session_secret_key,
+        max_age=2592000, same_site="none", https_only=True,
     )
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
+    # backend
     app.include_router(google_oauth2_router)
     app.include_router(github_oauth2_router)
     app.include_router(telegram_router)
     app.include_router(auth_logout_router)
 
+    # frontend
     app.include_router(homepage_router)
     app.include_router(welcome_router)
 
