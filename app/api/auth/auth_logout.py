@@ -9,6 +9,6 @@ auth_logout_router = APIRouter()
 async def logout(request: Request) -> Response:
     request.session.clear()
 
-    return Response(headers={"HX-Location": "/"}) \
+    return Response(headers={"HX-Redirect": "/"}) \
         if request.headers.get("HX-Request") \
         else RedirectResponse(url="/", status_code=303)
