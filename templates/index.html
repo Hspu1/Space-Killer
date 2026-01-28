@@ -16,16 +16,39 @@
         <a href="{{ url_for('google_login') }}" class="login-btn">Log in via Google</a>
         <a href="{{ url_for('github_login') }}" class="login-btn">Log in via Github</a>
 
-        <div class="tg-wrapper">
-            <script async src="https://telegram.org/js/telegram-widget.js?22"
-                data-telegram-login="SmthP_bot"
-                data-size="large"
-                data-radius="4"
-                data-lang="en"
-                data-auth-url="{{ url_for('telegram_callback') }}"
-                data-request-access="write">
-            </script>
-        </div>
+
+        <button onclick="loginTelegram(event)" class="login-btn">Log in via Telegram</button>
+        <div id="tg-hidden" style="display:none"></div>
+        <script async src="https://telegram.org/js/telegram-widget.js?22"></script>
+
+        <script type="text/javascript">
+            function onTelegramAuth(user) {
+                const params = new URLSearchParams(user).toString();
+                window.location.href = "/auth/telegram/callback?" + params;
+            }
+
+            function loginTelegram(event) {
+                const btn = event.currentTarget;
+                btn.classList.add('htmx-request');
+
+                if (!window.Telegram || !window.Telegram.Login) {
+                    alert("Telegram script not loaded yet!");
+                    btn.classList.remove('htmx-request');
+                    return;
+                }
+
+                window.Telegram.Login.auth(
+                    { bot_id: '8468644266', request_access: 'write' },
+                    (user) => {
+                        if (user) {
+                            onTelegramAuth(user);
+                        } else {
+                            btn.classList.remove('htmx-request');
+                        }
+                    }
+                );
+            }
+        </script>
     </div>
 
 {% endblock %}
