@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     google_client_secret: str
     github_client_id: str
     github_client_secret: str
+    telegram_bot_token: str
 
 
 stg = Settings()

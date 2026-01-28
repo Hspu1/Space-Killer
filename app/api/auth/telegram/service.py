@@ -1,13 +1,14 @@
+import hmac
+import hashlib
 from datetime import datetime, timezone
 
-from authlib.integrations.starlette_client import OAuthError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
-from app.api.auth.google_oauth2.client import google_oauth
+from app.core.env_conf import stg
 from app.core import UsersModel, UserIdentitiesModel
 from app.core.db.database import async_session_maker
 
@@ -31,8 +32,8 @@ async def get_email(session: AsyncSession, email: str) -> UsersModel | None:
 async def get_user_id(user_info: dict) -> str:
     async with async_session_maker.begin() as session:
         identity = await get_identity(
-            session=session, provider="google",
-            provider_user_id=user_info["sub"]
+            session=session, provider="telegram",
+            provider_user_id=user_info["id"]
         )
         if identity:
             return str(identity.user_id)
@@ -55,29 +56,43 @@ async def get_user_id(user_info: dict) -> str:
                 user = await get_email(session=session, email=user_info["email"])
 
         new_identity = UserIdentitiesModel(
-            user_id=user.id, provider="google",
-            provider_user_id=user_info["sub"]
+            user_id=user.id, provider="telegram",
+            provider_user_id=user_info["id"]
         )
         session.add(new_identity)
 
         return str(user.id)
 
 
-async def google_callback_handling(request: Request) -> RedirectResponse:
+async def telegram_callback_handling(request: Request):
     if request.query_params.get("error"):
         return RedirectResponse(url="/?msg=access_denied")
 
     try:
-        token = await google_oauth.google.authorize_access_token(request)
-        user_info = token.get("userinfo")
+        if data := dict(request.query_params):
+            received_hash = data.pop('hash', None)
+            data_check_string = "\n".join([f"{k}={v}" for k, v in sorted(data.items())])
+            secret_key = hashlib.sha256(stg.telegram_bot_token.encode()).digest()
+            expected_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
 
-        if user_info:
+            if not hmac.compare_digest(expected_hash, received_hash):
+                return RedirectResponse(url="/?msg=access_denied")
+
+            user_info = {
+                "id": data['id'],
+                "name": data.get('first_name', 'tg_user'),
+                "login": data.get('username', 'tg_user'),
+                "email": f"{data['id']}@telegram.user",
+                "email_verified": True
+            }
+
             request.session.clear()
             user_id = await get_user_id(user_info=user_info)
             request.session['user_id'] = user_id
-            request.session['given_name'] = user_info.get("given_name", "User")
+            request.session['given_name'] = user_info['name'] or user_info['login']
 
-        return RedirectResponse(url='/welcome')
+            return RedirectResponse(url='/welcome')
 
-    except OAuthError:
+    except Exception as e:
+        print(f"Telegram Auth Error: {e}")
         return RedirectResponse(url="/?msg=session_expired")
