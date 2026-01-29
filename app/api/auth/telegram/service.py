@@ -4,7 +4,7 @@ import hashlib
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 
-from app.api.auth.auth_service import get_user_id, AuthProvider
+from ..common import get_user_id, AuthProvider
 from app.core.env_conf import stg
 
 

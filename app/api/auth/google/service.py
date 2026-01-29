@@ -2,8 +2,8 @@ from authlib.integrations.starlette_client import OAuthError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 
-from app.api.auth.auth_service import get_user_id, AuthProvider
-from app.api.auth.google.client import google_oauth
+from ..common import get_user_id, AuthProvider
+from .client import google_oauth
 
 
 async def google_callback_handling(request: Request) -> RedirectResponse:

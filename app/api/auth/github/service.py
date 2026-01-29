@@ -2,8 +2,8 @@ from authlib.integrations.starlette_client import OAuthError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 
-from app.api.auth.auth_service import get_user_id, AuthProvider
-from app.api.auth.github.client import github_oauth
+from ..common import get_user_id, AuthProvider
+from .client import github_oauth
 
 
 async def github_callback_handling(request: Request) -> RedirectResponse:

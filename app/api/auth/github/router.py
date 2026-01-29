@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
 
-from app.api.auth.github.client import github_oauth
-from app.api.auth.github.service import github_callback_handling
+from .client import github_oauth
+from .service import github_callback_handling
 
 github_oauth2_router = APIRouter(tags=["github"], prefix="/auth/github")
 

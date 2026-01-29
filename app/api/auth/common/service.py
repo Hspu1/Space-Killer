@@ -1,18 +1,12 @@
 from datetime import datetime, timezone
-from enum import StrEnum
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
+from .schemas import AuthProvider
 from app.core import UsersModel, UserIdentitiesModel
 from app.core.db.database import async_session_maker
-
-
-class AuthProvider(StrEnum):
-    GOOGLE = "google"
-    GITHUB = "github"
-    TELEGRAM = "telegram"
 
 
 async def get_identity(

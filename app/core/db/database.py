@@ -2,8 +2,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine, async_sessionmaker, AsyncSession
 )
 
-from app.core.env_conf import stg
-# wb DI (Dishka??)
+from ..env_conf import stg
+
 
 engine = create_async_engine(
     stg.db_url, pool_pre_ping=True,  # auto health check

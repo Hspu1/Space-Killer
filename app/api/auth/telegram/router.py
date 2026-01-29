@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Response
-from app.api.auth.telegram.service import telegram_callback_handling
+from .service import telegram_callback_handling
 
 telegram_auth_router = APIRouter(tags=["telegram_auth"], prefix="/auth/telegram")
 

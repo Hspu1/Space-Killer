@@ -6,8 +6,7 @@ from sqlalchemy import (
     Boolean, Index
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.core.db.base import Base, TimestampMixin, UUIDv7Mixin
-# add some comments + overall
+from .base import Base, TimestampMixin, UUIDv7Mixin
 
 
 class UsersModel(Base, TimestampMixin, UUIDv7Mixin):
@@ -20,7 +19,6 @@ class UsersModel(Base, TimestampMixin, UUIDv7Mixin):
     identities: Mapped[list["UserIdentitiesModel"]] = relationship("UserIdentitiesModel", back_populates="user", cascade="all, delete-orphan")
 
     __table_args__ = (Index("idx_users_full_name", "full_name"),)
-    # wb CheckConstraint
 
 
 class UserIdentitiesModel(Base):
