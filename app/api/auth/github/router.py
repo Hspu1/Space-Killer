@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
 
-from app.api.auth.github_oauth2.client import github_oauth
-from app.api.auth.github_oauth2.service import github_callback_handling
+from app.api.auth.github.client import github_oauth
+from app.api.auth.github.service import github_callback_handling
 
-github_oauth2_router = APIRouter(tags=["github_oauth2"], prefix="/auth/github")
+github_oauth2_router = APIRouter(tags=["github"], prefix="/auth/github")
 
 
 @github_oauth2_router.get('/login')

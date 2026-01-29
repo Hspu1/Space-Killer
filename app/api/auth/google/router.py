@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
 
-from app.api.auth.google_oauth2.client import google_oauth
-from app.api.auth.google_oauth2.service import google_callback_handling
+from app.api.auth.google.client import google_oauth
+from app.api.auth.google.service import google_callback_handling
 
 
-google_oauth2_router = APIRouter(tags=["google_oauth2"], prefix="/auth/google")
+google_oauth2_router = APIRouter(tags=["google"], prefix="/auth/google")
 
 
 @google_oauth2_router.get("/login")
