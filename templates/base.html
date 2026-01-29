@@ -39,6 +39,12 @@
             text-shadow: 0 0 10px var(--neon-alpha), 0 0 20px var(--neon-glow);
         }
 
+        .auth-nav {
+            display: flex; flex-direction: row;
+            justify-content: center; align-items: center;
+            gap: 16px; width: 100%; flex-wrap: wrap;
+        }
+
         .login-btn {
             all: unset; display: inline-flex; align-items: center;
             justify-content: center; background-color: var(--bg-dark);
@@ -46,6 +52,11 @@
             padding: 16px 32px; border-radius: 4px; font-size: 18px;
             font-weight: 600; transition: all 0.25s ease;
             cursor: pointer; position: relative;
+        }
+
+        .login-btn:focus-visible {
+            outline: 2px solid var(--neon-green);
+            outline-offset: 4px;
         }
 
         .login-btn:hover:not(:disabled):not(.dev-mode) {
@@ -59,9 +70,18 @@
         }
 
         .htmx-request.login-btn::after {
-            content: "Loading..."; position: absolute; left: 50%;
+            content: "Loading";
+            position: absolute; left: 50%;
             transform: translateX(-50%); font-size: 18px;
             color: var(--neon-green); opacity: 0.7;
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: "Loading"; }
+            40% { content: "Loading."; }
+            60% { content: "Loading.."; }
+            80%, 100% { content: "Loading..."; }
         }
 
         .login-btn:disabled, .login-btn.dev-mode {
@@ -69,18 +89,6 @@
             pointer-events: none; box-shadow: none !important;
             border-color: var(--white-alpha) !important;
             color: #ffffff !important;
-        }
-
-        .badge {
-            font-size: 10px; background: var(--error-red);
-            color: #fff; padding: 2px 6px; border-radius: 3px;
-            margin-left: 8px; box-shadow: 0 0 10px rgba(255, 76, 76, 0.3);
-        }
-
-        .row-group {
-            display: flex; flex-direction: row;
-            justify-content: center; align-items: center;
-            gap: 16px; width: 100%; flex-wrap: wrap;
         }
 
         .error-msg {

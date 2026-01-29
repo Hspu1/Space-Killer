@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import HTMLResponse
 
+from app.core.env_conf import stg
 from app.core.templates_conf import templates
 
 homepage_router = APIRouter(tags=["UI"])
@@ -10,5 +11,8 @@ homepage_router = APIRouter(tags=["UI"])
 async def homepage(request: Request) -> Response:
     return templates.TemplateResponse(
         "index.html",
-        {"request": request, "msg": request.query_params.get("msg")}
+        {
+            "request": request, "bot_id": stg.telegram_bot_id,
+            "msg": request.query_params.get("msg")
+        }
     )

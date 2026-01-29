@@ -20,5 +20,9 @@ class Settings(BaseSettings):
     github_client_secret: str
     telegram_bot_token: str
 
+    @property
+    def telegram_bot_id(self) -> str:
+        return self.telegram_bot_token.split(':')[0]
+
 
 stg = Settings()
