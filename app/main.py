@@ -10,7 +10,8 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.auth import (
     github_oauth2_router, google_oauth2_router,
-    telegram_auth_router, auth_logout_router
+    telegram_auth_router, yandex_oauth2_router,
+    auth_logout_router
 )
 from app.frontend import homepage_router, welcome_router
 from app.core.env_conf import stg
@@ -66,6 +67,7 @@ def create_app(testing: bool = False) -> FastAPI:
     app.include_router(google_oauth2_router)
     app.include_router(github_oauth2_router)
     app.include_router(telegram_auth_router)
+    app.include_router(yandex_oauth2_router)
     app.include_router(auth_logout_router)
 
     # frontend

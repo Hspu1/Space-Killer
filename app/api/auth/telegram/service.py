@@ -25,7 +25,6 @@ async def telegram_callback_handling(request: Request) -> RedirectResponse:
             user_info_id = str(data["id"])
             user_info = {
                 "name": data.get('first_name', 'tg_user'),
-                "login": data.get('username', 'tg_user'),
                 "email": f"{user_info_id}@telegram.user",
             }
 
