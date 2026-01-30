@@ -14,8 +14,8 @@
 
     <h1 class="glow-text">Smth-P</h1>
     <nav class="auth-nav">
-        <a href="{{ url_for('google_login') }}" class="login-btn">Log in via Google</a>
-        <a href="{{ url_for('github_login') }}" class="login-btn">Log in via Github</a>
+        <a hx-get="{{ url_for('google_login') }}" hx-target="this" class="login-btn">Log in via Google</a>
+        <a hx-get="{{ url_for('github_login') }}" hx-target="this" class="login-btn">Log in via Github</a>
         <button onclick="loginTelegram(event)" class="login-btn">Log in via Telegram</button>
     </nav>
 
