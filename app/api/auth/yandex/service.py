@@ -12,15 +12,14 @@ async def yandex_callback_handling(request: Request) -> RedirectResponse:
 
     try:
         token = await yandex_oauth.yandex.authorize_access_token(request)
-        resp = await yandex_oauth.yandex.get("https://login.yandex.ru/info", token=token)
+        resp = await yandex_oauth.yandex.get('info', token=token)
         raw_user_info = resp.json()
         user_info_id = str(raw_user_info["id"])
 
         user_info = {
             "id": user_info_id,
             "email": raw_user_info.get("default_email") or f"{user_info_id}@yandex.user",
-            "name": raw_user_info.get('display_name') or raw_user_info.get('real_name'),
-
+            "name": raw_user_info.get('display_name') or raw_user_info.get('real_name')
         }
 
         if user_info:
