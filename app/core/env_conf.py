@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     telegram_bot_token: str
     yandex_client_id: str
     yandex_client_secret: str
+    stackoverflow_api_key: str
+    stackoverflow_client_id: str
+    stackoverflow_client_secret: str
 
     @property
     def telegram_bot_id(self) -> str:

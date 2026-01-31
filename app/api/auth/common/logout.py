@@ -2,10 +2,10 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
 
 
-auth_logout_router = APIRouter(tags=["common auth"])
+logout_router = APIRouter(tags=["common auth"])
 
 
-@auth_logout_router.post("/logout")
+@logout_router.post("/logout")
 async def logout(request: Request) -> Response:
     request.session.clear()
 

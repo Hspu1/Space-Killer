@@ -4,10 +4,10 @@ from .client import github_oauth
 from .service import github_callback_handling
 from ..common import login, AuthProvider
 
-github_oauth2_router = APIRouter(tags=["github"], prefix="/auth/github")
+github_router = APIRouter(tags=["github"], prefix="/auth/github")
 
 
-@github_oauth2_router.get('/login')
+@github_router.get('/login')
 async def github_login(request: Request) -> Response:
     return await login(
         request=request,
@@ -16,6 +16,6 @@ async def github_login(request: Request) -> Response:
     )
 
 
-@github_oauth2_router.get(path="/callback")
+@github_router.get(path="/callback")
 async def github_callback(request: Request) -> Response:
     return await github_callback_handling(request=request)

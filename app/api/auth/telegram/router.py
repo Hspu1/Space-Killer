@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Request, Response
 from .service import telegram_callback_handling
 
-telegram_auth_router = APIRouter(tags=["telegram"], prefix="/auth/telegram")
+telegram_router = APIRouter(tags=["telegram"], prefix="/auth/telegram")
 
 
-@telegram_auth_router.get(path="/callback")
+@telegram_router.get(path="/callback")
 async def telegram_callback(request: Request) -> Response:
     return await telegram_callback_handling(request=request)

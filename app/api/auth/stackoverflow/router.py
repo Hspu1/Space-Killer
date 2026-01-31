@@ -1,0 +1,21 @@
+from fastapi import APIRouter, Request, Response
+
+from .client import stackoverflow_oauth
+from .service import stackoverflow_callback_handling
+from ..common import login, AuthProvider
+
+stackoverflow_router = APIRouter(tags=["stackoverflow"], prefix="/auth/stackoverflow")
+
+
+@stackoverflow_router.get('/login')
+async def stackoverflow_login(request: Request) -> Response:
+    return await login(
+        request=request,
+        provider_name=AuthProvider.STACKOVERFLOW,
+        provider=stackoverflow_oauth.stackoverflow
+    )
+
+
+@stackoverflow_router.get('/callback')
+async def stackoverflow_callback(request: Request) -> Response:
+    return await stackoverflow_callback_handling(request)

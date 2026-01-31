@@ -4,10 +4,10 @@ from .client import google_oauth
 from .service import google_callback_handling
 from ..common import login, AuthProvider
 
-google_oauth2_router = APIRouter(tags=["google"], prefix="/auth/google")
+google_router = APIRouter(tags=["google"], prefix="/auth/google")
 
 
-@google_oauth2_router.get("/login")
+@google_router.get("/login")
 async def google_login(request: Request) -> Response:
     return await login(
         request=request,
@@ -16,6 +16,6 @@ async def google_login(request: Request) -> Response:
     )
 
 
-@google_oauth2_router.get(path="/callback")
+@google_router.get(path="/callback")
 async def google_callback(request: Request) -> Response:
     return await google_callback_handling(request=request)

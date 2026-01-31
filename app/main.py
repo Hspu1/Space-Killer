@@ -9,9 +9,9 @@ from starlette.middleware.sessions import SessionMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.auth import (
-    github_oauth2_router, google_oauth2_router,
-    telegram_auth_router, yandex_oauth2_router,
-    auth_logout_router
+    github_router, google_router,
+    telegram_router, yandex_router,
+    stackoverflow_router, logout_router
 )
 from app.frontend import homepage_router, welcome_router
 from app.core.env_conf import stg
@@ -63,12 +63,13 @@ def create_app(testing: bool = False) -> FastAPI:
     )
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
-    # backend
-    app.include_router(google_oauth2_router)
-    app.include_router(github_oauth2_router)
-    app.include_router(telegram_auth_router)
-    app.include_router(yandex_oauth2_router)
-    app.include_router(auth_logout_router)
+    # backend - auth
+    app.include_router(google_router)
+    app.include_router(github_router)
+    app.include_router(telegram_router)
+    app.include_router(yandex_router)
+    app.include_router(stackoverflow_router)
+    app.include_router(logout_router)
 
     # frontend
     app.include_router(homepage_router)

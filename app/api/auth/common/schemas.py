@@ -6,3 +6,4 @@ class AuthProvider(StrEnum):
     GITHUB = "github"
     TELEGRAM = "telegram"
     YANDEX = "yandex"
+    STACKOVERFLOW = "stackoverflow"
