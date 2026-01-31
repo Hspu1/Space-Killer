@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import RedirectResponse
 
 
-auth_logout_router = APIRouter()
+auth_logout_router = APIRouter(tags=["common auth"])
 
 
 @auth_logout_router.post("/logout")
