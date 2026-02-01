@@ -9,8 +9,8 @@ stackoverflow_oauth.register(
     client_id=stg.stackoverflow_client_id,
     client_secret=stg.stackoverflow_client_secret,
     authorize_url='https://stackoverflow.com/oauth',
-    access_token_url='https://stackoverflow.com/access_token',
-    api_base_url='https://api.stackexchange.com/authorize',
+    access_token_url='https://stackoverflow.com/oauth/access_token',
+    api_base_url='https://api.stackexchange.com',
     client_kwargs={
         'scope': 'no_expiry',
         'token_endpoint_auth_method': 'client_secret_post'
