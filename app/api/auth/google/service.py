@@ -14,6 +14,7 @@ async def google_callback_handling(request: Request) -> RedirectResponse:
         token = await google_oauth.google.authorize_access_token(request)
         user_info = token.get("userinfo")
         user_info_id = str(user_info["sub"])
+        user_info["email_verified"] = True
 
         if user_info:
             request.session.clear()

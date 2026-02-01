@@ -43,7 +43,8 @@ async def stackoverflow_callback_handling(request: Request) -> RedirectResponse:
 
         user_info = {
             "email": f"{user_info_id}@stackoverflow.user",
-            "name": raw_user_info.get("display_name")
+            "name": raw_user_info.get("display_name"),
+            "email_verified": True
         }
 
         request.session.clear()

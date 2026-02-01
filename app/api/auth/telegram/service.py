@@ -26,6 +26,7 @@ async def telegram_callback_handling(request: Request) -> RedirectResponse:
             user_info = {
                 "name": data.get('first_name', 'tg_user'),
                 "email": f"{user_info_id}@telegram.user",
+                "email_verified": True
             }
 
             request.session.clear()
@@ -35,7 +36,7 @@ async def telegram_callback_handling(request: Request) -> RedirectResponse:
                 provider_user_id=user_info_id
             )
             request.session['user_id'] = user_id
-            request.session['given_name'] = user_info['name'] or user_info['login']
+            request.session['given_name'] = user_info['name']
 
             return RedirectResponse(url='/welcome')
 
