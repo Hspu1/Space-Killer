@@ -18,7 +18,6 @@ async def github_callback_handling(request: Request) -> RedirectResponse:
         user_info["email_verified"] = True
 
         if user_info:
-            request.session.clear()
             if not user_info.get("email"):
                 user_info["email"] = f"{user_info_id}@github.user"
 
@@ -27,6 +26,7 @@ async def github_callback_handling(request: Request) -> RedirectResponse:
                 provider=AuthProvider.GITHUB,
                 provider_user_id=user_info_id
             )
+            request.session.clear()
             request.session['user_id'] = user_id
             request.session['given_name'] = user_info.get("name") or user_info.get("login")
 

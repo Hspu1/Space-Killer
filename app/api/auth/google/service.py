@@ -17,13 +17,12 @@ async def google_callback_handling(request: Request) -> RedirectResponse:
         user_info["email_verified"] = True
 
         if user_info:
-            request.session.clear()
-
             user_id = await get_user_id(
                 user_info=user_info,
                 provider=AuthProvider.GOOGLE,
                 provider_user_id=user_info_id
             )
+            request.session.clear()
             request.session['user_id'] = user_id
             request.session['given_name'] = user_info.get("given_name", "User")
 

@@ -47,12 +47,12 @@ async def stackoverflow_callback_handling(request: Request) -> RedirectResponse:
             "email_verified": True
         }
 
-        request.session.clear()
         user_id = await get_user_id(
             user_info=user_info,
             provider=AuthProvider.STACKOVERFLOW,
             provider_user_id=user_info_id
         )
+        request.session.clear()
         request.session['user_id'] = user_id
         request.session['given_name'] = user_info["name"].split()[0]
 
