@@ -10,17 +10,23 @@ class Settings(BaseSettings):
     )
 
     session_secret_key: str
-    csrf_secret_key: str
+
     proxy: str | None
     ssl_check: bool = True
+
     db_url: str
+
     google_client_id: str
     google_client_secret: str
+
     github_client_id: str
     github_client_secret: str
+
     telegram_bot_token: str
+
     yandex_client_id: str
     yandex_client_secret: str
+
     stackoverflow_api_key: str
     stackoverflow_client_id: str
     stackoverflow_client_secret: str
