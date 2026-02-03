@@ -2,7 +2,7 @@ from authlib.integrations.starlette_client import OAuthError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 
-from app.core import stg
+from app.core.env_conf import stg
 from ..common import get_user_id, AuthProvider
 from .client import stackoverflow_oauth
 

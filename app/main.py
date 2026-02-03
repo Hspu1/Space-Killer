@@ -14,7 +14,8 @@ from app.api.auth import (
     stackoverflow_router, logout_router
 )
 from app.frontend import homepage_router, welcome_router
-from app.core import stg, lifespan
+from app.core.env_conf import stg
+from app.core.lifespan import lifespan
 
 
 def static_docs_urls(app: FastAPI):

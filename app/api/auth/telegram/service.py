@@ -6,7 +6,7 @@ from fastapi import Request
 from fastapi.responses import RedirectResponse
 
 from ..common import get_user_id, AuthProvider
-from app.core import stg
+from app.core.env_conf import stg
 
 
 async def telegram_callback_handling(request: Request) -> RedirectResponse:

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from ..core import templates
+from ..core.templates_conf import templates
 
 welcome_router = APIRouter(tags=["UI"])
 

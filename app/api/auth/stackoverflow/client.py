@@ -1,6 +1,6 @@
 from authlib.integrations.starlette_client import OAuth
 
-from app.core import stg
+from app.core.env_conf import stg
 
 
 stackoverflow_oauth = OAuth()
