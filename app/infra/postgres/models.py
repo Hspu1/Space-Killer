@@ -6,7 +6,7 @@ from sqlalchemy import (
     Boolean, Index
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .base import Base, TimestampMixin, UUIDv7Mixin
+from app.infra.postgres.base import Base, TimestampMixin, UUIDv7Mixin
 
 
 class UsersModel(Base, TimestampMixin, UUIDv7Mixin):
