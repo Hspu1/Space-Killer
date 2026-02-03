@@ -1,9 +1,5 @@
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
-from fastapi.openapi.docs import (
-    get_redoc_html, get_swagger_ui_html,
-    get_swagger_ui_oauth2_redirect_html
-)
 from uvicorn import run
 from starsessions import SessionMiddleware, SessionAutoloadMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -17,32 +13,8 @@ from app.frontend import homepage_router, welcome_router
 from app.core.env_conf import stg
 from app.core.lifespan import lifespan
 from app.core.session import OrjsonSerializer
+from app.core.docs import static_docs_urls
 from app.infra.redis import LazyRedisStore
-
-
-def static_docs_urls(app: FastAPI):
-    # статика через более стабильный unpkg
-    @app.get("/docs", include_in_schema=False)
-    async def custom_swagger_ui_html():
-        return get_swagger_ui_html(
-            openapi_url=app.openapi_url,
-            title=app.title + " - Swagger UI",
-            oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
-            swagger_js_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js",
-            swagger_css_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css",
-        )
-
-    @app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
-    async def swagger_ui_redirect():
-        return get_swagger_ui_oauth2_redirect_html()
-
-    @app.get("/redoc", include_in_schema=False)
-    async def redoc_html():
-        return get_redoc_html(
-            openapi_url=app.openapi_url,
-            title=app.title + " - ReDoc",
-            redoc_js_url="https://unpkg.com/redoc@2/bundles/redoc.standalone.js",
-        )
 
 
 def create_app(testing: bool = False) -> FastAPI:
