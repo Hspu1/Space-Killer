@@ -14,7 +14,7 @@ from app.api.auth import (
     stackoverflow_router, logout_router
 )
 from app.frontend import homepage_router, welcome_router
-from app.core import stg
+from app.core import stg, lifespan
 
 
 def static_docs_urls(app: FastAPI):
@@ -45,7 +45,7 @@ def static_docs_urls(app: FastAPI):
 def create_app(testing: bool = False) -> FastAPI:
     """Фабрика для создания приложения"""
     app = FastAPI(
-        title="Smth-P",
+        title="Smth-P", lifespan=lifespan,
         default_response_class=ORJSONResponse,
         docs_url=None, redoc_url=None,
         swagger_ui_oauth2_redirect_url="/oauth2-redirect"
