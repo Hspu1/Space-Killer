@@ -1,3 +1,4 @@
-__all__ = ("Base", "UsersModel", "UserIdentitiesModel")
+__all__ = ("stg", "templates")
 
-from .db import Base, UsersModel, UserIdentitiesModel
+from .env_conf import stg
+from .templates_conf import templates

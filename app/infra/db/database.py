@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine, async_sessionmaker, AsyncSession
 )
 
-from ..env_conf import stg
+from app.core.env_conf import stg
 
 
 engine = create_async_engine(

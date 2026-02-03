@@ -5,8 +5,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 
 from .schemas import AuthProvider
-from app.core import UsersModel, UserIdentitiesModel
-from app.core.db.database import async_session_maker
+from app.infra import (
+    UsersModel, UserIdentitiesModel,
+    async_session_maker
+)
 
 
 async def get_identity(
