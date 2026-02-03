@@ -26,7 +26,8 @@ class LazyRedisStore(SessionStore):
         return session_id
 
     async def remove(self, session_id: str) -> None:
-        await self.connection.set(self._key(session_id, "invalid"), b"1", ex=2592000)
+        await self.connection.delete(self._key(session_id, "data"))
+        await self.connection.set(self._key(session_id, "invalid"), b"1", ex=3600)
 
     async def exists(self, session_id: str) -> bool:
         p = self.connection.pipeline()
