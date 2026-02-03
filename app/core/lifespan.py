@@ -3,7 +3,7 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 
-from app.infra import redis_service
+from app.infra.redis import redis_service
 
 
 @asynccontextmanager

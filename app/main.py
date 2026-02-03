@@ -2,10 +2,10 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from fastapi.openapi.docs import (
     get_redoc_html, get_swagger_ui_html,
-    get_swagger_ui_oauth2_redirect_html,
+    get_swagger_ui_oauth2_redirect_html
 )
 from uvicorn import run
-from starlette.middleware.sessions import SessionMiddleware
+from starsessions import SessionMiddleware, SessionAutoloadMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.auth import (
@@ -16,6 +16,8 @@ from app.api.auth import (
 from app.frontend import homepage_router, welcome_router
 from app.core.env_conf import stg
 from app.core.lifespan import lifespan
+from app.core.session import OrjsonSerializer
+from app.infra.redis import LazyRedisStore
 
 
 def static_docs_urls(app: FastAPI):
@@ -58,9 +60,14 @@ def create_app(testing: bool = False) -> FastAPI:
     static_docs_urls(app=app)
 
     # middlewares
+    app.add_middleware(SessionAutoloadMiddleware)
     app.add_middleware(
-        SessionMiddleware, secret_key=stg.session_secret_key,
-        max_age=2592000, same_site="none", https_only=True,
+        SessionMiddleware,
+        store=LazyRedisStore(),
+        serializer=OrjsonSerializer(stg.session_secret_key),
+        cookie_name="session_id", lifetime=2592000,
+        rolling=True, cookie_same_site="lax",
+        cookie_https_only=True
     )
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
