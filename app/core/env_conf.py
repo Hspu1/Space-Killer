@@ -24,16 +24,16 @@ class Settings(BaseSettings):
 
     telegram_bot_token: str
 
+    @property
+    def telegram_bot_id(self) -> str:
+        return self.telegram_bot_token.split(':')[0]
+
     yandex_client_id: str
     yandex_client_secret: str
 
     stackoverflow_api_key: str
     stackoverflow_client_id: str
     stackoverflow_client_secret: str
-
-    @property
-    def telegram_bot_id(self) -> str:
-        return self.telegram_bot_token.split(':')[0]
 
 
 stg = Settings()
