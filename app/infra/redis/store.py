@@ -4,8 +4,8 @@ from .service import redis_service
 
 
 class LazyRedisStore(SessionStore):
-    def __init__(self, prefix: str = "session"):
-        self.prefix = prefix
+    def __init__(self, prefix: str = "session", salt: str = "v1"):
+        self.prefix = f"{prefix}:{salt}"
 
     @property
     def connection(self):

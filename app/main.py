@@ -37,11 +37,11 @@ def create_app(testing: bool = False) -> FastAPI:
         SessionMiddleware,
         store=LazyRedisStore(),
         serializer=OrjsonSerializer(),
-        cookie_name="session_id", lifetime=2592000,
+        cookie_name="session_id", lifetime=stg.session_lifetime,
         rolling=True, cookie_same_site="lax",
         cookie_https_only=True
     )
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1",])  # + localtunnel
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=stg.allowed_hosts)
 
     # backend - auth
     app.include_router(google_router)
@@ -62,7 +62,7 @@ app = create_app()
 
 if __name__ == "__main__":
     run(
-        app="app.main:app", port=8000,
-        host="127.0.0.1", reload=False, use_colors=True,
-        proxy_headers=True, forwarded_allow_ips="127.0.0.1"  # + ip balancer
+        app="app.main:app", port=stg.run_port,
+        host=stg.run_host, reload=stg.run_reload, use_colors=True,
+        proxy_headers=True, forwarded_allow_ips=stg.forwarded_ips
     )

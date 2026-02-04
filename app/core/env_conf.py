@@ -9,8 +9,6 @@ class Settings(BaseSettings):
         env_file_encoding='utf-8', extra="ignore"
     )
 
-    session_secret_key: str
-
     proxy: str | None
     ssl_check: bool = True
 
@@ -34,6 +32,14 @@ class Settings(BaseSettings):
     stackoverflow_api_key: str
     stackoverflow_client_id: str
     stackoverflow_client_secret: str
+
+    session_lifetime: int = 2592000
+    allowed_hosts: list[str] = ["127.0.0.1", "localhost"]  # + localtunnel/domain
+    forwarded_ips: str = "127.0.0.1"  # + ip balancer
+
+    run_host: str = "127.0.0.1"
+    run_port: int = 8000
+    run_reload: bool = False
 
 
 stg = Settings()
