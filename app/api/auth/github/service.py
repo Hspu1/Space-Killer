@@ -26,8 +26,10 @@ async def github_callback_handling(request: Request) -> RedirectResponse:
                 provider_user_id=user_info_id
             )
             request.session.clear()
-            request.session['user_id'] = user_id
-            request.session['given_name'] = user_info.get("name") or user_info.get("login")
+            request.session.update({
+                "user_id": user_id,
+                "given_name": user_info.get("name") or user_info.get("login")
+            })
 
         return RedirectResponse(url='/welcome')
 

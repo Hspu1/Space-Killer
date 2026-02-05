@@ -29,8 +29,10 @@ async def yandex_callback_handling(request: Request) -> RedirectResponse:
                 provider_user_id=user_info_id
             )
             request.session.clear()
-            request.session['user_id'] = user_id
-            request.session['given_name'] = raw_user_info.get("first_name")
+            request.session.update({
+                "user_id": user_id,
+                "given_name": raw_user_info.get("first_name")
+            })
 
         return RedirectResponse(url='/welcome')
 

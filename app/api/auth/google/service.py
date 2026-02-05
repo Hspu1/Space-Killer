@@ -22,8 +22,10 @@ async def google_callback_handling(request: Request) -> RedirectResponse:
                 provider_user_id=user_info_id
             )
             request.session.clear()
-            request.session['user_id'] = user_id
-            request.session['given_name'] = user_info.get("given_name", "User")
+            request.session.update({
+                "user_id": user_id,
+                "given_name": user_info.get("given_name", "Google User")
+            })
 
         return RedirectResponse(url='/welcome')
 
