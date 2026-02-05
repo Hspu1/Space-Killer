@@ -1,6 +1,10 @@
+from secrets import token_urlsafe
+
 from fastapi import Request, Response
 from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client.apps import StarletteOAuth2App
+
+from app.core.env_conf import stg
 
 
 async def login(
@@ -14,9 +18,23 @@ async def login(
         base_url = base_url.replace("http://", "https://")
     redirect_uri = f"{base_url}/auth/{provider_name}/callback"
 
-    provider_url = await provider.authorize_redirect(request, redirect_uri)
-    url = provider_url.headers.get("location")
+    if provider_name == "stackoverflow":
+        state = token_urlsafe(32)
+        request.session["so_state"] = state
 
-    return Response(headers={"HX-Redirect": url}) \
-        if request.headers.get("HX-Request") else RedirectResponse(url)
-    # HX-Request is only after some of htmx methods
+        url = (
+            f"https://stackoverflow.com/oauth"
+            f"?client_id={stg.stackoverflow_client_id}"
+            f"&redirect_uri={redirect_uri}"
+            f"&state={state}"
+            f"&scope=no_expiry"
+        )
+
+    else:
+        provider_url = await provider.authorize_redirect(request, redirect_uri)
+        url = provider_url.headers.get("location")
+
+    if request.headers.get("HX-Request"):  # HX-Request exists only after using htmx methods
+        return Response(headers={"HX-Redirect": url})
+
+    return RedirectResponse(url)

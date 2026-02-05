@@ -19,8 +19,7 @@ async def yandex_callback_handling(request: Request) -> RedirectResponse:
         user_info = {
             "id": user_info_id,
             "email": raw_user_info.get("default_email") or f"{user_info_id}@yandex.user",
-            "name": raw_user_info.get('display_name') or raw_user_info.get('real_name'),
-            "email_verified": True
+            "name": raw_user_info.get('display_name') or raw_user_info.get('real_name')
         }
 
         if user_info:

@@ -18,4 +18,5 @@ async def stackoverflow_login(request: Request) -> Response:
 
 @stackoverflow_router.get('/callback')
 async def stackoverflow_callback(request: Request) -> Response:
-    return await stackoverflow_callback_handling(request)
+    redirect_uri = str(request.url_for("stackoverflow_callback"))
+    return await stackoverflow_callback_handling(request=request, redirect_uri=redirect_uri)

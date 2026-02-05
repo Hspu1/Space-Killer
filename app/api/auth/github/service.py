@@ -15,7 +15,6 @@ async def github_callback_handling(request: Request) -> RedirectResponse:
         resp = await github_oauth.github.get('user', token=token)
         user_info = resp.json()
         user_info_id = str(user_info["id"])
-        user_info["email_verified"] = True
 
         if user_info:
             if not user_info.get("email"):

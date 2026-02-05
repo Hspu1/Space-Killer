@@ -1,32 +1,42 @@
+from urllib.parse import parse_qs
+
 from authlib.integrations.starlette_client import OAuthError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
+from curl_cffi.requests import AsyncSession as TLSClient
+
 
 from app.core.env_conf import stg
 from ..common import get_user_id, AuthProvider
 from .client import stackoverflow_oauth
 
-from curl_cffi.requests import AsyncSession
-from urllib.parse import parse_qs
 
+async def stackoverflow_callback_handling(request: Request, redirect_uri: str) -> RedirectResponse:
+    returned_state = request.query_params.get("state")
+    saved_state = request.session.pop('so_state', None)
 
-async def stackoverflow_callback_handling(request: Request) -> RedirectResponse:
+    if not returned_state or returned_state != saved_state:
+        print(f"CSRF Alert, received: {returned_state}, expected: {saved_state}")
+        return RedirectResponse(url="/?msg=session_expired")
+
     code = request.query_params.get("code")  # temporary unique string
     if not code or request.query_params.get("error"):
         return RedirectResponse(url="/?msg=access_denied")
 
     try:
-        async with AsyncSession() as session:
+        async with TLSClient() as session:
             res = await session.post(
                 "https://stackoverflow.com/oauth/access_token",
                 data={
                     "client_id": stg.stackoverflow_client_id,
                     "client_secret": stg.stackoverflow_client_secret, "code": code,
-                    "redirect_uri": f"{request.url.scheme}://{request.url.netloc}/auth/stackoverflow/callback"
+                    "redirect_uri": redirect_uri
                 },  # receiving an access_token in exchange for a code
                 impersonate="chrome110"  # forging a TLS fingerprint
                 # so that it's identical to the Chrome 110th vers (recommended)
             )
+        if res.status_code != 200:
+            raise OAuthError(f"SO token error: {res.status_code}")  # + redirect
 
         token_dict = {k: v[0] for k, v in parse_qs(res.text).items()}  # parse_qs: str -> dict
         resp = None
@@ -43,8 +53,7 @@ async def stackoverflow_callback_handling(request: Request) -> RedirectResponse:
 
         user_info = {
             "email": f"{user_info_id}@stackoverflow.user",
-            "name": raw_user_info.get("display_name"),
-            "email_verified": True
+            "name": raw_user_info.get("display_name")
         }
 
         user_id = await get_user_id(
@@ -53,8 +62,10 @@ async def stackoverflow_callback_handling(request: Request) -> RedirectResponse:
             provider_user_id=user_info_id
         )
         request.session.clear()
-        request.session['user_id'] = user_id
-        request.session['given_name'] = user_info["name"].split()[0]
+        request.session.update({
+            "user_id": user_id,
+            "given_name": user_info["name"].split()[0] or "SO User"
+        })
 
         return RedirectResponse(url='/welcome')
 

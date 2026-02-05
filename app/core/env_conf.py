@@ -34,7 +34,10 @@ class Settings(BaseSettings):
     stackoverflow_client_secret: str
 
     session_lifetime: int = 2592000
-    allowed_hosts: list[str] = ["127.0.0.1", "localhost"]  # + localtunnel/domain
+    allowed_hosts: list[str] = [
+        "127.0.0.1", "localhost",
+        "little-aliens-work.loca.lt"
+    ]  # + localtunnel/domain
     forwarded_ips: str = "127.0.0.1"  # + ip balancer
 
     run_host: str = "127.0.0.1"
