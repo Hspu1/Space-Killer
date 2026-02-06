@@ -38,7 +38,7 @@ def create_app(testing: bool = False) -> FastAPI:
         store=LazyRedisStore(),
         serializer=OrjsonSerializer(),
         cookie_name="session_id", lifetime=stg.session_lifetime,
-        rolling=True, cookie_same_site="lax",
+        rolling=False, cookie_same_site="lax",
         cookie_https_only=True
     )
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=stg.allowed_hosts)
