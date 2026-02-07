@@ -12,22 +12,29 @@ class RedisService:
         self._lock = Lock()
 
     async def init_state(self, host: str, port: int, db: int) -> None:
-        if self._pool or self._client:  # state already exists
-            return None  # exit the function and move on
+        if self._pool or self._client:
+            return None
 
         async with self._lock:
             if self._pool or self._client:
                 return None
 
-            self._pool = ConnectionPool(  # open connections
+            pool = ConnectionPool(  # open connections
                 # (to not initialize a new one every single time)
                 host=host, port=port, db=db,
                 max_connections=stg.max_connections,
                 socket_connect_timeout=stg.socket_connect_timeout,
                 decode_responses=False  # avoiding unnecessary decoding
             )
-            self._client = Redis(connection_pool=self._pool)
-            await self._client.ping()
+            client = Redis(connection_pool=pool)
+
+            try:
+                await client.ping()
+                self._pool, self._client = pool, client
+
+            except Exception as e:
+                await pool.disconnect()
+                raise e
 
     def get_client(self) -> Redis:
         if self._client is None:
@@ -37,7 +44,7 @@ class RedisService:
     async def aclose(self) -> None:
         if self._pool:
             await self._pool.disconnect()
-            self._pool, self._client = None, None  # service shutdown guarantee
+            self._pool, self._client = None, None
 
 
 redis_service = RedisService()

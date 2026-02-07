@@ -15,17 +15,16 @@ async def google_callback_handling(request: Request) -> RedirectResponse:
         user_info = token.get("userinfo")
         user_info_id = str(user_info["sub"])
 
-        if user_info:
-            user_id = await get_user_id(
-                user_info=user_info,
-                provider=AuthProvider.GOOGLE,
-                provider_user_id=user_info_id
-            )
-            request.session.clear()
-            request.session.update({
-                "user_id": user_id,
-                "given_name": user_info.get("given_name", "Google User")
-            })
+        user_id = await get_user_id(
+            user_info=user_info,
+            provider=AuthProvider.GOOGLE,
+            provider_user_id=user_info_id
+        )
+        request.session.clear()
+        request.session.update({
+            "user_id": user_id,
+            "given_name": user_info.get("given_name", "Google User")
+        })
 
         return RedirectResponse(url='/welcome')
 

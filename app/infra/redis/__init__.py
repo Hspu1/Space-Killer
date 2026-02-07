@@ -1,5 +1,4 @@
-__all__ = ("redis_service", "LazyRedisStore")
+__all__ = ("redis_service", "RedisService", "RedisSessionStore")
 
-from .service import redis_service
-from .store import LazyRedisStore
-
+from .service import redis_service, RedisService
+from .store import RedisSessionStore

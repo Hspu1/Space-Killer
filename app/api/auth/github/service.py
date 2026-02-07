@@ -16,20 +16,19 @@ async def github_callback_handling(request: Request) -> RedirectResponse:
         user_info = resp.json()
         user_info_id = str(user_info["id"])
 
-        if user_info:
-            if not user_info.get("email"):
-                user_info["email"] = f"{user_info_id}@github.user"
+        if not user_info.get("email"):
+            user_info["email"] = f"{user_info_id}@github.user"
 
-            user_id = await get_user_id(
-                user_info=user_info,
-                provider=AuthProvider.GITHUB,
-                provider_user_id=user_info_id
-            )
-            request.session.clear()
-            request.session.update({
-                "user_id": user_id,
-                "given_name": user_info.get("name") or user_info.get("login")
-            })
+        user_id = await get_user_id(
+            user_info=user_info,
+            provider=AuthProvider.GITHUB,
+            provider_user_id=user_info_id
+        )
+        request.session.clear()
+        request.session.update({
+            "user_id": user_id,
+            "given_name": user_info.get("name") or user_info.get("login")
+        })
 
         return RedirectResponse(url='/welcome')
 

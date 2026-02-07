@@ -22,17 +22,16 @@ async def yandex_callback_handling(request: Request) -> RedirectResponse:
             "name": raw_user_info.get('display_name') or raw_user_info.get('real_name')
         }
 
-        if user_info:
-            user_id = await get_user_id(
-                user_info=user_info,
-                provider=AuthProvider.YANDEX,
-                provider_user_id=user_info_id
-            )
-            request.session.clear()
-            request.session.update({
-                "user_id": user_id,
-                "given_name": raw_user_info.get("first_name")
-            })
+        user_id = await get_user_id(
+            user_info=user_info,
+            provider=AuthProvider.YANDEX,
+            provider_user_id=user_info_id
+        )
+        request.session.clear()
+        request.session.update({
+            "user_id": user_id,
+            "given_name": raw_user_info.get("first_name")
+        })
 
         return RedirectResponse(url='/welcome')
 
