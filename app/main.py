@@ -11,16 +11,16 @@ from app.api.auth import (
 )
 from app.frontend import homepage_router, welcome_router
 from app.core.env_conf import stg
-from app.core.lifespan import lifespan
-from app.core.session import OrjsonSerializer
+from app.core.lifespan import get_lifespan
 from app.core.docs import static_docs_urls
-from app.infra.redis import LazyRedisStore
+from app.core.session import OrjsonSerializer
+from app.infra.redis import RedisSessionStore, redis_service, RedisService
 
 
-def create_app(testing: bool = False) -> FastAPI:
-    """Фабрика для создания приложения"""
+def create_app(redis_svc: RedisService = redis_service, testing: bool = False) -> FastAPI:
+    """Factory for creating an application"""
     app = FastAPI(
-        title="Smth-P", lifespan=lifespan,
+        title="Smth-P", lifespan=get_lifespan(redis_service=redis_svc),
         default_response_class=ORJSONResponse,
         docs_url=None, redoc_url=None,
         swagger_ui_oauth2_redirect_url="/oauth2-redirect"
@@ -32,11 +32,11 @@ def create_app(testing: bool = False) -> FastAPI:
     static_docs_urls(app=app)
 
     # middlewares
+    store, serializer = RedisSessionStore(service=redis_svc), OrjsonSerializer()
     app.add_middleware(SessionAutoloadMiddleware)
     app.add_middleware(
         SessionMiddleware,
-        store=LazyRedisStore(),
-        serializer=OrjsonSerializer(),
+        store=store, serializer=serializer,
         cookie_name="session_id", lifetime=stg.session_lifetime,
         rolling=False, cookie_same_site="lax",
         cookie_https_only=True
@@ -62,9 +62,9 @@ app = create_app()
 
 if __name__ == "__main__":
     run(
-        app="app.main:app", port=stg.run_port, host=stg.run_host,
+        app=app, port=stg.run_port, host=stg.run_host,
         reload=stg.run_reload, use_colors=True, access_log=False,
-        workers=4, http="httptools", loop="asyncio",
+        workers=1, http="httptools", loop="asyncio",
         # httptools -> lightweight HTTP parser,
         proxy_headers=True, forwarded_allow_ips=stg.forwarded_ips,
     )

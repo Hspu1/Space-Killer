@@ -3,11 +3,15 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 
-from app.infra.redis import redis_service
+from app.core.env_conf import stg
+from app.infra.redis import RedisService
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    redis_service.init_state(host="127.0.0.1", port=6379, db=2)
-    yield
-    await redis_service.aclose()
+def get_lifespan(redis_service: RedisService):
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+        await redis_service.init_state(host=stg.host, port=stg.port, db=stg.db)
+        yield
+        await redis_service.aclose()
+
+    return lifespan
