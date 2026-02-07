@@ -1,27 +1,39 @@
+from typing import Final
+
 from starsessions import SessionStore
 
-from .service import redis_service
+from app.infra.redis.service import RedisService
 
 
-class LazyRedisStore(SessionStore):
-    def __init__(self, prefix: str = "session", salt: str = "v1"):
-        self.prefix = f"{prefix}:{salt}"
-        self._conn = None
+class RedisSessionStore(SessionStore):
+    def __init__(
+            self, service: RedisService,
+            prefix: str = "session", version: str = "v1"
+    ) -> None:
+        # Final => no var upd
+        self._service: Final[RedisService] = service
+        self._prefix_root: Final[str] = f"{prefix}:{version}"
 
-    def _get_conn(self):
-        if not self._conn:
-            self._conn = redis_service.client
-        return self._conn
+    def _get_key(self, sid: str) -> str:
+        # sid == session_id
+        return f"{self._prefix_root}:{sid}"
 
-    def _key(self, sid: str) -> str:
-        return f"{self.prefix}:{sid}"
-
-    async def read(self, session_id: str, lifetime: int) -> bytes:
-        return await self._get_conn().get(self._key(session_id)) or b""
+    async def read(self, session_id: str, lifetime: int) -> bytes | None:
+        # the lifetime parameter is required for the SessionStore
+        client = self._service.get_client()
+        result = await client.get(name=self._get_key(session_id))
+        return result if result else None
 
     async def write(self, session_id: str, data: bytes, lifetime: int, ttl: int) -> str:
-        await self._get_conn().set(self._key(session_id), data, ex=max(1, ttl))
-        return session_id
+        # the lifetime parameter is required for the SessionStore
+        key, client = self._get_key(session_id), self._service.get_client()
+        if ttl <= 0:  # expired
+            await self.remove(session_id)
+            return session_id
+
+        await client.set(name=key, value=data, ex=ttl)
+        return session_id  # required for the "write" method SessionStore
 
     async def remove(self, session_id: str) -> None:
-        await self._get_conn().delete(self._key(session_id))
+        client = self._service.get_client()
+        await client.delete(self._get_key(session_id))
