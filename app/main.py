@@ -17,6 +17,13 @@ from app.core.session import OrjsonSerializer
 from app.infra.redis import RedisSessionStore, redis_service, RedisService
 
 
+auth_routers = (
+    google_router, github_router, telegram_router,
+    yandex_router, stackoverflow_router, logout_router
+)
+ui_routers = (homepage_router, welcome_router)
+
+
 def create_app(redis_svc: RedisService = redis_service, testing: bool = False) -> FastAPI:
     """Factory for creating an application"""
     app = FastAPI(
@@ -43,17 +50,8 @@ def create_app(redis_svc: RedisService = redis_service, testing: bool = False) -
     )
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=stg.allowed_hosts)
 
-    # backend - auth
-    app.include_router(google_router)
-    app.include_router(github_router)
-    app.include_router(telegram_router)
-    app.include_router(yandex_router)
-    app.include_router(stackoverflow_router)
-    app.include_router(logout_router)
-
-    # frontend
-    app.include_router(homepage_router)
-    app.include_router(welcome_router)
+    for router in (*auth_routers, *ui_routers):
+        app.include_router(router)
 
     return app
 
