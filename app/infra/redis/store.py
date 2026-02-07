@@ -17,15 +17,11 @@ class LazyRedisStore(SessionStore):
         return f"{self.prefix}:{sid}"
 
     async def read(self, session_id: str, lifetime: int) -> bytes:
-        data = await self._get_conn().get(self._key(session_id)) or b""
-        print(f"[READ] {len(data)} bytes")
-        return data
+        return await self._get_conn().get(self._key(session_id)) or b""
 
     async def write(self, session_id: str, data: bytes, lifetime: int, ttl: int) -> str:
-        print(f"[WRITE] {len(data)} bytes | ttl: {ttl}")
         await self._get_conn().set(self._key(session_id), data, ex=max(1, ttl))
         return session_id
 
     async def remove(self, session_id: str) -> None:
-        print(f"[REMOVE] sid: {session_id}")
         await self._get_conn().delete(self._key(session_id))

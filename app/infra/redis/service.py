@@ -10,7 +10,7 @@ class RedisService:
         self._pool = ConnectionPool(  # open connections
             # (to not initialize a new one every single time)
             host=host, port=port, db=db,
-            max_connections=100, socket_connect_timeout=2.0,
+            max_connections=100, socket_connect_timeout=2.0,  # 100 conns is optimal
             decode_responses=False  # avoiding unnecessary decoding
         )
         self._client = Redis(connection_pool=self._pool)

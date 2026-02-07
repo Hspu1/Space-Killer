@@ -62,7 +62,9 @@ app = create_app()
 
 if __name__ == "__main__":
     run(
-        app="app.main:app", port=stg.run_port,
-        host=stg.run_host, reload=stg.run_reload, use_colors=True,
-        proxy_headers=True, forwarded_allow_ips=stg.forwarded_ips
+        app="app.main:app", port=stg.run_port, host=stg.run_host,
+        reload=stg.run_reload, use_colors=True, access_log=False,
+        workers=4, http="httptools", loop="asyncio",
+        # httptools -> lightweight HTTP parser,
+        proxy_headers=True, forwarded_allow_ips=stg.forwarded_ips,
     )
