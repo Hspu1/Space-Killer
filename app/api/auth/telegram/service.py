@@ -15,12 +15,12 @@ async def telegram_callback_handling(request: Request) -> RedirectResponse:
 
     try:
         if data := dict(request.query_params):
-            received_hash = data.pop('hash', None)  # literally ctrl x + ctrl v hash
-            data_check_string = "\n".join([f"{k}={v}" for k, v in sorted(data.items())])  # sorted is essential
-            # single one big string with line break each time
-            secret_key = hashlib.sha256(stg.telegram_bot_token.encode()).digest()  # raw bites based on the secret token
-            expected_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()  # hexdigest -> from bites to str
-            # creating a new hash using our raw bites + value we're hashing + hash algorithm
+            # verify tg hmac signature according to official docs
+            received_hash = data.pop('hash', None)
+            data_check_string = "\n".join([f"{k}={v}" for k, v in sorted(data.items())])
+            secret_key = hashlib.sha256(stg.telegram_bot_token.encode()).digest()
+            expected_hash = hmac.new(secret_key, data_check_string.encode(), hashlib.sha256).hexdigest()
+
             if not hmac.compare_digest(expected_hash, received_hash):
                 return RedirectResponse(url="/?msg=access_denied")
 

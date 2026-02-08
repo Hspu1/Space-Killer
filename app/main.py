@@ -25,7 +25,6 @@ ui_routers = (homepage_router, welcome_router)
 
 
 def create_app(redis_svc: RedisService = redis_service, testing: bool = False) -> FastAPI:
-    """Factory for creating an application"""
     app = FastAPI(
         title="Smth-P", lifespan=get_lifespan(redis_service=redis_svc),
         default_response_class=ORJSONResponse,
@@ -38,7 +37,6 @@ def create_app(redis_svc: RedisService = redis_service, testing: bool = False) -
 
     static_docs_urls(app=app)
 
-    # middlewares
     store, serializer = RedisSessionStore(service=redis_svc), OrjsonSerializer()
     app.add_middleware(SessionAutoloadMiddleware)
     app.add_middleware(
@@ -61,8 +59,7 @@ app = create_app()
 if __name__ == "__main__":
     run(
         app=app, port=stg.run_port, host=stg.run_host,
-        reload=stg.run_reload, use_colors=True, access_log=False,
+        reload=stg.run_reload, use_colors=True, access_log=True,
         workers=1, http="httptools", loop="asyncio",
-        # httptools -> lightweight HTTP parser,
         proxy_headers=True, forwarded_allow_ips=stg.forwarded_ips,
     )

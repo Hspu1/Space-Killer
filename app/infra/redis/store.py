@@ -10,29 +10,25 @@ class RedisSessionStore(SessionStore):
             self, service: RedisService,
             prefix: str = "session", version: str = "v1"
     ) -> None:
-        # Final => no var upd
         self._service: Final[RedisService] = service
         self._prefix_root: Final[str] = f"{prefix}:{version}"
 
     def _get_key(self, sid: str) -> str:
-        # sid == session_id
         return f"{self._prefix_root}:{sid}"
 
     async def read(self, session_id: str, lifetime: int) -> bytes | None:
-        # the lifetime parameter is required for the SessionStore
         client = self._service.get_client()
         result = await client.get(name=self._get_key(session_id))
         return result if result else None
 
     async def write(self, session_id: str, data: bytes, lifetime: int, ttl: int) -> str:
-        # the lifetime parameter is required for the SessionStore
         key, client = self._get_key(session_id), self._service.get_client()
-        if ttl <= 0:  # expired
+        if ttl <= 0:
             await self.remove(session_id)
             return session_id
 
         await client.set(name=key, value=data, ex=ttl)
-        return session_id  # required for the "write" method SessionStore
+        return session_id
 
     async def remove(self, session_id: str) -> None:
         client = self._service.get_client()

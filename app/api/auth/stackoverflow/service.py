@@ -19,7 +19,7 @@ async def stackoverflow_callback_handling(request: Request, redirect_uri: str) -
         print(f"CSRF Alert, received: {returned_state}, expected: {saved_state}")
         return RedirectResponse(url="/?msg=session_expired")
 
-    code = request.query_params.get("code")  # temporary unique string
+    code = request.query_params.get("code")
     if not code or request.query_params.get("error"):
         return RedirectResponse(url="/?msg=access_denied")
 
@@ -31,18 +31,17 @@ async def stackoverflow_callback_handling(request: Request, redirect_uri: str) -
                     "client_id": stg.stackoverflow_client_id,
                     "client_secret": stg.stackoverflow_client_secret, "code": code,
                     "redirect_uri": redirect_uri
-                },  # receiving an access_token in exchange for a code
-                impersonate="chrome110"  # forging a TLS fingerprint
-                # so that it's identical to the Chrome 110th vers (recommended)
+                },
+                impersonate="chrome110"
             )
         if res.status_code != 200:
-            raise OAuthError(f"SO token error: {res.status_code}")  # + redirect
+            raise OAuthError(f"SO token error: {res.status_code}")
 
-        token_dict = {k: v[0] for k, v in parse_qs(res.text).items()}  # parse_qs: str -> dict
+        token_dict = {k: v[0] for k, v in parse_qs(res.text).items()}
         resp = None
         if access_token := token_dict.get("access_token"):
             resp = await stackoverflow_oauth.stackoverflow.get(
-                'me',  # special SO's view
+                'me',
                 params={'site': 'stackoverflow', 'key': stg.stackoverflow_api_key},
                 token={'access_token': access_token, 'token_type': 'Bearer'}
             )

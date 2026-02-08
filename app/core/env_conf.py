@@ -29,11 +29,10 @@ class ServerSettings(BaseSettings):
     run_port: int = 8000
     run_reload: bool = False
 
-    allowed_hosts: list[str] = [
-        "127.0.0.1", "localhost",
-        "little-aliens-work.loca.lt"
-    ]  # + localtunnel/domain
-    forwarded_ips: str = "127.0.0.1" # + ip balancer
+    allowed_hosts: list[str] = (
+        "127.0.0.1", "localhost"
+    )
+    forwarded_ips: str = "127.0.0.1"  # + ip balancer
 
     proxy: str | None = None
     ssl_check: bool = True
@@ -42,14 +41,18 @@ class ServerSettings(BaseSettings):
 
 class PostgresSettings(BaseSettings):
     db_url: str
+    pool_recycle: int = 3600
+    pool_size: int = 70
+    max_overflow: int = 30
+    pool_timeout: int = 10
 
 
 class RedisSettings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 6379
     db: int = 2
-    max_connections: int = 100
-    socket_connect_timeout: int = 4
+    max_connections: int = 1000
+    socket_connect_timeout: int = 5
 
 
 class Settings(AuthSettings, ServerSettings, PostgresSettings, RedisSettings):

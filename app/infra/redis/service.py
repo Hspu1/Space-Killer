@@ -19,12 +19,11 @@ class RedisService:
             if self._pool or self._client:
                 return None
 
-            pool = ConnectionPool(  # open connections
-                # (to not initialize a new one every single time)
+            pool = ConnectionPool(
                 host=host, port=port, db=db,
                 max_connections=stg.max_connections,
                 socket_connect_timeout=stg.socket_connect_timeout,
-                decode_responses=False  # avoiding unnecessary decoding
+                decode_responses=False  # avoid redundant decoding
             )
             client = Redis(connection_pool=pool)
 

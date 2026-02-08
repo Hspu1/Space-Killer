@@ -37,15 +37,14 @@ async def get_user_id(user_info: dict, provider: AuthProvider, provider_user_id:
         if identity:
             return str(identity.user_id)
 
+        # try to find user by email to perform auto-linking
         user = await get_email(session=session, email=user_info["email"])
         email_verification = datetime.now(timezone.utc) \
             if user_info.get("email_verified") else None
-        # Handle account linking:
-        # If user's identity is missing but email exists,
-        # link the new provider to the existing user
+
         if not user:
             try:
-                async with session.begin_nested():  # SAVEPOINT
+                async with session.begin_nested():
                     user = UsersModel(
                         email=user_info["email"],  full_name=user_info.get("name"),
                         email_verification_at=email_verification

@@ -13,9 +13,6 @@ async def login(
 ) -> Response:
 
     base_url = f"{request.url.scheme}://{request.url.netloc}"
-    # scheme -> protocol, netloc -> domain + port
-    if "loca.lt" in base_url:
-        base_url = base_url.replace("http://", "https://")
     redirect_uri = f"{base_url}/auth/{provider_name}/callback"
 
     if provider_name == "stackoverflow":
@@ -34,7 +31,7 @@ async def login(
         provider_url = await provider.authorize_redirect(request, redirect_uri)
         url = provider_url.headers.get("location")
 
-    if request.headers.get("HX-Request"):  # HX-Request exists only after using htmx methods
+    if request.headers.get("HX-Request"):
         return Response(headers={"HX-Redirect": url})
 
     return RedirectResponse(url)
