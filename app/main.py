@@ -4,24 +4,13 @@ from uvicorn import run
 from starsessions import SessionMiddleware, SessionAutoloadMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
-from app.api.auth import (
-    github_router, google_router,
-    telegram_router, yandex_router,
-    stackoverflow_router, logout_router
-)
-from app.frontend import homepage_router, welcome_router
+from app.api.auth import auth_router
+from app.ui import ui_router
 from app.core.env_conf import server_stg
 from app.core.lifespan import get_lifespan
 from app.core.docs import static_docs_urls
 from app.core.session import OrjsonSerializer
 from app.infra.redis import RedisSessionStore, redis_service, RedisService
-
-
-auth_routers = (
-    google_router, github_router, telegram_router,
-    yandex_router, stackoverflow_router, logout_router
-)
-ui_routers = (homepage_router, welcome_router)
 
 
 def create_app(redis_svc: RedisService = redis_service, testing: bool = False) -> FastAPI:
@@ -48,8 +37,8 @@ def create_app(redis_svc: RedisService = redis_service, testing: bool = False) -
     )
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=server_stg.allowed_hosts)
 
-    for router in (*auth_routers, *ui_routers):
-        app.include_router(router)
+    app.include_router(auth_router)
+    app.include_router(ui_router)
 
     return app
 
