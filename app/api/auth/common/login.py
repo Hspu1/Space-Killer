@@ -4,7 +4,7 @@ from fastapi import Request, Response
 from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client.apps import StarletteOAuth2App
 
-from app.core.env_conf import stg
+from app.core.env_conf import auth_stg
 
 
 async def login(
@@ -21,7 +21,7 @@ async def login(
 
         url = (
             f"https://stackoverflow.com/oauth"
-            f"?client_id={stg.stackoverflow_client_id}"
+            f"?client_id={auth_stg.stackoverflow_client_id}"
             f"&redirect_uri={redirect_uri}"
             f"&state={state}"
             f"&scope=no_expiry"

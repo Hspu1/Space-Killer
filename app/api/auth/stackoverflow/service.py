@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 from curl_cffi.requests import AsyncSession as TLSClient
 
 
-from app.core.env_conf import stg
+from app.core.env_conf import auth_stg
 from ..common import get_user_id, AuthProvider
 from .client import stackoverflow_oauth
 
@@ -28,8 +28,8 @@ async def stackoverflow_callback_handling(request: Request, redirect_uri: str) -
             res = await session.post(
                 "https://stackoverflow.com/oauth/access_token",
                 data={
-                    "client_id": stg.stackoverflow_client_id,
-                    "client_secret": stg.stackoverflow_client_secret, "code": code,
+                    "client_id": auth_stg.stackoverflow_client_id,
+                    "client_secret": auth_stg.stackoverflow_client_secret, "code": code,
                     "redirect_uri": redirect_uri
                 },
                 impersonate="chrome110"
@@ -42,7 +42,7 @@ async def stackoverflow_callback_handling(request: Request, redirect_uri: str) -
         if access_token := token_dict.get("access_token"):
             resp = await stackoverflow_oauth.stackoverflow.get(
                 'me',
-                params={'site': 'stackoverflow', 'key': stg.stackoverflow_api_key},
+                params={'site': 'stackoverflow', 'key': auth_stg.stackoverflow_api_key},
                 token={'access_token': access_token, 'token_type': 'Bearer'}
             )
 

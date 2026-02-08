@@ -10,7 +10,7 @@ from app.api.auth import (
     stackoverflow_router, logout_router
 )
 from app.frontend import homepage_router, welcome_router
-from app.core.env_conf import stg
+from app.core.env_conf import server_stg
 from app.core.lifespan import get_lifespan
 from app.core.docs import static_docs_urls
 from app.core.session import OrjsonSerializer
@@ -42,11 +42,11 @@ def create_app(redis_svc: RedisService = redis_service, testing: bool = False) -
     app.add_middleware(
         SessionMiddleware,
         store=store, serializer=serializer,
-        cookie_name="session_id", lifetime=stg.session_lifetime,
+        cookie_name="session_id", lifetime=server_stg.session_lifetime,
         rolling=False, cookie_same_site="lax",
         cookie_https_only=True
     )
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=stg.allowed_hosts)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=server_stg.allowed_hosts)
 
     for router in (*auth_routers, *ui_routers):
         app.include_router(router)
@@ -58,8 +58,8 @@ app = create_app()
 
 if __name__ == "__main__":
     run(
-        app=app, port=stg.run_port, host=stg.run_host,
-        reload=stg.run_reload, use_colors=True, access_log=True,
+        app=app, port=server_stg.run_port, host=server_stg.run_host,
+        reload=server_stg.run_reload, use_colors=True, access_log=True,
         workers=1, http="httptools", loop="asyncio",
-        proxy_headers=True, forwarded_allow_ips=stg.forwarded_ips,
+        proxy_headers=True, forwarded_allow_ips=server_stg.forwarded_ips,
     )

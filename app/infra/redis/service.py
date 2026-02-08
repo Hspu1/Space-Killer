@@ -2,7 +2,7 @@ from asyncio import Lock
 
 from redis.asyncio import Redis, ConnectionPool
 
-from app.core.env_conf import stg
+from app.core.env_conf import redis_stg
 
 
 class RedisService:
@@ -21,8 +21,8 @@ class RedisService:
 
             pool = ConnectionPool(
                 host=host, port=port, db=db,
-                max_connections=stg.max_connections,
-                socket_connect_timeout=stg.socket_connect_timeout,
+                max_connections=redis_stg.max_connections,
+                socket_connect_timeout=redis_stg.socket_connect_timeout,
                 decode_responses=False  # avoid redundant decoding
             )
             client = Redis(connection_pool=pool)
