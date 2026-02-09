@@ -40,7 +40,7 @@ class ServerSettings(BaseSettings):
     run_port: int = 8000
     run_reload: bool = False
 
-    allowed_hosts: list[str] = ("127.0.0.1", "localhost")
+    allowed_hosts: list[str] = ("hspu1-the-greatest.loca.lt", )
     forwarded_ips: str = "127.0.0.1"  # + ip balancer
     proxy: str | None = None
     ssl_check: bool = True
@@ -51,7 +51,7 @@ class PostgresSettings(BaseSettings):
     model_config = CFG
     db_url: str
     pool_recycle: int = 3600
-    pool_size: int = 70
+    pool_size: int = 70  # 4 workers, limit: 1000
     max_overflow: int = 30
     pool_timeout: int = 10
 
@@ -61,7 +61,7 @@ class RedisSettings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 6379
     db: int = 2
-    max_connections: int = 1000
+    max_connections: int = 500  # 4 workers, limit: 3168
     socket_connect_timeout: int = 5
 
 

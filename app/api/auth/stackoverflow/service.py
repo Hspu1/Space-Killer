@@ -48,6 +48,7 @@ async def stackoverflow_callback_handling(request: Request, redirect_uri: str) -
 
         data = resp.json()
         raw_user_info = data["items"][0]
+        print(f"SO: {raw_user_info}")
         user_info_id = str(raw_user_info["user_id"])
 
         user_info = {
