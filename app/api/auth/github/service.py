@@ -14,7 +14,6 @@ async def github_callback_handling(request: Request) -> RedirectResponse:
         token = await github_oauth.github.authorize_access_token(request)
         resp = await github_oauth.github.get('user', token=token)
         user_info = resp.json()
-        print(f"GitHub: {user_info}")
         user_info_id = str(user_info["id"])
         user_info["email"] = f"{user_info_id}@github.user"
 

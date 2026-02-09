@@ -15,7 +15,6 @@ async def telegram_callback_handling(request: Request) -> RedirectResponse:
 
     try:
         if data := dict(request.query_params):
-            print(f"TG: {data}")
             # verify tg hmac signature according to official docs
             received_hash = data.pop('hash', None)
             data_check_string = "\n".join([f"{k}={v}" for k, v in sorted(data.items())])

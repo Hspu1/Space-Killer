@@ -13,7 +13,6 @@ async def google_callback_handling(request: Request) -> RedirectResponse:
     try:
         token = await google_oauth.google.authorize_access_token(request)
         user_info = token.get("userinfo")
-        print(f"Google: {user_info}")
         user_info_id = str(user_info["sub"])
 
         user_id = await get_user_id(

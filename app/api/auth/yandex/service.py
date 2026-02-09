@@ -14,7 +14,6 @@ async def yandex_callback_handling(request: Request) -> RedirectResponse:
         token = await yandex_oauth.yandex.authorize_access_token(request)
         resp = await yandex_oauth.yandex.get('info', token=token)
         raw_user_info = resp.json()
-        print(f"Yandex: {raw_user_info}")
         user_info_id = str(raw_user_info["id"])
 
         user_info = {
