@@ -1,7 +1,8 @@
 from pathlib import Path
+from typing import Annotated
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import PostgresDsn
+from pydantic import AfterValidator, PostgresDsn
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -50,7 +51,7 @@ class ServerSettings(BaseSettings):
 
 class PostgresSettings(BaseSettings):
     model_config = CFG
-    db_url: PostgresDsn
+    db_url: Annotated[PostgresDsn, AfterValidator(str)]
     pool_recycle: int = 3600
     pool_size: int = 70  # 4 workers, limit: 1000
     max_overflow: int = 30
