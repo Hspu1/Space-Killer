@@ -14,11 +14,11 @@ class UsersModel(Base, TimestampMixin, UUIDv7Mixin):
 
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     email_verification_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None, server_default=None)
-    full_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")  # ban etc
     identities: Mapped[list["UserIdentitiesModel"]] = relationship("UserIdentitiesModel", back_populates="user", cascade="all, delete-orphan")
 
-    __table_args__ = (Index("idx_users_full_name", "full_name"),)
+    __table_args__ = (Index("idx_users_name", "name"),)
 
 
 class UserIdentitiesModel(Base):

@@ -1,43 +1,38 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.dialects.postgresql import insert
 
 from .schemas import AuthProvider
-from app.infra import UsersModel, UserIdentitiesModel, async_session_maker
+from app.infra.postgres.database import async_session_maker
+from app.infra.postgres.models import UsersModel, UserIdentitiesModel
 
 
 async def get_user_id(user_info: dict, provider: AuthProvider, provider_user_id: str) -> str:
     async with async_session_maker.begin() as session:
-        stmt = (
-            select(UserIdentitiesModel.user_id)
-            .where(
-                UserIdentitiesModel.provider == provider,
-                UserIdentitiesModel.provider_user_id == provider_user_id
-            )
-        )
-        if user_id := (await session.execute(stmt)).scalar():
-            return str(user_id)
-
-        email_verification = datetime.now(timezone.utc) \
+        verify_email = datetime.now(timezone.utc) \
             if user_info.get("email_verified") else None
 
-        try:
-            async with session.begin_nested():
-                user = UsersModel(
-                    email=user_info["email"],  full_name=user_info.get("name"),
-                    email_verification_at=email_verification
-                )
-                session.add(user)
-                await session.flush()
+        stmt = insert(UsersModel).values(
+            email=user_info["email"],
+            name=user_info.get("name"),
+            email_verification_at=verify_email
+        )
+        user_upsert_stmt = stmt.on_conflict_do_update(
+            index_elements=['email'],
+            set_={'name': stmt.excluded.name},
+            where=(
+                    (user_info.get("email_verified")) |
+                    (UsersModel.email_verification_at.is_not(None))
+            )
+        ).returning(UsersModel.id)
+        user_id = (await session.execute(user_upsert_stmt)).scalar_one()
 
-        except IntegrityError:
-            raise Exception("I am gay")
-
-        new_identity = UserIdentitiesModel(
-            user_id=user.id, provider=provider,
-            provider_user_id=provider_user_id
+        identity_upsert_stmt = (
+            insert(UserIdentitiesModel).values(
+                user_id=user_id, provider=provider,
+                provider_user_id=provider_user_id
+            ).on_conflict_do_nothing()
         )
 
-        session.add(new_identity)
-        return str(user.id)
+        await session.execute(identity_upsert_stmt)
+        return str(user_id)
