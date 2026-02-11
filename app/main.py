@@ -1,3 +1,5 @@
+from sys import argv
+
 from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from uvicorn import run
@@ -9,7 +11,7 @@ from app.ui import ui_router
 from app.core.env_conf import server_stg
 from app.core.lifespan import get_lifespan
 from app.core.docs import static_docs_urls
-from app.core.session import OrjsonSerializer
+from app.core.serializer import OrjsonSerializer
 from app.infra.redis import RedisSessionStore, redis_service, RedisService
 
 
@@ -46,8 +48,10 @@ def create_app(redis_svc: RedisService = redis_service, testing: bool = False) -
 app = create_app()
 
 if __name__ == "__main__":
+    custom_port = int(argv[1]) if len(argv) > 1 else server_stg.run_port
+
     run(
-        app=app, port=server_stg.run_port, host=server_stg.run_host,
+        app="app.main:app", port=custom_port, host=server_stg.run_host,
         reload=server_stg.run_reload, use_colors=True, access_log=True,
         workers=1, http="httptools", loop="asyncio",
         proxy_headers=True, forwarded_allow_ips=server_stg.forwarded_ips,

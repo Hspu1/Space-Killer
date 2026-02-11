@@ -53,7 +53,7 @@ class PostgresSettings(BaseSettings):
     model_config = CFG
     db_url: Annotated[PostgresDsn, AfterValidator(str)]
     pool_recycle: int = 3600
-    pool_size: int = 70  # 4 workers, limit: 1000
+    pool_size: int = 70  # 4 workers, limit: 500
     max_overflow: int = 30
     pool_timeout: int = 10
 
