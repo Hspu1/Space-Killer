@@ -1,9 +1,12 @@
+import logging
 import time
 from typing import Final
 
 from starsessions import SessionStore
 
 from app.infra.redis.service import RedisService
+
+logger = logging.getLogger(__name__)
 
 
 class RedisSessionStore(SessionStore):
@@ -21,7 +24,10 @@ class RedisSessionStore(SessionStore):
         start = time.perf_counter()
         client = self._service.get_client()
         result = await client.get(name=self._get_key(session_id))
-        print(f"[REDIS] READ sid={session_id[:8]}: {(time.perf_counter() - start):.4f}s")
+        logger.info(
+            f"[REDIS] READ sid={session_id[:8]}: "
+            f"total {(time.perf_counter() - start):.4f}s"
+        )
         return result if result else None
 
     async def write(self, session_id: str, data: bytes, lifetime: int, ttl: int) -> str:
@@ -32,11 +38,17 @@ class RedisSessionStore(SessionStore):
             return session_id
 
         await client.set(name=key, value=data, ex=ttl)
-        print(f"[REDIS] WRITE sid={session_id[:8]}, size={len(data)}b: {(time.perf_counter() - start):.4f}s")
+        logger.info(
+            f"[REDIS] WRITE sid={session_id[:8]}, size={len(data)}b: "
+            f"total {(time.perf_counter() - start):.4f}s"
+        )
         return session_id
 
     async def remove(self, session_id: str) -> None:
         start = time.perf_counter()
         client = self._service.get_client()
         await client.delete(self._get_key(session_id))
-        print(f"[REDIS] REMOVE sid={session_id[:8]}: {(time.perf_counter() - start):.4f}s")
+        logger.info(
+            f"[REDIS] REMOVE sid={session_id[:8]}: "
+            f"total {(time.perf_counter() - start):.4f}s"
+        )

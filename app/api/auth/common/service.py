@@ -1,3 +1,4 @@
+import logging
 import time
 from datetime import datetime, timezone
 
@@ -7,6 +8,8 @@ from sqlalchemy import or_, select
 from .schemas import AuthProvider
 from app.infra.postgres.service import pg_service
 from app.infra.postgres.models import UsersModel, UserIdentitiesModel
+
+logger = logging.getLogger(__name__)
 
 
 async def get_user_id(user_info: dict, provider: AuthProvider, provider_user_id: str) -> str:
@@ -21,7 +24,7 @@ async def get_user_id(user_info: dict, provider: AuthProvider, provider_user_id:
             )
         )
         if user_id := (await session.execute(stmt)).scalar():
-            print(f"[DB] READ total: {time.perf_counter() - start_time:.4f}s")
+            logger.info(f"[DB] READ total: {time.perf_counter() - start_time:.4f}s")
             return str(user_id)
 
         verify_email = datetime.now(timezone.utc) \
@@ -51,5 +54,5 @@ async def get_user_id(user_info: dict, provider: AuthProvider, provider_user_id:
 
         await session.execute(identity_upsert_stmt)
 
-    print(f"[DB] WRITE/UPDATE total: {(time.perf_counter() - start_time):.4f}s")
+    logger.info(f"[DB] WRITE/UPDATE total: {time.perf_counter() - start_time:.4f}s")
     return str(user_id)

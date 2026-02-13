@@ -1,7 +1,10 @@
+import logging
 import time
 
 from orjson import OPT_NON_STR_KEYS, OPT_SERIALIZE_UUID, dumps, loads, JSONDecodeError, JSONEncodeError
 from starsessions.serializers import Serializer
+
+logger = logging.getLogger(__name__)
 
 
 class OrjsonSerializer(Serializer):
@@ -12,8 +15,10 @@ class OrjsonSerializer(Serializer):
         start = time.perf_counter()
         try:
             result = dumps(data, option=self._dump_opts)
-            elapsed = (time.perf_counter() - start) * 1_000_000
-            print(f"[SERIALIZE] took {elapsed:.2f}µs")
+            logger.info(
+                f"[SERIALIZE] total "
+                f"{(time.perf_counter() - start) * 1_000_000:.4f}µs"
+            )
             return result
         except (JSONEncodeError, TypeError):
             raise
@@ -24,8 +29,10 @@ class OrjsonSerializer(Serializer):
         start = time.perf_counter()
         try:
             result = loads(data)
-            elapsed = (time.perf_counter() - start) * 1_000_000
-            print(f"[DESERIALIZE] took {elapsed:.2f}µs")
+            logger.info(
+                f"[DESERIALIZE] total "
+                f"{(time.perf_counter() - start) * 1_000_000:.4f}µs"
+            )
             return result
         except (JSONDecodeError, TypeError):
             raise

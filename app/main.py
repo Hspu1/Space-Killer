@@ -14,6 +14,9 @@ from app.core.docs import static_docs_urls
 from app.core.serializer import OrjsonSerializer
 from app.infra.redis import RedisSessionStore, redis_service, RedisService
 from app.infra.postgres.service import pg_service, PostgresService
+from app.utils import setup_logging
+
+setup_logging()
 
 
 def create_app(
