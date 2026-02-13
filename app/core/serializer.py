@@ -17,7 +17,7 @@ class OrjsonSerializer(Serializer):
             result = dumps(data, option=self._dump_opts)
             logger.info(
                 f"[SERIALIZE] total "
-                f"{(time.perf_counter() - start) * 1_000_000:.4f}µs"
+                f"\033[93m{(time.perf_counter() - start) * 1_000_000:.4f}µs\033[0m"
             )
             return result
         except (JSONEncodeError, TypeError):
@@ -31,7 +31,7 @@ class OrjsonSerializer(Serializer):
             result = loads(data)
             logger.info(
                 f"[DESERIALIZE] total "
-                f"{(time.perf_counter() - start) * 1_000_000:.4f}µs"
+                f"\033[93m{(time.perf_counter() - start) * 1_000_000:.4f}µs\033[0m"
             )
             return result
         except (JSONDecodeError, TypeError):

@@ -26,7 +26,7 @@ class RedisSessionStore(SessionStore):
         result = await client.get(name=self._get_key(session_id))
         logger.info(
             f"[REDIS] READ sid={session_id[:8]}: "
-            f"total {(time.perf_counter() - start):.4f}s"
+            f"total \033[93m{(time.perf_counter() - start):.4f}s\033[0m"
         )
         return result if result else None
 
@@ -40,7 +40,7 @@ class RedisSessionStore(SessionStore):
         await client.set(name=key, value=data, ex=ttl)
         logger.info(
             f"[REDIS] WRITE sid={session_id[:8]}, size={len(data)}b: "
-            f"total {(time.perf_counter() - start):.4f}s"
+            f"total \033[93m{(time.perf_counter() - start):.4f}s\033[0m"
         )
         return session_id
 
@@ -50,5 +50,5 @@ class RedisSessionStore(SessionStore):
         await client.delete(self._get_key(session_id))
         logger.info(
             f"[REDIS] REMOVE sid={session_id[:8]}: "
-            f"total {(time.perf_counter() - start):.4f}s"
+            f"total \033[93m{(time.perf_counter() - start):.4f}s\033[0m"
         )
