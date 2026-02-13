@@ -5,13 +5,14 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import or_, select
 
 from .schemas import AuthProvider
-from app.infra.postgres.database import async_session_maker
+from app.infra.postgres.service import pg_service
 from app.infra.postgres.models import UsersModel, UserIdentitiesModel
 
 
 async def get_user_id(user_info: dict, provider: AuthProvider, provider_user_id: str) -> str:
     start_time = time.perf_counter()
-    async with async_session_maker.begin() as session:
+    session_maker = pg_service.get_session_maker()
+    async with session_maker.begin() as session:
         stmt = (
             select(UserIdentitiesModel.user_id)
             .where(
@@ -35,7 +36,7 @@ async def get_user_id(user_info: dict, provider: AuthProvider, provider_user_id:
             index_elements=['email'],
             set_={'name': stmt.excluded.name},
             where=or_(
-                user_info.get("email_verified", False),
+                bool(user_info.get("email_verified")),
                 UsersModel.email_verification_at.is_not(None)
             )
         ).returning(UsersModel.id)

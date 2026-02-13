@@ -13,11 +13,19 @@ from app.core.lifespan import get_lifespan
 from app.core.docs import static_docs_urls
 from app.core.serializer import OrjsonSerializer
 from app.infra.redis import RedisSessionStore, redis_service, RedisService
+from app.infra.postgres.service import pg_service, PostgresService
 
 
-def create_app(redis_svc: RedisService = redis_service, testing: bool = False) -> FastAPI:
+def create_app(
+        redis_svc: RedisService = redis_service,
+        pg_svc: PostgresService = pg_service,
+        testing: bool = False
+) -> FastAPI:
+
     app = FastAPI(
-        title="Smth-P", lifespan=get_lifespan(redis_service=redis_svc),
+        title="Smth-P", lifespan=get_lifespan(
+            redis_service=redis_svc, pg_service=pg_svc
+        ),
         default_response_class=ORJSONResponse,
         docs_url=None, redoc_url=None,
         swagger_ui_oauth2_redirect_url="/oauth2-redirect"
@@ -49,6 +57,7 @@ app = create_app()
 
 if __name__ == "__main__":
     custom_port = int(argv[1]) if len(argv) > 1 else server_stg.run_port
+    # run this command: python -m app.main <port>
 
     run(
         app="app.main:app", port=custom_port, host=server_stg.run_host,
