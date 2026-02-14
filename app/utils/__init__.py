@@ -1,3 +1,3 @@
-__all__ = "setup_logging"
+from .logger_conf import setup_logging, Colors
 
-from .logger_conf import setup_logging
+__all__ = ("setup_logging", "Colors")

@@ -1,6 +1,5 @@
 from fastapi import APIRouter
-
-__all__ = "auth_router"
+from typing import Final
 
 from .github import github_router
 from .google import google_router
@@ -11,8 +10,12 @@ from .common import logout_router
 
 auth_router = APIRouter()
 
-for router in (
-        github_router, google_router, telegram_router,
-        yandex_router, stackoverflow_router, logout_router
-):
+ROUTERS: Final[list[APIRouter]] = [
+    github_router, google_router, telegram_router,
+    yandex_router, stackoverflow_router, logout_router
+]
+
+for router in ROUTERS:
     auth_router.include_router(router)
+
+__all__ = ("auth_router",)

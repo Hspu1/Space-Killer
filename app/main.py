@@ -60,7 +60,7 @@ app = create_app()
 
 if __name__ == "__main__":
     custom_port = int(argv[1]) if len(argv) > 1 else server_stg.run_port
-    # run this command: python -m app.main <port>
+    # run this command: (uv run) python -m app.main <port>
 
     run(
         app="app.main:app", port=custom_port, host=server_stg.run_host,
