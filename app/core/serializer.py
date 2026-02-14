@@ -25,11 +25,11 @@ class OrjsonSerializer(Serializer):
         try:
             res = dumps(data, option=self._dump_opts)
             if logger.isEnabledFor(logging.DEBUG):
-                dur = (time.perf_counter() - start) * 1_000_000
+                dur_us = (time.perf_counter() - start) * 1_000_000
                 logger.debug(
-                    "%s[SERIALIZE]%s total %s%.4fµs%s",
+                    "%s[SERIALIZE]%s total %s%.2fµs%s",
                     Colors.PURPLE, Colors.RESET,
-                    Colors.YELLOW, dur, Colors.RESET
+                    Colors.YELLOW, dur_us, Colors.RESET
                 )
             return res
 
@@ -48,11 +48,11 @@ class OrjsonSerializer(Serializer):
         try:
             res = loads(data)
             if logger.isEnabledFor(logging.DEBUG):
-                dur = (time.perf_counter() - start) * 1_000_000
+                dur_us = (time.perf_counter() - start) * 1_000_000
                 logger.debug(
-                    "%s[DESERIALIZE]%s total %s%.4fµs%s",
+                    "%s[DESERIALIZE]%s total %s%.2fµs%s",
                     Colors.PURPLE, Colors.RESET,
-                    Colors.YELLOW, dur, Colors.RESET
+                    Colors.YELLOW, dur_us, Colors.RESET
                 )
             return res
 

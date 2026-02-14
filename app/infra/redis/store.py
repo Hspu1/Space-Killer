@@ -30,11 +30,11 @@ class RedisSessionStore(SessionStore):
         result = await client.get(name=self._get_key(session_id))
 
         if logger.isEnabledFor(logging.DEBUG):
-            dur = time.perf_counter() - start
+            dur_ms = (time.perf_counter() - start) * 1000
             logger.debug(
-                "%s[REDIS] READ%s sid=%s...: total %s%.4fs%s",
+                "%s[REDIS] READ%s sid=%s...: total %s%.2fms%s",
                 Colors.PURPLE, Colors.RESET, session_id[:8],
-                Colors.YELLOW, dur, Colors.RESET
+                Colors.YELLOW, dur_ms, Colors.RESET
             )
         return result
 
@@ -49,11 +49,11 @@ class RedisSessionStore(SessionStore):
         await client.set(name=key, value=data, ex=ttl)
 
         if logger.isEnabledFor(logging.DEBUG):
-            dur = time.perf_counter() - start
+            dur_ms = (time.perf_counter() - start) * 1000
             logger.debug(
-                "%s[REDIS] WRITE%s sid=%s..., size=%db: total %s%.4fs%s",
+                "%s[REDIS] WRITE%s sid=%s..., size=%db: total %s%.2fms%s",
                 Colors.PURPLE, Colors.RESET, session_id[:8], len(data),
-                Colors.YELLOW, dur, Colors.RESET
+                Colors.YELLOW, dur_ms, Colors.RESET
             )
         return session_id
 
@@ -63,9 +63,9 @@ class RedisSessionStore(SessionStore):
         await client.delete(self._get_key(session_id))
 
         if logger.isEnabledFor(logging.DEBUG):
-            dur = time.perf_counter() - start
+            dur_ms = (time.perf_counter() - start) * 1000
             logger.debug(
-                "%s[REDIS] REMOVE%s sid=%s...: total %s%.4fs%s",
+                "%s[REDIS] REMOVE%s sid=%s...: total %s%.2fms%s",
                 Colors.PURPLE, Colors.RESET, session_id[:8],
-                Colors.YELLOW, dur, Colors.RESET
+                Colors.YELLOW, dur_ms, Colors.RESET
             )

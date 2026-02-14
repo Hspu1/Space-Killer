@@ -8,6 +8,7 @@ from sqlalchemy import or_, select
 from .schemas import AuthProvider
 from app.infra.postgres.service import pg_service
 from app.infra.postgres.models import UsersModel, UserIdentitiesModel
+from app.utils import Colors
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +24,16 @@ async def get_user_id(user_info: dict, provider: AuthProvider, provider_user_id:
                 UserIdentitiesModel.provider_user_id == provider_user_id
             )
         )
-        if user_id := (await session.execute(stmt)).scalar():
-            logger.info(f"[DB] READ total: \033[93m{time.perf_counter() - start_time:.4f}s\033[0m")
+
+        res = await session.execute(stmt)
+        if user_id := res.scalar():
+            if logger.isEnabledFor(logging.DEBUG):
+                dur_ms = (time.perf_counter() - start_time) * 1000
+                logger.debug(
+                    "%s[DB] READ%s user_id=%s...: total %s%.2fms%s",
+                    Colors.PURPLE, Colors.RESET, str(user_id)[:8],
+                    Colors.YELLOW, dur_ms, Colors.RESET
+                )
             return str(user_id)
 
         verify_email = datetime.now(timezone.utc) \
@@ -54,5 +63,11 @@ async def get_user_id(user_info: dict, provider: AuthProvider, provider_user_id:
 
         await session.execute(identity_upsert_stmt)
 
-    logger.info(f"[DB] WRITE/UPDATE total: \033[93m{time.perf_counter() - start_time:.4f}s\033[0m")
+    dur_ms = (time.perf_counter() - start_time) * 1000
+    logger.debug(
+        "%s[DB] WRITE/UPSERT%s user=%s: total %s%.2fms%s",
+        Colors.PURPLE, Colors.RESET, user_info["email"],
+        Colors.YELLOW, dur_ms, Colors.RESET
+    )
+
     return str(user_id)
