@@ -1,5 +1,5 @@
 import logging
-import time
+from time import perf_counter
 from typing import Any, Final
 
 from orjson import (
@@ -20,12 +20,12 @@ class OrjsonSerializer(Serializer):
         self._dump_opts: Final = OPT_NON_STR_KEYS | OPT_SERIALIZE_UUID
 
     def serialize(self, data: dict[str, Any]) -> bytes:
-        start = time.perf_counter()
+        start = perf_counter()
 
         try:
-            res = dumps(data, option=self._dump_opts)
+            res = dumps(data, option=self._dump_opts, default=str)
             if logger.isEnabledFor(logging.DEBUG):
-                dur_us = (time.perf_counter() - start) * 1_000_000
+                dur_us = (perf_counter() - start) * 1_000_000
                 logger.debug(
                     "%s[SERIALIZE]%s total %s%.2fµs%s",
                     Colors.PURPLE, Colors.RESET,
@@ -44,11 +44,11 @@ class OrjsonSerializer(Serializer):
         if not data:
             return {}
 
-        start = time.perf_counter()
+        start = perf_counter()
         try:
             res = loads(data)
             if logger.isEnabledFor(logging.DEBUG):
-                dur_us = (time.perf_counter() - start) * 1_000_000
+                dur_us = (perf_counter() - start) * 1_000_000
                 logger.debug(
                     "%s[DESERIALIZE]%s total %s%.2fµs%s",
                     Colors.PURPLE, Colors.RESET,

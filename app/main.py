@@ -8,34 +8,27 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.auth import auth_router
 from app.ui import ui_router
-from app.core.env_conf import server_stg
+from app.core.env_conf import server_stg, pg_stg, redis_stg
 from app.core.lifespan import get_lifespan
 from app.core.docs import static_docs_urls
 from app.core.serializer import OrjsonSerializer
-from app.infra.redis import RedisSessionStore, redis_service, RedisService
-from app.infra.postgres.service import pg_service, PostgresService
+from app.infra.redis import RedisSessionStore, RedisService
+from app.infra.postgres.service import PostgresService
 from app.utils import setup_logging
 
 setup_logging()
 
 
-def create_app(
-        redis_svc: RedisService = redis_service,
-        pg_svc: PostgresService = pg_service,
-        testing: bool = False
-) -> FastAPI:
-
+def create_app() -> FastAPI:
+    pg_svc, redis_svc = (
+        PostgresService(config=pg_stg), RedisService(config=redis_stg)
+    )
     app = FastAPI(
-        title="Smth-P", lifespan=get_lifespan(
-            redis_service=redis_svc, pg_service=pg_svc
-        ),
+        title="Smth-P", lifespan=get_lifespan(pg=pg_svc, redis=redis_svc),
         default_response_class=ORJSONResponse,
         docs_url=None, redoc_url=None,
         swagger_ui_oauth2_redirect_url="/oauth2-redirect"
     )
-
-    if testing:
-        app.state.testing = True
 
     static_docs_urls(app=app)
 
@@ -52,6 +45,9 @@ def create_app(
 
     app.include_router(auth_router)
     app.include_router(ui_router)
+
+    app.state.pg_svc = redis_svc
+    app.state.pg_svc = redis_svc
 
     return app
 

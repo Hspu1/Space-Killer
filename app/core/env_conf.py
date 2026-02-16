@@ -65,6 +65,7 @@ class RedisSettings(BaseSettings):
     db: int = 2
     max_connections: int = 500  # 4 workers, limit: 3168
     socket_connect_timeout: int = 5
+    health_check_interval: int = 30
 
 
 auth_stg, server_stg, pg_stg, redis_stg = (
