@@ -10,6 +10,7 @@ dependencies = [
     "authlib>=1.6.6",
     "curl-cffi>=0.14.0",
     "fastapi[standard]>=0.128.0",
+    "httpx>=0.28.1",
     "itsdangerous>=2.2.0",
     "jinja2>=3.1.6",
     "orjson>=3.11.5",
@@ -44,7 +45,7 @@ strict = true
 
 [tool.ruff]  #  uv run ruff check .
 fix = false
-line-length = 111
+line-length = 100
 exclude = ["alembic"]
 lint.select = [
     "E",   # Pycodestyle errors

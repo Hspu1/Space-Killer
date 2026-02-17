@@ -7,6 +7,9 @@
             <div class="error-msg" onclick="this.remove()" title="Click to close">
                 {% if msg == "access_denied" %}You refused authorization
                 {% elif msg == "session_expired" %}Your session has expired
+                {% elif msg == "provider_error" %}Provider's error, try again
+                {% elif msg == "network_error" %}Network error, try again
+                {% elif msg == "so_throttle" %}StackOverflow is overtaxed, please wait {{ request.query_params.get('retry_after', 10) }}s
                 {% else %}Error occurred{% endif %}
             </div>
         {% endif %}

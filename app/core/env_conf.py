@@ -42,7 +42,9 @@ class ServerSettings(BaseSettings):
     run_port: int = 8000
     run_reload: bool = False
 
-    allowed_hosts: list[str] = ("hspu1-the-greatest.loca.lt", )
+    allowed_hosts: list[str] = (
+        "hspu1-the-greatest.loca.lt",
+    )
     forwarded_ips: str = "127.0.0.1"  # + ip balancer
     proxy: str | None = None
     ssl_check: bool = True
