@@ -3,7 +3,7 @@ from time import perf_counter
 from datetime import datetime, timezone
 
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy import or_, select
+from sqlalchemy import case, select
 
 from .schemas import AuthProvider
 from app.infra.postgres.service import PostgresService
@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 async def get_user_id(
         pg_svc: PostgresService, user_info: dict, provider: AuthProvider
 ) -> str:
-
     start_time = perf_counter()
     session_maker = pg_svc.get_session_maker()
     async with session_maker() as session:
@@ -39,7 +38,7 @@ async def get_user_id(
                 )
             return str(user_id)
 
-    async with session_maker.begin() as session:
+    async with session.begin():
         verify_email = datetime.now(timezone.utc) \
             if user_info["email_verified"] else None
 
@@ -48,16 +47,15 @@ async def get_user_id(
             email_verification_at=verify_email
         )
         user_upsert_stmt = stmt.on_conflict_do_update(
-            index_elements=['email'],
+            index_elements=["email"],
             set_={
-                "name": stmt.excluded.name, "email": stmt.excluded.email,
-                "email_verification_at": stmt.excluded.email_verification_at
-            },
-            where=or_(
-                bool(user_info["email_verified"]),
-                UsersModel.email_verification_at.is_not(None)
-            ),
-
+                "name": stmt.excluded.name,
+                "email_verification_at": case(
+                    (user_info.get("email_verified") is True,
+                     stmt.excluded.email_verification_at),
+                    else_=UsersModel.email_verification_at
+                )
+            }
         ).returning(UsersModel.id)
 
         user_id = (await session.execute(user_upsert_stmt)).scalar_one()
