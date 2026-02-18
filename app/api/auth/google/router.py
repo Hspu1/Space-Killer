@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, Request, Response, Depends
 
+from app.infra.dependencies import get_pg
+from app.infra.postgres.service import PostgresService
 from .client import google_oauth
 from .service import google_callback_handling
 from ..common import login, AuthProvider
@@ -17,5 +19,7 @@ async def google_login(request: Request) -> Response:
 
 
 @google_router.get(path="/callback")
-async def google_callback(request: Request) -> Response:
-    return await google_callback_handling(request=request)
+async def google_callback(
+        request: Request, pg: PostgresService = Depends(get_pg)
+) -> Response:
+    return await google_callback_handling(request=request, pg_svc=pg)
