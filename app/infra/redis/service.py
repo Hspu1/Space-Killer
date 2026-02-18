@@ -1,5 +1,4 @@
 from asyncio import wait_for, TimeoutError as AsyncTimeoutError
-import logging
 from time import perf_counter
 
 from redis.asyncio import (
@@ -8,9 +7,7 @@ from redis.asyncio import (
 )
 
 from app.core.env_conf import RedisSettings
-from app.utils import Colors
-
-logger = logging.getLogger(__name__)
+from app.utils.log_helpers import log_debug_redis, log_error_infra
 
 
 class RedisService:
@@ -35,18 +32,15 @@ class RedisService:
 
         try:
             await wait_for(self._client.ping(), timeout=3.0)
+            log_debug_redis(
+                op="CONNECTED", start_time=start,
+                detail=f"{self._config.host}:{self._config.port}/db={self._config.db}"
+            )
 
         except (RedisConnError, AsyncTimeoutError, RedisTimeoutError) as e:
             await self.disconnect()
+            log_error_infra(service="REDIS", op="CONNECT", exc=e)
             raise ConnectionError("Redis is not reachable") from e
-
-        if logger.isEnabledFor(logging.DEBUG):
-            dur_ms = (perf_counter() - start) * 1000
-            logger.debug(
-                "%s[REDIS] CONNECTED%s %s:%d (db=%d): total %s%.2fms%s",
-                Colors.PURPLE, Colors.RESET, self._config.host, self._config.port,
-                self._config.db, Colors.YELLOW, dur_ms, Colors.RESET
-            )
 
     def get_client(self) -> Redis:
         if self._client is None:
@@ -55,14 +49,14 @@ class RedisService:
         return self._client
 
     async def disconnect(self) -> None:
-        if self._client:
-            start = perf_counter()
-            await self._client.close()
-            self._client = None
+        if not self._client:
+            return
 
-            if logger.isEnabledFor(logging.DEBUG):
-                dur_ms = (perf_counter() - start) * 1000
-                logger.debug(
-                    "%s[REDIS] DISCONNECTED%s: total %s%.2fms%s",
-                    Colors.PURPLE, Colors.RESET, Colors.YELLOW, dur_ms, Colors.RESET
-                )
+        start = perf_counter()
+        try:
+            await self._client.close()
+            log_debug_redis(op="DISCONNECTED", start_time=start)
+        except Exception as e:
+            log_error_infra("REDIS", "DISCONNECT", e)
+        finally:
+            self._client = None
