@@ -1,5 +1,4 @@
-from asyncio import wait_for, TimeoutError as AsyncTimeoutError
-import logging
+from asyncio import TimeoutError as AsyncTimeoutError
 from time import perf_counter
 
 from sqlalchemy import text
@@ -10,9 +9,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.core.env_conf import PostgresSettings
-from app.utils import Colors
-
-logger = logging.getLogger(__name__)
+from app.utils import log_debug_db, log_error_infra
 
 
 class PostgresService:
@@ -38,22 +35,16 @@ class PostgresService:
         )
 
         try:
-            await wait_for(self.ping(), timeout=5.0)
+            log_debug_db(
+                op="CONNECTED", start_time=start,
+                detail=f"pool={self._config.pool_size}+{self._config.max_overflow}"
+            )
 
         except (SQLAlchemyError, AsyncTimeoutError) as e:
             await self.disconnect()
             self._engine, self._session_maker = None, None
-            logger.error(f"Database readiness check failed: {e}")
-
+            log_error_infra(service="DB", op="CONNECT", exc=e)
             raise ConnectionError("Postgres isn't ready") from e
-
-        if logger.isEnabledFor(logging.DEBUG):
-            dur_ms = (perf_counter() - start) * 1000
-            logger.debug(
-                "%s[DB] CONNECTED%s pool=%d+%d: total %s%.2fms%s",
-                Colors.PURPLE, Colors.RESET, self._config.pool_size,
-                self._config.max_overflow, Colors.YELLOW, dur_ms, Colors.RESET
-            )
 
     async def ping(self) -> None:
         if not self._engine:
@@ -75,13 +66,8 @@ class PostgresService:
         start = perf_counter()
         try:
             await self._engine.dispose()
+            log_debug_db(op="DISCONNECTED", start_time=start)
+        except Exception as e:
+            log_error_infra(service="DB", op="DISCONNECT", exc=e)
         finally:
             self._engine, self._session_maker = None, None
-
-        if logger.isEnabledFor(logging.DEBUG):
-            dur_ms = (perf_counter() - start) * 1000
-            logger.debug(
-                "%s[DB] DISCONNECTED%s: total %s%.2fms%s",
-                Colors.PURPLE, Colors.RESET,
-                Colors.YELLOW, dur_ms, Colors.RESET
-            )

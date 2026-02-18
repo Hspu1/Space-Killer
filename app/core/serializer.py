@@ -1,4 +1,3 @@
-import logging
 from time import perf_counter
 from typing import Any, Final
 
@@ -8,9 +7,7 @@ from orjson import (
 )
 from starsessions.serializers import Serializer
 
-from app.utils import Colors
-
-logger = logging.getLogger(__name__)
+from app.utils.log_helpers import log_debug_core, log_error_infra
 
 
 class OrjsonSerializer(Serializer):
@@ -24,20 +21,14 @@ class OrjsonSerializer(Serializer):
 
         try:
             res = dumps(data, option=self._dump_opts, default=str)
-            if logger.isEnabledFor(logging.DEBUG):
-                dur_us = (perf_counter() - start) * 1_000_000
-                logger.debug(
-                    "%s[SERIALIZE]%s total %s%.2fµs%s",
-                    Colors.PURPLE, Colors.RESET,
-                    Colors.YELLOW, dur_us, Colors.RESET
-                )
+            log_debug_core(
+                op="SERIALIZE", start_time=start,
+                detail=f"keys={len(data)}"
+            )
             return res
 
         except (JSONEncodeError, TypeError) as e:
-            logger.error(
-                "%s[SERIALIZE ERROR]%s -> %s",
-                Colors.RED, Colors.RESET, e
-            )
+            log_error_infra(service="CORE", op="SERIALIZE", exc=e)
             raise
 
     def deserialize(self, data: bytes) -> dict[str, Any]:
@@ -47,18 +38,12 @@ class OrjsonSerializer(Serializer):
         start = perf_counter()
         try:
             res = loads(data)
-            if logger.isEnabledFor(logging.DEBUG):
-                dur_us = (perf_counter() - start) * 1_000_000
-                logger.debug(
-                    "%s[DESERIALIZE]%s total %s%.2fµs%s",
-                    Colors.PURPLE, Colors.RESET,
-                    Colors.YELLOW, dur_us, Colors.RESET
-                )
+            log_debug_core(
+                op="DESERIALIZE", start_time=start,
+                detail=f"keys={len(data)}"
+            )
             return res
 
         except (JSONDecodeError, TypeError) as e:
-            logger.error(
-                "%s[DESERIALIZE ERROR]%s -> %s",
-                Colors.RED, Colors.RESET, e
-            )
+            log_error_infra(service="CORE", op="DESERIALIZE", exc=e)
             return {}
