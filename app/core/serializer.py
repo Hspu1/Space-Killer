@@ -20,10 +20,10 @@ class OrjsonSerializer(Serializer):
         start = perf_counter()
 
         try:
-            res = dumps(data, option=self._dump_opts, default=str)
+            res = dumps(data, option=self._dump_opts)
             log_debug_core(
                 op="SERIALIZE", start_time=start,
-                detail=f"keys={len(data)}"
+                detail="keys=%d" % len(data)
             )
             return res
 
@@ -40,7 +40,7 @@ class OrjsonSerializer(Serializer):
             res = loads(data)
             log_debug_core(
                 op="DESERIALIZE", start_time=start,
-                detail=f"keys={len(data)}"
+                detail="size=%db" % len(data)
             )
             return res
 
