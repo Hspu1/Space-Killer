@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, Request, Response, Depends
 
+from app.infra.dependencies import get_pg
+from app.infra.postgres.service import PostgresService
 from .client import yandex_oauth
 from .service import yandex_callback_handling
 from ..common import login, AuthProvider
@@ -17,5 +19,7 @@ async def yandex_login(request: Request) -> Response:
 
 
 @yandex_router.get(path="/callback")
-async def yandex_callback(request: Request) -> Response:
-    return await yandex_callback_handling(request=request)
+async def yandex_callback(
+        request: Request, pg: PostgresService = Depends(get_pg)
+) -> Response:
+    return await yandex_callback_handling(request=request, pg_svc=pg)

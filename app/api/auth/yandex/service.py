@@ -1,39 +1,60 @@
+from time import perf_counter
+
 from authlib.integrations.starlette_client import OAuthError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 
-from ..common import get_user_id, AuthProvider
+from app.infra.postgres.service import PostgresService
+from app.utils import log_debug_auth, log_error_auth
+from ..common import get_user_id, AuthProvider, get_safe_info
 from .client import yandex_oauth
 
 
-async def yandex_callback_handling(request: Request) -> RedirectResponse:
+async def yandex_callback_handling(
+        request: Request, pg_svc: PostgresService
+) -> RedirectResponse:
+
+    start_total = perf_counter()
     if request.query_params.get("error"):
         return RedirectResponse(url="/?msg=access_denied")
 
     try:
+        start_token = perf_counter()
         token = await yandex_oauth.yandex.authorize_access_token(request)
+        log_debug_auth(label="token_fetch", start=start_token,
+                            provider=AuthProvider.YANDEX)
+
+        start_api = perf_counter()
         resp = await yandex_oauth.yandex.get('info', token=token)
-        raw_user_info = resp.json()
-        user_info_id = str(raw_user_info["id"])
+        log_debug_auth(label="api_fetch", start=start_api,
+                            provider=AuthProvider.YANDEX)
 
-        user_info = {
-            "id": user_info_id,
-            "email": raw_user_info.get("default_email") or f"{user_info_id}@yandex.user",
-            "name": raw_user_info.get('display_name') or raw_user_info.get('real_name')
-        }
+        if resp.status_code != 200:
+            log_error_auth(
+                provider=AuthProvider.YANDEX,
+                message=f"API failed status={resp.status_code} body={resp.text[:50]}"
+            )
+            return RedirectResponse(url="/?msg=provider_error")
 
+        user_info = resp.json()
+        safe_user_info = get_safe_info(user_info=user_info, provider=AuthProvider.YANDEX)
         user_id = await get_user_id(
-            user_info=user_info,
-            provider=AuthProvider.YANDEX,
-            provider_user_id=user_info_id
+            pg_svc=pg_svc, user_info=safe_user_info,
+            provider=AuthProvider.YANDEX
         )
         request.session.clear()
         request.session.update({
-            "user_id": user_id,
-            "given_name": raw_user_info.get("first_name")
+            "user_id": user_id, "given_name": safe_user_info["name"]
         })
 
+        log_debug_auth(label="total", start=start_total,
+                            provider=AuthProvider.YANDEX)
         return RedirectResponse(url='/welcome')
 
-    except OAuthError:
+    except OAuthError as e:
+        log_error_auth(provider=AuthProvider.YANDEX, message="oauth err", exc=e)
         return RedirectResponse(url="/?msg=session_expired")
+
+    except Exception as e:
+        log_error_auth(provider=AuthProvider.YANDEX, message="unexpected", exc=e)
+        return RedirectResponse(url="/?msg=provider_error")
