@@ -1,22 +1,19 @@
-import logging
 from time import perf_counter
 from datetime import datetime, timezone
 
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy import case, select
 
-from .schemas import AuthProvider
+from app.api.auth.common.schemas import AuthProvider
 from app.infra.postgres.service import PostgresService
 from app.infra.postgres.models import UsersModel, UserIdentitiesModel
-from app.utils import Colors
-
-logger = logging.getLogger(__name__)
+from app.utils import log_debug_db
 
 
 async def get_user_id(
         pg_svc: PostgresService, user_info: dict, provider: AuthProvider
 ) -> str:
-    start_time = perf_counter()
+    start_select = perf_counter()
     session_maker = pg_svc.get_session_maker()
     async with session_maker() as session:
         stmt = (
@@ -29,15 +26,13 @@ async def get_user_id(
 
         res = await session.execute(stmt)
         if user_id := res.scalar():
-            if logger.isEnabledFor(logging.DEBUG):
-                dur_ms = (perf_counter() - start_time) * 1000
-                logger.debug(
-                    "%s[DB] READ%s user_id=%s...: total %s%.2fms%s",
-                    Colors.PURPLE, Colors.RESET, str(user_id)[:8],
-                    Colors.YELLOW, dur_ms, Colors.RESET
-                )
+            log_debug_db(
+                op="READ", start_time=start_select,
+                detail=f"id={str(user_id)[:8]}.."
+            )
             return str(user_id)
 
+    start_insert = perf_counter()
     async with session.begin():
         verify_email = datetime.now(timezone.utc) \
             if user_info["email_verified"] else None
@@ -67,11 +62,8 @@ async def get_user_id(
         )
         await session.execute(identity_upsert_stmt)
 
-    dur_ms = (perf_counter() - start_time) * 1000
-    logger.debug(
-        "%s[DB] WRITE/UPSERT%s user=%s: total %s%.2fms%s",
-        Colors.PURPLE, Colors.RESET, user_info["email"],
-        Colors.YELLOW, dur_ms, Colors.RESET
+    log_debug_db(
+        op="UPSERT", start_time=start_insert,
+        detail=f'email: {user_info["email"]}'
     )
-
     return str(user_id)

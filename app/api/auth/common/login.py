@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from authlib.integrations.starlette_client.apps import StarletteOAuth2App
 
 from app.core.env_conf import auth_stg
-from app.utils import Colors
+from app.utils.logger_conf import Colors
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +40,9 @@ async def login(
     if logger.isEnabledFor(logging.DEBUG):
         duration = (perf_counter() - start) * 1000
         logger.debug(
-            "%s[AUTH LOGIN]%s provider=%s, total=%.2fms",
-            Colors.PURPLE, Colors.RESET, provider_name.upper(), duration
+            "%s[AUTH LOGIN]%s provider=%s, total=%s%.2fms%s",
+            Colors.PURPLE, Colors.RESET, provider_name.upper(),
+            Colors.YELLOW, duration, Colors.RESET
         )
 
     if request.headers.get("HX-Request"):
