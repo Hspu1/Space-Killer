@@ -43,7 +43,7 @@ class ServerSettings(BaseSettings):
     run_reload: bool = False
 
     allowed_hosts: list[str] = (
-        "hspu1-the-greatest.loca.lt",
+        "hspu1-the-greatest.loca.lt", "127.0.0.1"
     )
     forwarded_ips: str = "127.0.0.1"  # + ip balancer
     proxy: str | None = None
