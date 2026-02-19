@@ -50,6 +50,3 @@ htmlcov/
 # IDE
 .idea/
 *.iml
-
-# k6
-k6lt.js
