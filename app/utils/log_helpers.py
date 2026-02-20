@@ -88,7 +88,19 @@ def log_debug_net(op: str, start_time: float, detail: str = ""):
         info = f" {Colors.LIGHT_GRAY}({detail}){Colors.RESET}" if detail else ""
 
         logger.debug(
-            "%s[NET]%s %-12s %s%.2fms%s%s",
+            "%s[NET/HTTP]%s %-12s %s%.2fms%s%s",
             Colors.LIGHT_BLUE, Colors.RESET, op,
+            Colors.YELLOW, dur, Colors.RESET, info
+        )
+
+
+def log_debug_limiter(op: str, start_time: float, detail: str = ""):
+    if logger.isEnabledFor(logging.DEBUG):
+        dur = (perf_counter() - start_time) * 1000
+        info = f" {Colors.LIGHT_GRAY}({detail}){Colors.RESET}" if detail else ""
+
+        logger.debug(
+            "%s[REDIS LIMITER]%s %-10s %s%.2fms%s%s",
+            Colors.PINK, Colors.RESET, op,
             Colors.YELLOW, dur, Colors.RESET, info
         )
