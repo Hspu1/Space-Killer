@@ -49,7 +49,7 @@ class RedisSessionStore(SessionStore):
             return session_id
         except Exception as e:
             log_error_infra(service="REDIS", op="WRITE session", exc=e)
-            return session_id
+            raise e
 
     async def remove(self, session_id: str) -> None:
         start = perf_counter()

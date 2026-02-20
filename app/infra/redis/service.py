@@ -1,4 +1,4 @@
-from asyncio import wait_for, TimeoutError as AsyncTimeoutError
+from asyncio import wait_for, shield, TimeoutError as AsyncTimeoutError
 from time import perf_counter
 
 from redis.asyncio import (
@@ -42,6 +42,9 @@ class RedisService:
             log_error_infra(service="REDIS", op="CONNECT", exc=e)
             raise ConnectionError("Redis is not reachable") from e
 
+        except Exception as e:
+            log_error_infra(service="REDIS", op="CONNECT", exc=e)
+
     def get_client(self) -> Redis:
         if self._client is None:
             raise RuntimeError("RedisService isn't initialized")
@@ -52,11 +55,14 @@ class RedisService:
         if not self._client:
             return
 
-        start = perf_counter()
-        try:
-            await self._client.close()
-            log_debug_redis(op="DISCONNECTED", start_time=start)
-        except Exception as e:
-            log_error_infra("REDIS", "DISCONNECT", e)
-        finally:
-            self._client = None
+        async def _do_disconnect():
+            start = perf_counter()
+            try:
+                await self._client.close()
+                log_debug_redis(op="DISCONNECTED", start_time=start)
+            except Exception as e:
+                log_error_infra("REDIS", "DISCONNECT", e)
+            finally:
+                self._client = None
+
+        await shield(_do_disconnect())

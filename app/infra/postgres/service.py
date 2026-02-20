@@ -1,4 +1,4 @@
-from asyncio import TimeoutError as AsyncTimeoutError
+from asyncio import wait_for, shield, TimeoutError as AsyncTimeoutError
 from time import perf_counter
 
 from sqlalchemy import text
@@ -23,18 +23,18 @@ class PostgresService:
     async def connect(self) -> None:
         if self._engine:
             return
-
-        start = perf_counter()
-        self._engine = create_async_engine(
-            url=self._config.db_url, pool_pre_ping=True, pool_recycle=self._config.pool_recycle,
-            pool_size=self._config.pool_size, max_overflow=self._config.max_overflow,
-            pool_timeout=self._config.pool_timeout
-        )
-        self._session_maker = async_sessionmaker(
-            bind=self._engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
-        )
-
         try:
+            start = perf_counter()
+            self._engine = create_async_engine(
+                url=self._config.db_url, pool_pre_ping=True, pool_recycle=self._config.pool_recycle,
+                pool_size=self._config.pool_size, max_overflow=self._config.max_overflow,
+                pool_timeout=self._config.pool_timeout
+            )
+            self._session_maker = async_sessionmaker(
+                bind=self._engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
+            )
+            await wait_for(self.ping(), 3.0)
+
             log_debug_db(
                 op="CONNECTED", start_time=start,
                 detail=f"pool={self._config.pool_size}+{self._config.max_overflow}"
@@ -42,9 +42,12 @@ class PostgresService:
 
         except (SQLAlchemyError, AsyncTimeoutError) as e:
             await self.disconnect()
-            self._engine, self._session_maker = None, None
             log_error_infra(service="DB", op="CONNECT", exc=e)
             raise ConnectionError("Postgres isn't ready") from e
+
+        except Exception as e:
+            log_error_infra(service="DB", op="CONNECT", exc=e)
+            raise e
 
     async def ping(self) -> None:
         if not self._engine:
@@ -63,11 +66,14 @@ class PostgresService:
         if not self._engine:
             return
 
-        start = perf_counter()
-        try:
-            await self._engine.dispose()
-            log_debug_db(op="DISCONNECTED", start_time=start)
-        except Exception as e:
-            log_error_infra(service="DB", op="DISCONNECT", exc=e)
-        finally:
-            self._engine, self._session_maker = None, None
+        async def _do_disconnect():
+            start = perf_counter()
+            try:
+                await self._engine.dispose()
+                log_debug_db(op="DISCONNECTED", start_time=start)
+            except Exception as e:
+                log_error_infra(service="DB", op="DISCONNECT", exc=e)
+            finally:
+                self._engine, self._session_maker = None, None
+
+        await shield(_do_disconnect())
