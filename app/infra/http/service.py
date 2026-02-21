@@ -71,7 +71,7 @@ class HttpService:
             return await self.client.get(url=url, **kwargs)
 
     async def disconnect(self):
-        if not self.client and not self.so_session:
+        if not self.client:
             return
 
         async def _do_disconnect():
@@ -79,14 +79,12 @@ class HttpService:
             try:
                 if self.client:
                     await self.client.aclose()
-                if self.so_session:
-                    await self.so_session.close()
                 log_debug_net(op="DISCONNECTED", start_time=start)
 
             except Exception as e:
                 log_error_infra(service="HTTP", op="DISCONNECT", exc=e)
 
             finally:
-                self.client = self.so_session = None
+                self.client = None
 
         await shield(_do_disconnect())
