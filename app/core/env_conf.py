@@ -1,3 +1,5 @@
+from functools import cached_property
+from hashlib import sha256
 from pathlib import Path
 from typing import Annotated
 
@@ -29,11 +31,15 @@ class AuthSettings(BaseSettings):
     stackoverflow_client_secret: str
 
     telegram_bot_token: str
-    tg_session_timeout: int = 86400
+    tg_session_timeout: int = 300
 
-    @property
+    @cached_property
     def telegram_bot_id(self) -> str:
         return self.telegram_bot_token.split(':')[0]
+
+    @cached_property
+    def secret_key(self) -> bytes:
+        return sha256(self.telegram_bot_token.encode()).digest()
 
 
 class ServerSettings(BaseSettings):
@@ -55,8 +61,8 @@ class PostgresSettings(BaseSettings):
     model_config = CFG
     db_url: Annotated[PostgresDsn, AfterValidator(str)]
     pool_recycle: int = 3600
-    pool_size: int = 70  # 4 workers, limit: 500
-    max_overflow: int = 30
+    pool_size: int = 300  # limit: 500
+    max_overflow: int = 70
     pool_timeout: int = 10
 
 
@@ -65,12 +71,20 @@ class RedisSettings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 6379
     db: int = 2
-    max_connections: int = 500  # 4 workers, limit: 3168
+    max_connections: int = 1000  # limit: 3168
     socket_connect_timeout: int = 5
     health_check_interval: int = 30
 
 
-auth_stg, server_stg, pg_stg, redis_stg = (
+class HTTPSettings(BaseSettings):
+    model_config = CFG
+    max_connections: int = 50
+    max_keepalive_connections: int = 10
+    keepalive_expiry: float = 3.0
+
+
+auth_stg, server_stg, pg_stg, redis_stg, http_stg = (
     AuthSettings(), ServerSettings(),
-    PostgresSettings(), RedisSettings()
+    PostgresSettings(), RedisSettings(),
+    HTTPSettings()
 )

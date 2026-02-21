@@ -1,47 +1,44 @@
 from contextlib import asynccontextmanager
-from asyncio import gather
-from time import perf_counter
+from asyncio import gather, wait_for
 from typing import Awaitable
 
 from fastapi import FastAPI
 
 from app.infra.postgres.service import PostgresService
-from app.infra.redis import RedisService
-from app.utils import log_debug_db
+from app.infra.redis import RedisService, RateLimiter
+from app.infra.http import HttpService
 from app.utils.log_helpers import log_error_infra
 
 
 async def safe_close(service_name: str, coroutine: Awaitable):
     try:
-        await coroutine
+        await wait_for(coroutine, timeout=5.0)
     except Exception as e:
         log_error_infra(service=service_name, op="SHUTDOWN_ERROR", exc=e)
 
 
-def get_lifespan(pg: PostgresService, redis: RedisService):
+def get_lifespan(
+        pg_svc: PostgresService, redis_svc: RedisService,
+        http_svc: HttpService
+):
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        await gather(pg.connect(), redis.connect())
-        warmup_size, start_warm = 15, perf_counter()
+        await gather(pg_svc.connect(), redis_svc.connect(), http_svc.connect())
+        limiter = RateLimiter(redis_svc=redis_svc)
+        await limiter.init()
 
-        try:
-            await gather(*(pg.ping() for _ in range(warmup_size)))
-            log_debug_db(
-                op="WARMUP", start_time=start_warm,
-                detail=f"conns: {warmup_size}"
-            )
-
-        except Exception as e:
-            log_error_infra(service="DB", op="WARMUP_FAILED", exc=e)
-
-        app.state.pg_svc, app.state.redis_svc = pg, redis
+        (app.state.pg_svc, app.state.redis_svc,
+         app.state.limiter, app.state.http_svc) = (
+            pg_svc, redis_svc, limiter, http_svc
+        )
         try:
             yield
 
         finally:
             await gather(
-                safe_close(service_name="Postgres", coroutine=pg.disconnect()),
-                safe_close(service_name="Redis", coroutine=redis.disconnect())
+                safe_close(service_name="Postgres", coroutine=pg_svc.disconnect()),
+                safe_close(service_name="Redis", coroutine=redis_svc.disconnect()),
+                safe_close(service_name="HTTP", coroutine=http_svc.disconnect())
             )
 
     return lifespan
