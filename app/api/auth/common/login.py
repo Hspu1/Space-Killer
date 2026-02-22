@@ -24,14 +24,18 @@ async def login(
     if provider_name == "stackoverflow":
         state = token_urlsafe(32)
         request.session["so_state"] = state
-
         url = (
-            f"https://stackoverflow.com/oauth"
-            f"?client_id={auth_stg.stackoverflow_client_id}"
-            f"&redirect_uri={redirect_uri}"
-            f"&state={state}"
-            f"&scope=no_expiry"
-        )
+            "https://stackoverflow.com/oauth"
+            "?client_id=%s&redirect_uri=%s&state=%s&scope=no_expiry"
+        ) % (auth_stg.stackoverflow_client_id, redirect_uri, state)
+
+    elif provider_name == "github":
+        state = token_urlsafe(32)
+        request.session["github_state"] = state
+        url = (
+            "https://github.com/login/oauth/authorize"
+            "?client_id=%s&redirect_uri=%s&state=%s&scope=user:email"
+        ) % (auth_stg.github_client_id, redirect_uri, state)
 
     else:
         provider_url = await provider.authorize_redirect(request, redirect_uri)

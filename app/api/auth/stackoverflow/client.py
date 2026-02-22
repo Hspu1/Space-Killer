@@ -2,7 +2,6 @@ from authlib.integrations.starlette_client import OAuth
 
 from app.core.env_conf import auth_stg
 
-
 stackoverflow_oauth = OAuth()
 stackoverflow_oauth.register(
     name='stackoverflow',

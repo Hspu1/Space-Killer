@@ -2,7 +2,6 @@ from authlib.integrations.starlette_client import OAuth
 
 from app.core.env_conf import auth_stg, server_stg
 
-
 client_params = {
     'scope': 'user:email',
     'timeout': auth_stg.auth_timeout,

@@ -26,11 +26,14 @@ def get_safe_name(user_info: dict) -> str:
 
 
 def get_safe_info(user_info: dict[str, Any], provider: AuthProvider) -> dict[str, str | bool]:
-    email = (user_info.get("email") or user_info.get("default_email") or "").lower().strip()
+    email = None if provider == AuthProvider.GITHUB \
+        else (
+            user_info.get("email") or user_info.get("default_email") or ""
+    ).lower().strip()
+
     is_verified = user_info.get("email_verified") is True
     provider = provider.value.lower()
-
-    if not is_verified and provider == "yandex" and email.endswith(YANDEX_DOMAINS):
+    if (not is_verified and provider == "yandex") and email and email.endswith(YANDEX_DOMAINS):
         is_verified = True
 
     provider_safe_id = get_safe_id(user_info=user_info)
