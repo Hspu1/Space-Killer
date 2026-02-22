@@ -16,7 +16,7 @@ CFG = SettingsConfigDict(
 
 class AuthSettings(BaseSettings):
     model_config = CFG
-    auth_timeout: float = 10.0
+    auth_timeout: float = 5.0
     google_client_id: str
     google_client_secret: str
 
@@ -61,8 +61,8 @@ class PostgresSettings(BaseSettings):
     model_config = CFG
     db_url: Annotated[PostgresDsn, AfterValidator(str)]
     pool_recycle: int = 3600
-    pool_size: int = 300  # limit: 500
-    max_overflow: int = 70
+    pool_size: int = 100  # 4 workers recommended (pgsql limit: 500)
+    max_overflow: int = 10
     pool_timeout: int = 10
 
 
@@ -71,14 +71,14 @@ class RedisSettings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 6379
     db: int = 2
-    max_connections: int = 1000  # limit: 3168
+    max_connections: int = 700  # 4 workers recommended (redis limit: 3168)
     socket_connect_timeout: int = 5
     health_check_interval: int = 30
 
 
 class HTTPSettings(BaseSettings):
     model_config = CFG
-    max_connections: int = 50
+    max_connections: int = 30
     max_keepalive_connections: int = 10
     keepalive_expiry: float = 3.0
 

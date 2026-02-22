@@ -1,5 +1,3 @@
-import asyncio
-import random
 from sys import argv
 
 from fastapi import FastAPI

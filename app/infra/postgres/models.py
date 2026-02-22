@@ -15,7 +15,7 @@ class UsersModel(Base, TimestampMixin, UUIDv7Mixin):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     email_verification_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), default=None, server_default=None)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default="true")  # ban etc
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")  # soft delete
     identities: Mapped[list["UserIdentitiesModel"]] = relationship("UserIdentitiesModel", back_populates="user", cascade="all, delete-orphan")
 
     __table_args__ = (Index("idx_users_name", "name"),)

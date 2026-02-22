@@ -1,4 +1,4 @@
-from time import perf_counter, time
+from time import perf_counter, time_ns
 from typing import Final
 
 from app.infra.redis import RedisService
@@ -17,7 +17,9 @@ local earliest_time = tat - burst
 
 if now >= earliest_time then
     local new_tat = math.max(tat, now) + interval
-    redis.call('SET', key, new_tat, 'PX', math.ceil(new_tat - now))
+    local ttl = math.ceil(new_tat - now)
+    if ttl <= 0 then ttl = 1 end
+    redis.call('SET', key, new_tat, 'PX', ttl)
     return 0
 else
     return math.ceil(earliest_time - now)
@@ -38,7 +40,7 @@ class RateLimiter:
     async def is_allowed(self, key: str, limit: int, window: int) -> bool:
         start, client = perf_counter(), self._redis.get_client()
         now_ms, interval, burst = (
-            int(time() * 1000), (window * 1000) // limit, window * 1000
+            time_ns() // 1_000_000, (window * 1000) // limit, window * 1000
         )
         try:
             wait_time = await client.evalsha(
