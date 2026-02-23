@@ -21,13 +21,11 @@ async def yandex_callback_handling(
     try:
         start_token = perf_counter()
         token = await yandex_oauth.yandex.authorize_access_token(request)
-        log_debug_auth(label="token_fetch", start=start_token,
-                            provider=AuthProvider.YANDEX)
+        log_debug_auth(label="token_fetch", start_time=start_token, provider=AuthProvider.YANDEX)
 
         start_api = perf_counter()
         resp = await yandex_oauth.yandex.get('info', token=token)
-        log_debug_auth(label="api_fetch", start=start_api,
-                            provider=AuthProvider.YANDEX)
+        log_debug_auth(label="api_fetch", start_time=start_api, provider=AuthProvider.YANDEX)
 
         if resp.status_code != 200:
             log_error_auth(
@@ -42,13 +40,11 @@ async def yandex_callback_handling(
             pg_svc=pg_svc, user_info=safe_user_info,
             provider=AuthProvider.YANDEX
         )
-        request.session.clear()
         request.session.update({
             "user_id": user_id, "given_name": safe_user_info["name"]
         })
 
-        log_debug_auth(label="total", start=start_total,
-                            provider=AuthProvider.YANDEX)
+        log_debug_auth(label="total", start_time=start_total, provider=AuthProvider.YANDEX)
         return RedirectResponse(url='/welcome')
 
     except OAuthError as e:

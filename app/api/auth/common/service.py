@@ -14,7 +14,7 @@ async def get_user_id(pg_svc: PostgresService, user_info: dict, provider: AuthPr
     start_time, session_maker = perf_counter(), pg_svc.get_session_maker()
     async with session_maker() as session:
         stmt = select(UserIdentitiesModel.user_id).where(
-            UserIdentitiesModel.provider == provider.value,
+            UserIdentitiesModel.provider == provider.value.lower(),
             UserIdentitiesModel.provider_user_id == user_info["id"]
         )
         if user_id := (await session.execute(stmt)).scalar():
@@ -33,7 +33,7 @@ async def get_user_id(pg_svc: PostgresService, user_info: dict, provider: AuthPr
 
         await session.execute(
             insert(UserIdentitiesModel).values(
-                user_id=user_id, provider=provider.value,
+                user_id=user_id, provider=provider.value.lower(),
                 provider_user_id=user_info["id"]
             ).on_conflict_do_nothing(index_elements=["provider", "provider_user_id"])
         )

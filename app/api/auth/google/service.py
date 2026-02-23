@@ -21,8 +21,7 @@ async def google_callback_handling(
     try:
         start_token = perf_counter()
         token = await google_oauth.google.authorize_access_token(request)
-        log_debug_auth(label="token_fetch", start=start_token,
-                            provider=AuthProvider.GOOGLE)
+        log_debug_auth(label="token_fetch", start_time=start_token, provider=AuthProvider.GOOGLE)
 
         user_info = token.get("userinfo")
         safe_user_info = get_safe_info(user_info=user_info, provider=AuthProvider.GOOGLE)
@@ -30,13 +29,11 @@ async def google_callback_handling(
             pg_svc=pg_svc, user_info=safe_user_info,
             provider=AuthProvider.GOOGLE
         )
-        request.session.clear()
         request.session.update({
             "user_id": user_id, "given_name": safe_user_info["name"]
         })
 
-        log_debug_auth(label="total", start=start_total,
-                            provider=AuthProvider.GOOGLE)
+        log_debug_auth(label="total", start_time=start_total, provider=AuthProvider.GOOGLE)
         return RedirectResponse(url='/welcome')
 
     except OAuthError as e:

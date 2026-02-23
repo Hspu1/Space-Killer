@@ -2,39 +2,40 @@ import logging
 from time import perf_counter
 
 from .logger_conf import Colors
+from ..api.auth.common import AuthProvider
 
 logger = logging.getLogger(__name__)
 
 
-def log_debug_auth(label: str, start_time: float, provider: str) -> None:
+def log_debug_auth(label: str, start_time: float, provider: AuthProvider) -> None:
     if logger.isEnabledFor(logging.DEBUG):
         dur = (perf_counter() - start_time) * 1000
         logger.debug(
             "%s[AUTH] %s%s %s=%s%.2fms%s",
-            Colors.PURPLE, provider, Colors.RESET, label,
+            Colors.PURPLE, provider.value.upper(), Colors.RESET, label,
             Colors.YELLOW, dur, Colors.RESET
         )
 
 
-def log_error_auth(provider: str, message: str, exc: Exception = None) -> None:
+def log_error_auth(provider: AuthProvider, message: str, exc: Exception = None) -> None:
     if exc:
         logger.error(
             "%s[AUTH ERROR] %s%s %s: %s",
-            Colors.RED, provider, Colors.RESET, message, exc, exc_info=True
+            Colors.RED, provider.value.upper(), Colors.RESET, message, exc, exc_info=True
         )
     else:
         logger.error(
             "%s[AUTH ERROR] %s%s %s",
-            Colors.RED, provider, Colors.RESET, message
+            Colors.RED, provider.value.upper(), Colors.RESET, message
         )
 
 
-def log_warn_auth(provider: str, message: str, **kwargs) -> None:
+def log_warn_auth(provider: AuthProvider, message: str, **kwargs) -> None:
     extra = " ".join([f"{k}={v}" for k, v in kwargs.items()])
     logger.warning(
         "%s[AUTH WARN]%s %s%s%s %s %s%s%s",
         Colors.ORANGE, Colors.RESET,
-        Colors.LIGHT_GRAY, provider, Colors.RESET, message,
+        Colors.LIGHT_GRAY, provider.value.upper(), Colors.RESET, message,
         Colors.YELLOW, extra, Colors.RESET
     )
 

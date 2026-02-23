@@ -14,15 +14,20 @@ from ..common import get_user_id, AuthProvider, get_safe_info
 async def stackoverflow_callback_handling(
         request: Request, redirect_uri: str, pg_svc: PostgresService
 ) -> RedirectResponse:
-    start_total = perf_counter()
+    start = perf_counter()
 
-    returned_state = request.query_params.get("state")
-    saved_state = request.session.pop('so_state', None)
+    returned_state, saved_state = (
+        request.query_params.get("state"), request.session.pop('so_state', None)
+    )
     if not returned_state or returned_state != saved_state:
-        log_error_auth(provider=AuthProvider.STACKOVERFLOW, message="CSRF mismatch")
+        log_error_auth(provider=AuthProvider.STACKOVERFLOW, message="CSRF STATE mismatch")
         return RedirectResponse(url="/?msg=session_expired")
 
     if request.query_params.get("error"):
+        log_error_auth(
+            provider=AuthProvider.STACKOVERFLOW,
+            message="QUERY PARAMS got %s" % request.query_params.get("error")
+        )
         return RedirectResponse(url="/?msg=access_denied")
 
     try:
@@ -33,17 +38,14 @@ async def stackoverflow_callback_handling(
             pg_svc=pg_svc, user_info=safe_user_info,
             provider=AuthProvider.STACKOVERFLOW
         )
-
-        request.session.clear()
         request.session.update({
             "user_id": user_id, "given_name": safe_user_info["name"]
         })
 
-        log_debug_auth(label="total", start=start_total,
-                            provider=AuthProvider.STACKOVERFLOW)
+        log_debug_auth(label="total", start_time=start, provider=AuthProvider.STACKOVERFLOW)
         return RedirectResponse(url='/welcome')
 
-    except (HTTPError, KeyError, OAuthError) as e:
+    except (HTTPError, OAuthError, ValueError, KeyError) as e:
         log_error_auth(provider=AuthProvider.STACKOVERFLOW, message="network/provider", exc=e)
         return RedirectResponse(url="/?msg=provider_error")
 
