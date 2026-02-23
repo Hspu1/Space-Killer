@@ -3,10 +3,10 @@ import { check } from 'k6';
 
 export const options = {
     stages: [
-        { duration: '1s', target: 100 },
-        { duration: '8s', target: 100 },
-        { duration: '1s', target: 0 },
-    ],
+        { duration: '1m', target: 60 },
+        { duration: '18m', target: 60 },
+        { duration: '1m', target: 0 },
+    ], // >500'000 insertions (possible duplicates due to math.random)
     discardResponseBodies: true,
 };
 
@@ -23,6 +23,7 @@ export default function () {
 
     let res = http.get(`${BASE_URL}/auth/telegram/callback?${query}`, params);
     check(res, {
-        'ok': (r) => r.status === 307
+        'is_307': (r) => r.status === 307,
+        'no_error': (r) => !r.headers['Location'].includes('msg=')
     });
 }
