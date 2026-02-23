@@ -138,5 +138,14 @@
         <span>© 2026 Smth-P</span>
         <a href="https://github.com/Hspu1/Smth-P" target="_blank">Repo</a>
     </footer>
+    <script type="text/javascript">
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                document.querySelectorAll('.htmx-request').forEach(el => {
+                    el.classList.remove('htmx-request');
+                });
+            }
+        });
+    </script>
 </body>
 </html>

@@ -28,7 +28,7 @@
 
         <script type="text/javascript">
             const TGAuth = {
-                bot_id: '{{ bot_id }}',
+                bot_id: {{ bot_id | tojson }},
 
                 handleAuth: function(user) {
                     const params = new URLSearchParams(user).toString();
