@@ -11,7 +11,7 @@ google_router = APIRouter(tags=["google"], prefix="/auth/google")
 
 @google_router.get(path='/login',
     dependencies=[Depends(rate_limit(
-        limit=10, window=1, scope="google_login")
+        limit=5, window=1, scope="google_login")
     )]
 )
 async def google_login(request: Request) -> Response:
@@ -23,7 +23,7 @@ async def google_login(request: Request) -> Response:
 
 @google_router.get(path='/callback',
     dependencies=[Depends(rate_limit(
-        limit=10, window=1, scope="google_callback")
+        limit=5, window=1, scope="google_callback")
     )]
 )
 async def google_callback(request: Request, pg: PostgresService = Depends(get_pg)) -> Response:

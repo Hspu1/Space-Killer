@@ -13,6 +13,7 @@ yandex_oauth.register(
     client_kwargs={
         'scope': 'login:email login:info',
         'token_endpoint_auth_method': 'client_secret_post',
-        "timeout": auth_stg.auth_timeout
+        "timeout": auth_stg.auth_timeout,
+        'code_challenge_method': 'S256'
     },
 )

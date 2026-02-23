@@ -11,6 +11,7 @@ google_oauth.register(
     client_kwargs={
         'scope': 'openid email profile',
         'prompt': 'select_account',
-        'timeout': auth_stg.auth_timeout
+        'timeout': auth_stg.auth_timeout,
+        'code_challenge_method': 'S256'
     }
 )

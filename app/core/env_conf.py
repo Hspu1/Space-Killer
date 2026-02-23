@@ -29,6 +29,8 @@ class AuthSettings(BaseSettings):
     stackoverflow_api_key: str
     stackoverflow_client_id: str
     stackoverflow_client_secret: str
+    so_access_token_link: str = \
+        "https://stackoverflow.com/oauth/access_token"
 
     telegram_bot_token: str
     tg_session_timeout: int = 300

@@ -10,7 +10,7 @@ telegram_router = APIRouter(tags=["telegram"], prefix="/auth/telegram")
 
 @telegram_router.get(path='/callback',
     dependencies=[Depends(rate_limit(
-        limit=10, window=1, scope="telegram_callback")
+        limit=5, window=1, scope="telegram_callback")
     )]
 )
 async def telegram_callback(request: Request, pg: PostgresService = Depends(get_pg)) -> Response:

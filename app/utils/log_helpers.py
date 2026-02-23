@@ -6,9 +6,9 @@ from .logger_conf import Colors
 logger = logging.getLogger(__name__)
 
 
-def log_debug_auth(label: str, start: float, provider: str) -> None:
+def log_debug_auth(label: str, start_time: float, provider: str) -> None:
     if logger.isEnabledFor(logging.DEBUG):
-        dur = (perf_counter() - start) * 1000
+        dur = (perf_counter() - start_time) * 1000
         logger.debug(
             "%s[AUTH] %s%s %s=%s%.2fms%s",
             Colors.PURPLE, provider, Colors.RESET, label,

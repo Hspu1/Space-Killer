@@ -11,7 +11,7 @@ stackoverflow_router = APIRouter(tags=["stackoverflow"], prefix="/auth/stackover
 
 @stackoverflow_router.get(path='/login',
     dependencies=[Depends(rate_limit(
-        limit=10, window=1, scope="stackoverflow_login")
+        limit=5, window=1, scope="stackoverflow_login")
     )]
 )
 async def stackoverflow_login(request: Request) -> Response:
@@ -23,7 +23,7 @@ async def stackoverflow_login(request: Request) -> Response:
 
 @stackoverflow_router.get(path='/callback',
     dependencies=[Depends(rate_limit(
-        limit=10, window=1, scope="stackoverflow_callback")
+        limit=5, window=1, scope="stackoverflow_callback")
     )]
 )
 async def stackoverflow_callback(request: Request, pg: PostgresService = Depends(get_pg)) -> Response:
