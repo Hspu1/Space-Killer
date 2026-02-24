@@ -14,7 +14,7 @@ from .client import stackoverflow_oauth
 async def exchange_so_token(request, redirect_uri):
     start, code = perf_counter(), request.query_params.get("code")
     if not code:
-        raise HTTPError("NO AUTH CODE provided")
+        raise HTTPError("NO auth code provided")
 
     async with TLSClient() as session:
         res = await session.post(
@@ -30,13 +30,7 @@ async def exchange_so_token(request, redirect_uri):
     if res.status_code != 200 or not res.text:
         raise HTTPError("TOKEN exchange FAILED: %s" % res.status_code)
 
-    if not (parsed_data := parse_qs(res.text)):
-        raise ValueError("RESPONSE is empty or INVALID format")
-
-    if "access_token" not in parsed_data:
-        raise HTTPError("RESPONSE is MISSING the ACCESS TOKEN in %s" % parsed_data)
-
-    return {k: v[0] for k, v in parsed_data.items()}
+    return {k: v[0] for k, v in parse_qs(res.text).items()}
 
 
 async def fetch_so_user(access_token: str) -> dict:
@@ -51,22 +45,11 @@ async def fetch_so_user(access_token: str) -> dict:
         log_error_auth(provider=AuthProvider.STACKOVERFLOW, message="API fetch FAILED")
         resp.raise_for_status()
 
-    try:
-        user_data = resp.json()
-    except ValueError:
-        raise ValueError("API returned INVAlID JSON")
-    except Exception:
-        raise ValueError("API returned INVAlID JSON")
-
-    if not user_data or not isinstance(user_data, dict):
-        raise ValueError("API response is INVALID")
-
-    if "backoff" in user_data:
-        log_warn_auth(provider=AuthProvider.STACKOVERFLOW, message="Backoff received", seconds=user_data["backoff"])
-
-    if not (items := user_data.get("items")) or not isinstance(items, list):
-        log_error_auth(provider=AuthProvider.STACKOVERFLOW, message="User items missing in response")
-        raise KeyError("Response ITEMS MISSING")
+    if "backoff" in (user_data := resp.json()):
+        log_warn_auth(
+            provider=AuthProvider.STACKOVERFLOW,
+            message="Backoff received", seconds=user_data["backoff"]
+        )
 
     log_debug_auth(label="api_fetch", start_time=start, provider=AuthProvider.STACKOVERFLOW)
     return user_data["items"][0]
