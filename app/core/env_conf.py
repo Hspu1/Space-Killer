@@ -80,9 +80,13 @@ class RedisSettings(BaseSettings):
 
 class HTTPSettings(BaseSettings):
     model_config = CFG
-    max_connections: int = 30
-    max_keepalive_connections: int = 10
-    keepalive_expiry: float = 3.0
+    max_connections: int = 100
+    max_keepalive_connections: int = 50
+    keepalive_expiry: float = 30.0
+    warmup_urls: tuple = (
+        'https://github.com/login/oauth/access_token',
+        'https://api.github.com/user'
+    )
 
 
 auth_stg, server_stg, pg_stg, redis_stg, http_stg = (

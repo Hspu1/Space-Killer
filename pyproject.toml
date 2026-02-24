@@ -17,6 +17,7 @@ dependencies = [
     "redis>=7.1.0",
     "sqlalchemy[asyncio]>=2.0.45",
     "starsessions[redis]>=2.2.1",
+    "tenacity>=9.1.4",
     "uuid6>=2025.0.1",
     "uvicorn[standard]>=0.40.0",
 ]
