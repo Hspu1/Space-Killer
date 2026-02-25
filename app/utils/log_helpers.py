@@ -51,10 +51,10 @@ def log_debug_db(op: str, start_time: float, detail: str = ""):
         )
 
 
-def log_error_infra(service: str, op: str, exc: Exception):
+def log_error_infra(service: str, op: str, exc: Exception = "", exc_tuple: tuple = ""):
     logger.error(
-        "%s[INFRA ERROR]%s %s %s: %s",
-        Colors.RED, Colors.RESET, service, op, exc, exc_info=True
+        "%s[INFRA ERROR]%s %s %s: %s %s",
+        Colors.RED, Colors.RESET, service, op, exc, exc_tuple, exc_info=True
     )
 
 

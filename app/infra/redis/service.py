@@ -44,6 +44,7 @@ class RedisService:
 
         except Exception as e:
             log_error_infra(service="REDIS", op="CONNECT", exc=e)
+            raise e
 
     def get_client(self) -> Redis:
         if self._client is None:
@@ -62,6 +63,7 @@ class RedisService:
                 log_debug_redis(op="DISCONNECTED", start_time=start)
             except Exception as e:
                 log_error_infra("REDIS", "DISCONNECT", e)
+                raise e
             finally:
                 self._client = None
 

@@ -52,6 +52,7 @@ class HttpService:
 
         except Exception as e:
             log_error_infra(service="HTTP", op="CONNECT", exc=e)
+            raise e
 
     @retry(
         retry=retry_if_exception_type(RETRY_EXCEPTIONS),
@@ -95,6 +96,7 @@ class HttpService:
 
             except Exception as e:
                 log_error_infra(service="HTTP", op="DISCONNECT", exc=e)
+                raise e
 
             finally:
                 self.client = None

@@ -73,6 +73,7 @@ class PostgresService:
                 log_debug_db(op="DISCONNECTED", start_time=start)
             except Exception as e:
                 log_error_infra(service="DB", op="DISCONNECT", exc=e)
+                raise e
             finally:
                 self._engine, self._session_maker = None, None
 
