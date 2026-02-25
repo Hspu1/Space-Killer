@@ -23,7 +23,7 @@ async def exchange_so_token(request, redirect_uri):
                 "client_id": auth_stg.stackoverflow_client_id,
                 "client_secret": auth_stg.stackoverflow_client_secret,
                 "code": code, "redirect_uri": redirect_uri
-            }, impersonate="chrome110"
+            }, impersonate="safari15_5"
         )
 
     log_debug_auth(label="token_exchange", start_time=start, provider=AuthProvider.STACKOVERFLOW)
