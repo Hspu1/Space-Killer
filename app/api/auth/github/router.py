@@ -12,7 +12,7 @@ github_router = APIRouter(tags=["github"], prefix="/auth/github")
 
 @github_router.get(path='/login',
     dependencies=[Depends(rate_limit(
-        limit=5, window=1, scope="github_login")
+        limit=1, window=1, burst=3, scope="github_login")
     )]
 )
 async def github_login(request: Request) -> Response:
@@ -24,7 +24,7 @@ async def github_login(request: Request) -> Response:
 
 @github_router.get(path="/callback",
     dependencies=[Depends(rate_limit(
-        limit=5, window=1, scope="github_callback")
+        limit=1, window=2, scope="github_callback")
     )]
 )
 async def github_callback(
