@@ -2,21 +2,16 @@ from asyncio import gather, shield
 from time import perf_counter
 
 from httpx import (
-    AsyncClient, Limits, Response, TimeoutException,
-    NetworkError, RemoteProtocolError, HTTPStatusError
+    AsyncClient, Limits, Response,
+    TimeoutException, NetworkError, RemoteProtocolError, HTTPStatusError
 )
 from tenacity import (
-    retry, stop_after_attempt,
+    retry, retry_any, retry_if_exception, stop_after_attempt,
     wait_random_exponential, retry_if_exception_type
 )
 
 from app.core.env_conf import AuthSettings, ServerSettings, http_stg
 from app.utils.log_helpers import log_debug_http, log_error_infra, log_warn_auth
-
-RETRY_EXCEPTIONS = (
-    TimeoutException, NetworkError,
-    RemoteProtocolError, HTTPStatusError
-)
 
 
 class HttpService:
@@ -55,8 +50,13 @@ class HttpService:
             raise e
 
     @retry(
-        retry=retry_if_exception_type(RETRY_EXCEPTIONS),
+        retry=retry_any(
+            retry_if_exception_type((TimeoutException, NetworkError, RemoteProtocolError)),
+            retry_if_exception_type(HTTPStatusError) &
+            retry_if_exception(lambda e: e.response.status_code >= 500 or e.response.status_code == 429)
+        ),
         stop=stop_after_attempt(3), wait=wait_random_exponential(multiplier=1, max=5),
+        # multiplier=1 equals standard behaviour of the formula
         reraise=True, before_sleep=lambda res: log_warn_auth(  # 'res' provides methods from tenacity
             provider="HTTP", message="GITHUB Attempt %d failed, Error: %s" % (
                 res.attempt_number, res.outcome.exception()
@@ -65,8 +65,7 @@ class HttpService:
     )
     async def _make_request(self, method: str, url: str, **kwargs) -> Response:
         resp = await self.client.request(method, url, **kwargs)
-        if resp.status_code >= 500 or resp.status_code == 429:
-            resp.raise_for_status()
+        resp.raise_for_status()
         return resp
 
     async def safe_post(self, url: str, **kwargs) -> Response:

@@ -48,7 +48,6 @@ async def github_callback_handling(
 async def exchange_github_token(svc, code, uri):
     params = github_kwargs(HttpMethods.POST, code=code, redirect_uri=uri)
     res = await svc.safe_post(**params)
-    res.raise_for_status()
 
     if "error" in (data := res.json()):
         raise ValueError("GitHub returned error: %s" % data.get("error"))
@@ -58,6 +57,5 @@ async def exchange_github_token(svc, code, uri):
 async def fetch_github_profile(svc, token):
     params = github_kwargs(HttpMethods.GET, access_token=token)
     res = await svc.safe_get(**params)
-    res.raise_for_status()
 
     return get_safe_info(res.json(), provider=AuthProvider.GITHUB)
