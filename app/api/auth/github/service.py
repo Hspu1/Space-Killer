@@ -33,6 +33,8 @@ async def github_callback_handling(
             pg_svc=pg_svc, user_info=safe_user_info,
             provider=AuthProvider.GITHUB
         )
+
+        request.session.clear()
         request.session.update({
             "user_id": user_id, "given_name": safe_user_info["name"]
         })
