@@ -16,6 +16,7 @@ from app.infra.redis import RedisSessionStore, RedisService
 from app.infra.postgres.service import PostgresService
 from app.infra.http import HttpService
 from app.utils import setup_logging
+# from practiece import bastard_router
 
 setup_logging()
 
@@ -50,6 +51,7 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(ui_router)
+    # app.include_router(bastard_router)
 
     return app
 
