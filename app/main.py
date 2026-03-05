@@ -1,21 +1,22 @@
 from sys import argv
 
 from fastapi import FastAPI
-from fastapi.responses import ORJSONResponse
-from uvicorn import run
-from starsessions import SessionMiddleware, SessionAutoloadMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import ORJSONResponse
+from starsessions import SessionAutoloadMiddleware, SessionMiddleware
+from uvicorn import run
 
 from app.api.auth import auth_router
-from app.ui import ui_router
-from app.core.env_conf import server_stg, pg_stg, redis_stg, auth_stg
-from app.core.lifespan import get_lifespan
 from app.core.docs import static_docs_urls
+from app.core.env_conf import auth_stg, pg_stg, redis_stg, server_stg
+from app.core.lifespan import get_lifespan
 from app.core.serializer import OrjsonSerializer
-from app.infra.redis import RedisSessionStore, RedisService
-from app.infra.postgres.service import PostgresService
 from app.infra.http import HttpService
+from app.infra.postgres.service import PostgresService
+from app.infra.redis import RedisService, RedisSessionStore
+from app.ui import ui_router
 from app.utils import setup_logging
+
 # from practiece import bastard_router
 
 setup_logging()
@@ -23,17 +24,18 @@ setup_logging()
 
 def create_app() -> FastAPI:
     pg_svc, redis_svc, http_svc = (
-        PostgresService(config=pg_stg), RedisService(config=redis_stg),
-        HttpService(auth_stg=auth_stg, server_stg=server_stg)
+        PostgresService(config=pg_stg),
+        RedisService(config=redis_stg),
+        HttpService(auth_stg=auth_stg, server_stg=server_stg),
     )
 
     app = FastAPI(
-        title="Smth-P", lifespan=get_lifespan(
-            pg_svc=pg_svc, redis_svc=redis_svc, http_svc=http_svc
-        ),
+        title="Smth-P",
+        lifespan=get_lifespan(pg_svc=pg_svc, redis_svc=redis_svc, http_svc=http_svc),
         default_response_class=ORJSONResponse,
-        docs_url=None, redoc_url=None,
-        swagger_ui_oauth2_redirect_url="/oauth2-redirect"
+        docs_url=None,
+        redoc_url=None,
+        swagger_ui_oauth2_redirect_url="/oauth2-redirect",
     )
 
     static_docs_urls(app=app)
@@ -42,12 +44,15 @@ def create_app() -> FastAPI:
     app.add_middleware(SessionAutoloadMiddleware)
     app.add_middleware(
         SessionMiddleware,
-        store=store, serializer=serializer,
-        cookie_name="session_id", lifetime=server_stg.session_lifetime,
-        rolling=False, cookie_same_site="lax",
-        cookie_https_only=True
+        store=store,
+        serializer=serializer,
+        cookie_name="session_id",
+        lifetime=server_stg.session_lifetime,
+        rolling=False,
+        cookie_same_site="lax",
+        cookie_https_only=True,
     )
-    # app.add_middleware(TrustedHostMiddleware, allowed_hosts=server_stg.allowed_hosts)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=server_stg.allowed_hosts)
 
     app.include_router(auth_router)
     app.include_router(ui_router)
@@ -63,8 +68,15 @@ if __name__ == "__main__":
     # run this command: (uv run) python -m app.main <port>
 
     run(
-        app="app.main:app", port=custom_port, host=server_stg.run_host,
-        reload=server_stg.run_reload, use_colors=True, access_log=False,
-        workers=1, http="httptools", loop="asyncio",
-        # proxy_headers=True, forwarded_allow_ips=server_stg.forwarded_ips
+        app=app,
+        port=custom_port,
+        host=server_stg.run_host,
+        reload=False,
+        use_colors=True,
+        access_log=False,
+        workers=1,
+        http="httptools",
+        loop="asyncio",
+        proxy_headers=True,
+        forwarded_allow_ips=server_stg.forwarded_ips,
     )
