@@ -28,15 +28,15 @@ FMT: Final = (
 
 
 def setup_logging(level: int = logging.DEBUG) -> None:
-    logging.basicConfig(
-        level=level, format=FMT,
-        datefmt="%H:%M:%S", force=True
-    )
+    logging.basicConfig(level=level, format=FMT, datefmt="%H:%M:%S", force=True)
 
     levels: Final[dict[str, int]] = {
-        "asyncio": logging.INFO, "httpx": logging.WARNING,
-        "httpcore": logging.WARNING, "authlib": logging.INFO,
-        "sqlalchemy.engine": logging.WARNING, "uvicorn.access": logging.INFO
+        "asyncio": logging.INFO,
+        "httpx": logging.WARNING,
+        "httpcore": logging.WARNING,
+        "authlib": logging.INFO,
+        "sqlalchemy.engine": logging.WARNING,
+        "uvicorn.access": logging.INFO,
     }
 
     for name, lvl in levels.items():
