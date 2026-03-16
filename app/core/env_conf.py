@@ -3,41 +3,36 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Annotated
 
+from pydantic import AfterValidator, Field, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import AfterValidator, PostgresDsn
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 ENV_FILE = BASE_DIR / ".env"
-CFG = SettingsConfigDict(
-    env_file=ENV_FILE, env_file_encoding='utf-8', extra="ignore"
-)
+CFG = SettingsConfigDict(env_file=ENV_FILE, env_file_encoding="utf-8", extra="ignore")
 
 
 class AuthSettings(BaseSettings):
     model_config = CFG
     auth_timeout: float = 5.0
-    google_client_id: str
-    google_client_secret: str
+    google_client_id: str = Field(default=...)
+    google_client_secret: str = Field(default=...)
 
-    github_client_id: str
-    github_client_secret: str
+    github_client_id: str = Field(default=...)
+    github_client_secret: str = Field(default=...)
 
-    yandex_client_id: str
-    yandex_client_secret: str
+    yandex_client_id: str = Field(default=...)
+    yandex_client_secret: str = Field(default=...)
 
-    stackoverflow_api_key: str
-    stackoverflow_client_id: str
-    stackoverflow_client_secret: str
-    so_access_token_link: str = \
-        "https://stackoverflow.com/oauth/access_token"
+    stackoverflow_api_key: str = Field(default=...)
+    stackoverflow_client_id: str = Field(default=...)
+    stackoverflow_client_secret: str = Field(default=...)
 
-    telegram_bot_token: str
+    telegram_bot_token: str = Field(default=...)
     tg_session_timeout: int = 300
 
     @cached_property
     def telegram_bot_id(self) -> str:
-        return self.telegram_bot_token.split(':')[0]
+        return self.telegram_bot_token.split(":")[0]
 
     @cached_property
     def secret_key(self) -> bytes:
@@ -48,24 +43,21 @@ class ServerSettings(BaseSettings):
     model_config = CFG
     run_host: str = "127.0.0.1"
     run_port: int = 8000
-    run_reload: bool = False
 
-    allowed_hosts: list[str] = (
-        "hspu1-the-greatest.loca.lt", "127.0.0.1"
-    )
+    allowed_hosts: tuple[str, ...] = ("hspu1-the-greatest.loca.lt", "127.0.0.1")
     forwarded_ips: str = "127.0.0.1"  # + ip balancer
-    proxy: str | None = None
+    proxy: str | None = None  # for GitHub (check .env)
     ssl_check: bool = True
-    session_lifetime: int = 2592000
+    session_lifetime: int = 604_800
 
 
 class PostgresSettings(BaseSettings):
     model_config = CFG
-    db_url: Annotated[PostgresDsn, AfterValidator(str)]
-    pool_recycle: int = 3600
-    pool_size: int = 100  # 4 workers recommended (pgsql limit: 500)
-    max_overflow: int = 10
-    pool_timeout: int = 10
+    db_url: Annotated[PostgresDsn, AfterValidator(str)] = Field(default=...)
+    pool_recycle: int = 1800
+    pool_size: int = 15
+    max_overflow: int = 5
+    pool_timeout: int = 5
 
 
 class RedisSettings(BaseSettings):
@@ -73,24 +65,32 @@ class RedisSettings(BaseSettings):
     host: str = "127.0.0.1"
     port: int = 6379
     db: int = 2
-    max_connections: int = 700  # 4 workers recommended (redis limit: 3168)
-    socket_connect_timeout: int = 5
+
+    @cached_property
+    def db_url(self) -> str:
+        return f"redis://{self.host}:{self.port}/{self.db}"
+
+    max_connections: int = 100
+    socket_timeout: float = 0.5
+    socket_connect_timeout: float = 1.5
     health_check_interval: int = 30
 
 
 class HTTPSettings(BaseSettings):
     model_config = CFG
     max_connections: int = 100
-    max_keepalive_connections: int = 50
-    keepalive_expiry: float = 30.0
-    warmup_urls: tuple = (
-        'https://github.com/login/oauth/access_token',
-        'https://api.github.com/user'
+    max_keepalive_connections: int = 30
+    keepalive_expiry: float = 20.0
+    warmup_urls: tuple[str, ...] = (
+        "https://github.com/login/oauth/access_token",
+        "https://api.github.com/user",
     )
 
 
 auth_stg, server_stg, pg_stg, redis_stg, http_stg = (
-    AuthSettings(), ServerSettings(),
-    PostgresSettings(), RedisSettings(),
-    HTTPSettings()
+    AuthSettings(),
+    ServerSettings(),
+    PostgresSettings(),
+    RedisSettings(),
+    HTTPSettings(),
 )
