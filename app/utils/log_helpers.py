@@ -1,5 +1,6 @@
 import logging
 from time import perf_counter
+from typing import Any
 
 from .logger_conf import Colors
 
@@ -23,35 +24,40 @@ def log_debug_auth(label: str, start_time: float, provider: str) -> None:
 
 
 def log_error_auth(provider: str, message: str, exc: Exception | None = None) -> None:
-    if exc:
-        logger.error(
-            "%s[AUTH ERROR] %s%s %s: %s",
-            Colors.RED,
+    if logger.isEnabledFor(logging.ERROR):
+        if exc:
+            logger.error(
+                "%s[AUTH ERROR] %s%s %s: %s",
+                Colors.RED,
+                provider,
+                Colors.RESET,
+                message,
+                exc,
+                exc_info=isinstance(exc, Exception),
+            )
+
+        else:
+            logger.error(
+                "%s[AUTH ERROR] %s%s %s", Colors.RED, provider, Colors.RESET, message
+            )
+
+
+def log_warn_auth(provider: str, message: str, **kwargs: Any) -> None:
+    if logger.isEnabledFor(logging.WARNING):
+        extra = " ".join([f"{k}={v}" for k, v in kwargs.items()])
+
+        logger.warning(
+            "%s[AUTH WARN]%s %s%s%s %s %s%s%s",
+            Colors.ORANGE,
+            Colors.RESET,
+            Colors.LIGHT_GRAY,
             provider,
             Colors.RESET,
             message,
-            exc,
+            Colors.YELLOW,
+            extra,
+            Colors.RESET,
         )
-
-    else:
-        logger.error("%s[AUTH ERROR] %s%s %s", Colors.RED, provider, Colors.RESET, message)
-
-
-def log_warn_auth(provider: str, message: str, **kwargs) -> None:
-    extra = " ".join([f"{k}={v}" for k, v in kwargs.items()])
-
-    logger.warning(
-        "%s[AUTH WARN]%s %s%s%s %s %s%s%s",
-        Colors.ORANGE,
-        Colors.RESET,
-        Colors.LIGHT_GRAY,
-        provider,
-        Colors.RESET,
-        message,
-        Colors.YELLOW,
-        extra,
-        Colors.RESET,
-    )
 
 
 def log_debug_db(op: str, start_time: float, detail: str = "") -> None:
@@ -72,18 +78,22 @@ def log_debug_db(op: str, start_time: float, detail: str = "") -> None:
 
 
 def log_error_infra(
-    service: str, op: str, exc: Exception | str = "", exc_tuple: tuple | str = ""
+    service: str,
+    op: str,
+    exc: Exception | str = "",
+    exc_tuple: tuple[Any, ...] | str = "",
 ) -> None:
-
-    logger.error(
-        "%s[INFRA ERROR]%s %s %s: %s %s",
-        Colors.RED,
-        Colors.RESET,
-        service,
-        op,
-        exc,
-        exc_tuple,
-    )
+    if logger.isEnabledFor(logging.ERROR):
+        logger.error(
+            "%s[INFRA ERROR]%s %s %s: %s %s",
+            Colors.RED,
+            Colors.RESET,
+            service,
+            op,
+            exc,
+            exc_tuple,
+            exc_info=isinstance(exc, Exception),
+        )
 
 
 def log_debug_core(op: str, start_time: float, detail: str = "") -> None:

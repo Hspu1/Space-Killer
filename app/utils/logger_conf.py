@@ -33,6 +33,7 @@ def setup_logging(level: int = logging.DEBUG) -> None:
     levels: Final[dict[str, int]] = {
         "asyncio": logging.INFO,
         "httpx": logging.WARNING,
+        "hpack": logging.WARNING,
         "httpcore": logging.WARNING,
         "authlib": logging.INFO,
         "sqlalchemy.engine": logging.WARNING,
