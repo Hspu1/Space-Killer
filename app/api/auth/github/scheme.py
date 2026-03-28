@@ -2,5 +2,5 @@ from enum import StrEnum
 
 
 class HttpMethods(StrEnum):
-    POST: str = "POST"
-    GET: str = "GET"
+    POST = "POST"
+    GET = "GET"

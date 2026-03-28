@@ -1,8 +1,9 @@
 from sys import argv
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, RedirectResponse
+from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 from starsessions import SessionAutoloadMiddleware, SessionMiddleware
 from uvicorn import run
 
@@ -16,8 +17,6 @@ from app.infra.postgres.service import PostgresService
 from app.infra.redis import RedisService, RedisSessionStore
 from app.ui import ui_router
 from app.utils import setup_logging
-
-# from practiece import bastard_router
 
 setup_logging()
 
@@ -46,7 +45,7 @@ def create_app() -> FastAPI:
         SessionMiddleware,
         store=store,
         serializer=serializer,
-        cookie_name="session_id",
+        cookie_name="sid",
         lifetime=server_stg.session_lifetime,
         rolling=False,
         cookie_same_site="lax",
@@ -56,17 +55,29 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(ui_router)
-    # app.include_router(bastard_router)
 
     return app
 
 
 app = create_app()
 
-if __name__ == "__main__":
-    custom_port = int(argv[1]) if len(argv) > 1 else server_stg.run_port
-    # run this command: (uv run) python -m app.main <port>
 
+@app.exception_handler(HTTP_429_TOO_MANY_REQUESTS)
+async def rate_limit_handler(request: Request, exc: HTTPException) -> Response:
+    wait_time = getattr(exc, "headers", {}).get("Retry-After", "a few")
+    url = f"/?msg=too_many_requests&wait={wait_time}"
+
+    if request.headers.get("HX-Request"):
+        return Response(headers={"HX-Redirect": url})
+
+    return RedirectResponse(url)
+
+
+if __name__ == "__main__":
+    # RUN: (uv run) python -m app.main <port>
+    # LT:  npx localtunnel --port <port> --subdomain <name>
+
+    custom_port = int(argv[1]) if len(argv) > 1 else server_stg.run_port
     run(
         app=app,
         port=custom_port,

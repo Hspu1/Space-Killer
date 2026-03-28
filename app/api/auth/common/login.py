@@ -1,55 +1,59 @@
-import logging
 from secrets import token_urlsafe
 from time import perf_counter
+from urllib.parse import urljoin
 
+from authlib.integrations.starlette_client.apps import StarletteOAuth2App
 from fastapi import Request, Response
 from fastapi.responses import RedirectResponse
-from authlib.integrations.starlette_client.apps import StarletteOAuth2App
+from yarl import URL
 
-from app.api.auth.common import AuthProvider
 from app.core.env_conf import auth_stg
-from app.utils.logger_conf import Colors
+from app.utils.log_helpers import log_debug_login, log_error_auth
 
-logger = logging.getLogger(__name__)
+from .schemas import AuthProvider
 
 
 async def login(
-        request: Request, provider_name: AuthProvider,
-        provider: StarletteOAuth2App
+    request: Request, provider: AuthProvider, oauth_app: StarletteOAuth2App | None = None
 ) -> Response:
 
-    start = perf_counter()
+    start, provider_name = perf_counter(), provider.value
+    state = token_urlsafe(32)
+    request.session["state"] = state
+
     base_url = f"{request.url.scheme}://{request.url.netloc}"
-    redirect_uri = f"{base_url}/auth/{provider_name.value.lower()}/callback"
+    redirect_uri = urljoin(base_url, f"/auth/{provider_name.lower()}/callback")
+    match provider_name.lower():
+        case "stackoverflow":
+            params = {
+                "client_id": auth_stg.stackoverflow_client_id,
+                "redirect_uri": redirect_uri,
+                "state": state,
+                "scope": "no_expiry",
+            }
+            url = str(URL("https://stackoverflow.com/oauth").with_query(params))
 
-    if provider_name.value.lower() == "stackoverflow":
-        state = token_urlsafe(32)
-        request.session["so_state"] = state
-        url = (
-            "https://stackoverflow.com/oauth"
-            "?client_id=%s&redirect_uri=%s&state=%s&scope=no_expiry"
-        ) % (auth_stg.stackoverflow_client_id, redirect_uri, state)
+        case "github":
+            params = {
+                "client_id": auth_stg.github_client_id,
+                "redirect_uri": redirect_uri,
+                "state": state,
+                "scope": "user:email",
+            }
+            url = str(URL("https://github.com/login/oauth/authorize").with_query(params))
 
-    elif provider_name.value.lower() == "github":
-        state = token_urlsafe(32)
-        request.session["github_state"] = state
-        url = (
-            "https://github.com/login/oauth/authorize"
-            "?client_id=%s&redirect_uri=%s&state=%s&scope=user:email"
-        ) % (auth_stg.github_client_id, redirect_uri, state)
+        case "yandex" | "google" if oauth_app is not None:
+            provider_url = await oauth_app.authorize_redirect(request, redirect_uri)
+            url = provider_url.headers.get("location")
 
-    else:
-        provider_url = await provider.authorize_redirect(request, redirect_uri)
-        url = provider_url.headers.get("location")
+        case _:
+            log_error_auth(
+                provider=provider_name,
+                message="Attempt to login via unsupported provider",
+            )
+            return RedirectResponse(url="/?msg=provider_error")
 
-    if logger.isEnabledFor(logging.DEBUG):
-        duration = (perf_counter() - start) * 1000
-        logger.debug(
-            "%s[AUTH LOGIN]%s provider=%s, total=%s%.2fms%s",
-            Colors.PURPLE, Colors.RESET, provider_name.value.upper(),
-            Colors.YELLOW, duration, Colors.RESET
-        )
-
+    log_debug_login(start_time=start, provider=provider_name.upper())
     if request.headers.get("HX-Request"):
         return Response(headers={"HX-Redirect": url})
 

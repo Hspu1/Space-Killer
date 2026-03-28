@@ -1,10 +1,13 @@
+from .login import login
+from .logout import logout_router
 from .mappers import get_safe_info
 from .schemas import AuthProvider
-from app.api.auth.common.service import get_user_id
-from .logout import logout_router
-from .login import login
+from .service import get_user_id
 
 __all__ = (
-    "AuthProvider", "logout_router", "get_user_id",
-    "login", "get_safe_info"
+    "AuthProvider",
+    "get_safe_info",
+    "get_user_id",
+    "login",
+    "logout_router",
 )

@@ -3,7 +3,7 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import AfterValidator, Field, PostgresDsn
+from pydantic import AfterValidator, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -14,20 +14,20 @@ CFG = SettingsConfigDict(env_file=ENV_FILE, env_file_encoding="utf-8", extra="ig
 class AuthSettings(BaseSettings):
     model_config = CFG
     auth_timeout: float = 5.0
-    google_client_id: str = Field(default=...)
-    google_client_secret: str = Field(default=...)
+    google_client_id: str
+    google_client_secret: str
 
-    github_client_id: str = Field(default=...)
-    github_client_secret: str = Field(default=...)
+    github_client_id: str
+    github_client_secret: str
 
-    yandex_client_id: str = Field(default=...)
-    yandex_client_secret: str = Field(default=...)
+    yandex_client_id: str
+    yandex_client_secret: str
 
-    stackoverflow_api_key: str = Field(default=...)
-    stackoverflow_client_id: str = Field(default=...)
-    stackoverflow_client_secret: str = Field(default=...)
+    stackoverflow_api_key: str
+    stackoverflow_client_id: str
+    stackoverflow_client_secret: str
 
-    telegram_bot_token: str = Field(default=...)
+    telegram_bot_token: str
     tg_session_timeout: int = 300
 
     @cached_property
@@ -53,7 +53,7 @@ class ServerSettings(BaseSettings):
 
 class PostgresSettings(BaseSettings):
     model_config = CFG
-    db_url: Annotated[PostgresDsn, AfterValidator(str)] = Field(default=...)
+    db_url: Annotated[PostgresDsn, AfterValidator(str)]
     pool_recycle: int = 1800
     pool_size: int = 15
     max_overflow: int = 5
@@ -70,7 +70,7 @@ class RedisSettings(BaseSettings):
     def db_url(self) -> str:
         return f"redis://{self.host}:{self.port}/{self.db}"
 
-    max_connections: int = 100
+    max_connections: int = 250
     socket_timeout: float = 0.5
     socket_connect_timeout: float = 1.5
     health_check_interval: int = 30
@@ -78,10 +78,10 @@ class RedisSettings(BaseSettings):
 
 class HTTPSettings(BaseSettings):
     model_config = CFG
-    max_connections: int = 100
-    max_keepalive_connections: int = 30
+    max_connections: int = 25
+    max_keepalive_connections: int = 15
     keepalive_expiry: float = 20.0
-    warmup_urls: tuple[str, ...] = (
+    warmup_urls: tuple[str, str] = (
         "https://github.com/login/oauth/access_token",
         "https://api.github.com/user",
     )

@@ -1,32 +1,40 @@
-from fastapi import APIRouter, Request, Response, Depends
+from typing import Annotated
 
-from app.infra.dependencies import get_pg, rate_limit
+from fastapi import APIRouter, Depends, Request, Response
+
+from app.core.dependencies import get_pg, rate_limiter
 from app.infra.postgres.service import PostgresService
-from .client import stackoverflow_oauth
+
+from ..common import AuthProvider, login
 from .service import stackoverflow_callback_handling
-from ..common import login, AuthProvider
 
 stackoverflow_router = APIRouter(tags=["stackoverflow"], prefix="/auth/stackoverflow")
 
 
-@stackoverflow_router.get(path='/login',
-    dependencies=[Depends(rate_limit(
-        limit=1, window=1, burst=3, scope="stackoverflow_login")
-    )]
+@stackoverflow_router.get(
+    path="/login",
+    dependencies=[
+        Depends(rate_limiter(limit=1, period=5, burst=5, scope="stackoverflow_login"))
+    ],
 )
 async def stackoverflow_login(request: Request) -> Response:
     return await login(
-        request=request, provider_name=AuthProvider.STACKOVERFLOW,
-        provider=stackoverflow_oauth.stackoverflow
+        request=request,
+        provider=AuthProvider.STACKOVERFLOW,
     )
 
 
-@stackoverflow_router.get(path='/callback',
-    dependencies=[Depends(rate_limit(
-        limit=1, window=2, scope="stackoverflow_callback")
-    )]
+@stackoverflow_router.get(
+    path="/callback",
+    dependencies=[
+        Depends(rate_limiter(limit=1, period=7, burst=3, scope="stackoverflow_callback"))
+    ],
 )
-async def stackoverflow_callback(request: Request, pg: PostgresService = Depends(get_pg)) -> Response:
+async def stackoverflow_callback(
+    request: Request,
+    pg: Annotated[PostgresService, Depends(get_pg)],
+) -> Response:
+
     redirect_uri = str(request.url_for("stackoverflow_callback"))
     return await stackoverflow_callback_handling(
         request=request, redirect_uri=redirect_uri, pg_svc=pg
