@@ -8,9 +8,10 @@
              integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
              crossorigin=""/>
         <style>
-                body, html { margin: 0; padding: 0; height: 100%; background: #000; }
-                #map { width: 100%; height: 100vh; }
+                body, html { margin: 0; padding: 0; height: 100%; background: #f0f0f0; }
+                #map { width: 100%; height: 100vh; background: #000; }
                 .leaflet-control-attribution { font-size: 10px !important; }
+                .leaflet-control-layers-toggle { width: 44px !important; height: 44px !important; }
             </style>
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
              integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -23,21 +24,43 @@
           var northEast = L.latLng(89.9, 180);
           var bounds = L.latLngBounds(southWest, northEast);
 
+          var darkTheme = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png', {
+              subdomains: 'abcd',
+              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+              maxZoom: 19,
+              noWrap: true,
+              bounds: bounds
+          });
+
+          var lightTheme = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+              maxZoom: 19,
+              noWrap: true,
+              bounds: bounds
+          });
+
+          var savedTheme = localStorage.getItem('mapTheme');
+          var initialLayer = (savedTheme === 'Light Mode') ? lightTheme : darkTheme;
+
           var map = L.map('map', {
+              layers: [initialLayer],
               zoomControl: true,
               attributionControl: true,
               minZoom: 3,
-              maxBounds: bounds,         // Запрещаем уходить за границы мира
-              maxBoundsViscosity: 1.0    // Делаем границы "твердыми" (не пружинят)
+              maxBounds: bounds,
+              maxBoundsViscosity: 1.0
           }).setView([35, 10], 3);
 
-          L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png', {
-              subdomains: 'abcd',
-              attribution: '&copy; OpenStreetMap &copy; CARTO',
-              maxZoom: 20,
-              noWrap: true,              // ВАЖНО: отключает "ленту" карт по горизонтали
-              bounds: bounds             // Подсказывает слою его реальные границы
-          }).addTo(map);
+          var baseMaps = {
+              "Dark Mode": darkTheme,
+              "Light Mode": lightTheme
+          };
+
+          L.control.layers(baseMaps, null, { collapsed: true }).addTo(map);
+
+          map.on('baselayerchange', function(e) {
+              localStorage.setItem('mapTheme', e.name);
+          });
         </script>
     </body>
 </html>
