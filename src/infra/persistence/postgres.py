@@ -1,4 +1,3 @@
-from asyncio import wait_for
 from time import perf_counter
 from typing import Any
 
@@ -58,7 +57,7 @@ class PostgresManager:
                 expire_on_commit=False,
                 autoflush=False,
             )
-            await wait_for(self.ping(), 3.0)
+            await self.ping()
 
             log_debug_db(
                 op="CONNECTED",

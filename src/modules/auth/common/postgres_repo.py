@@ -47,12 +47,8 @@ async def pg_resolve_user_id(
                     index_where=(UsersModel.is_active.is_(True)),
                     set_={
                         UsersModel.updated_at: datetime.now(UTC)
-                    },  # dummy update to force RETURNING id
-                )  # Why not ON CONFLICT DO NOTHING ???
-                # ON CONFLICT DO NOTHING works as advertised:
-                # it does nothing if a row exists that conflicts
-                # with the declared unique constraint. So it also returns no row
-                # Hence, we won't get an ID in this case
+                    },  # ensure ID return on conflict
+                )
                 .returning(UsersModel.id)
             )
         ).scalar_one()

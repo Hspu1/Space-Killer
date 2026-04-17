@@ -1,0 +1,48 @@
+# Meta
+.git
+.gitignore
+.dockerignore
+docker-compose*
+.github/
+.gitlab-ci.yml
+
+# Python - чистим кэши и артефакты сборки
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# Environments - жестко отсекаем локальные виртуалки
+.env
+.venv
+venv/
+ENV/
+env/
+
+# Data & DB - чтобы случайно не утянуть локальную базу в 10Гб
+postgres_data/
+dump.rdb
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# IDE & OS - мусор от систем
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

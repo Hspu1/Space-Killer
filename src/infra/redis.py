@@ -34,7 +34,7 @@ class RedisManager:
         )
 
         try:
-            await self._client.ping()
+            await self.ping()
             log_debug_redis(
                 op="CONNECTED",
                 start_time=start,
@@ -44,6 +44,12 @@ class RedisManager:
         except (RedisConnError, TimeoutError, Exception) as e:
             await self.disconnect()
             raise RedisNotReachableError from e
+
+    async def ping(self) -> bool:
+        if not self._client:
+            raise RedisNotReachableError
+
+        await self._client.ping()
 
     def get_client(self) -> Redis:
         if self._client is None:

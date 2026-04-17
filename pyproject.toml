@@ -11,6 +11,8 @@ dependencies = [
     "authlib>=1.6.6",
     "curl-cffi>=0.14.0",
     "fastapi[standard]>=0.128.0",
+    "granian",
+    "httptools",
     "httpx[http2]>=0.28.1",
     "itsdangerous>=2.2.0",
     "jinja2>=3.1.6",
@@ -24,6 +26,7 @@ dependencies = [
     "throttled-py[redis]>=3.1.1",
     "uuid6>=2025.0.1",
     "uvicorn[standard]>=0.40.0",
+    "uvloop",
     "yarl>=1.23.0",
 ]
 

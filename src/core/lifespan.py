@@ -13,7 +13,7 @@ from src.utils.log_helpers import log_error_infra
 
 async def safe_start(service_name: str, coroutine: Awaitable) -> None:
     try:
-        await wait_for(coroutine, timeout=7.0)
+        await wait_for(coroutine, timeout=4.0)
     except Exception as e:
         log_error_infra(service=service_name, op="STARTUP FAILED", exc=e)
         raise SafeStartError from e
@@ -21,7 +21,7 @@ async def safe_start(service_name: str, coroutine: Awaitable) -> None:
 
 async def silent_close(service_name: str, coroutine: Awaitable) -> None:
     try:
-        await wait_for(coroutine, timeout=7.0)
+        await wait_for(coroutine, timeout=4.0)
     except Exception as e:
         log_error_infra(service=service_name, op="SHUTDOWN FAILED", exc=e)
 
