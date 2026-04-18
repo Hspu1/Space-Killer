@@ -24,6 +24,7 @@ class RedisManager:
         self._client = Redis(
             host=self._config.host,
             port=self._config.port,
+            password=self._config.password,
             db=self._config.db,
             max_connections=100,  # 100/250
             socket_connect_timeout=self._config.socket_connect_timeout,

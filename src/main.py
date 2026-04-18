@@ -56,9 +56,9 @@ def create_app() -> FastAPI:
         lifetime=server_stg.session_lifetime,
         rolling=False,
         cookie_same_site="lax",
-        cookie_https_only=True,
+        # cookie_https_only=True,
     )
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=server_stg.allowed_hosts)
+    # app.add_middleware(TrustedHostMiddleware, allowed_hosts=server_stg.allowed_hosts)
 
     app.include_router(auth_router)
     app.include_router(ui_router)

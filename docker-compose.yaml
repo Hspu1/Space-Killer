@@ -15,7 +15,7 @@ services:
       - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
     depends_on:
       api:
-        condition: service_healthy
+        condition: service_started
     networks:
       - frontend
     deploy:
@@ -25,7 +25,7 @@ services:
           memory: 256M
 
   db:
-    image: postgres:17-alpine
+    image: postgres:16-alpine
     container_name: db
     restart: unless-stopped
     shm_size: 4gb
@@ -51,13 +51,7 @@ services:
     image: redis:7.4-alpine
     container_name: redis
     restart: unless-stopped
-    command:
-      [
-        "redis-server",
-        "/usr/local/etc/redis/redis.conf",
-        "--requirepass",
-        "${REDIS_PASSWORD}",
-      ]
+    command: ["redis-server"] 
     volumes:
       - ./deploy/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
       - redis_data:/data
@@ -91,6 +85,9 @@ services:
     container_name: api
     restart: always
     env_file: .env
+    environment:
+      GRANIAN_PROXY_HEADERS: "true"
+      GRANIAN_FORWARDED_ALLOW_IPS: "*"
     depends_on:
       db:
         condition: service_healthy
@@ -101,12 +98,6 @@ services:
     networks:
       - frontend
       - backend
-    healthcheck:
-      test: ["CMD", "curl", "-fs", "http://localhost:8000/health/readiness"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
     deploy:
       resources:
         limits:
@@ -115,9 +106,7 @@ services:
 
 networks:
   frontend:
-    driver: bridge
   backend:
-    internal: true
 
 volumes:
   pg_data:

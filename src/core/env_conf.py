@@ -62,9 +62,10 @@ class PostgresSettings(BaseSettings):
 
 class RedisSettings(BaseSettings):
     model_config = CFG
-    host: str = "127.0.0.1"
+    host: str = "redis"
     port: int = 6379
     db: int = 2
+    password: str | None = None
 
     @cached_property
     def db_url(self) -> str:
