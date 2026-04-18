@@ -37,7 +37,8 @@ async def github_callback(
     auth_http_client: Annotated[AuthHttpClient, Depends(get_auth_http_client)],
 ) -> Response:
 
-    redirect_uri = str(request.url_for("github_callback"))
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    redirect_uri = f"https://{host}/auth/github/callback"
     return await github_callback_handler(
         request=request,
         pg_manager=pg_manager,

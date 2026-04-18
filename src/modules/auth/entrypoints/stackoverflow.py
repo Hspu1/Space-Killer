@@ -35,7 +35,8 @@ async def stackoverflow_callback(
     pg_manager: Annotated[PostgresManager, Depends(get_pg_manager)],
 ) -> Response:
 
-    redirect_uri = str(request.url_for("stackoverflow_callback"))
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    redirect_uri = f"https://{host}/auth/stackoverflow/callback"
     return await stackoverflow_callback_handler(
         request=request, redirect_uri=redirect_uri, pg_manager=pg_manager
     )

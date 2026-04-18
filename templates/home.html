@@ -20,10 +20,10 @@
 
     <h1 class="glow-text">Smth-P login</h1>
     <nav class="auth-nav">
-        <a hx-get="{{ url_for('google_login') }}" hx-target="this" class="login-btn">with Google</a>
-        <a hx-get="{{ url_for('github_login') }}" hx-target="this" class="login-btn">with GitHub</a>
-        <a hx-get="{{ url_for('yandex_login') }}" hx-target="this" class="login-btn">with Yandex</a>
-        <a hx-get="{{ url_for('stackoverflow_login') }}" hx-target="this" class="login-btn">with Stack Overflow</a>
+        <a hx-get="/auth/google/login" hx-target="this" class="login-btn">with Google</a>
+        <a hx-get="/auth/github/login" hx-target="this" class="login-btn">with GitHub</a>
+        <a hx-get="/auth/yandex/login" hx-target="this" class="login-btn">with Yandex</a>
+        <a hx-get="/auth/stackoverflow/login" hx-target="this" class="login-btn">with Stack Overflow</a>
         <button onclick="loginTelegram(event)" class="login-btn">with Telegram</button>
     </nav>
 

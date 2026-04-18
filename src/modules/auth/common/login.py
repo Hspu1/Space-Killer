@@ -21,8 +21,8 @@ async def login(
     state = token_urlsafe(32)
     request.session["state"] = state
 
-    base_url = f"{request.url.scheme}://{request.url.netloc}"
-    redirect_uri = urljoin(base_url, f"/auth/{provider_name.lower()}/callback")
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    redirect_uri = f"https://{host}/auth/{provider_name.lower()}/callback"
     match provider_name.lower():
         case "stackoverflow":
             params = {

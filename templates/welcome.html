@@ -4,9 +4,9 @@
 {% block body %}
     {% if user %}
         <h1 class="glow-text">Welcome, {{ user.name }}</h1>
-        <a hx-post="{{ url_for('logout') }}"
-           role="button" class="login-btn" style="cursor: pointer;">
-           Log out
+        <a hx-post="/auth/logout"
+        role="button" class="login-btn" style="cursor: pointer;">
+        Log out
         </a>
     {% endif %}
 {% endblock %}

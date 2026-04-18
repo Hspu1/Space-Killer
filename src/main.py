@@ -1,7 +1,7 @@
 from sys import argv
 
 from fastapi import FastAPI, HTTPException, Request, Response
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
+# from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import ORJSONResponse, RedirectResponse
 from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 from starsessions import SessionAutoloadMiddleware, SessionMiddleware
@@ -44,6 +44,21 @@ def create_app() -> FastAPI:
         swagger_ui_oauth2_redirect_url="/oauth2-redirect",
     )
 
+    @app.middleware("http")
+    async def set_https_scheme(request: Request, call_next):
+        if request.headers.get("x-forwarded-proto") == "https":
+            request.scope["scheme"] = "https"
+        
+        host = request.headers.get("host")
+        if host:
+            host_parts = host.split(":")
+            server_name = host_parts[0]
+            server_port = int(host_parts[1]) if len(host_parts) > 1 else 443
+            request.scope["server"] = (server_name, server_port)
+        
+        return await call_next(request)
+
+
     static_docs_urls(app=app)
 
     store, serializer = RedisSessionStore(manager=redis_manager), OrjsonSerializer()
@@ -54,9 +69,9 @@ def create_app() -> FastAPI:
         serializer=serializer,
         cookie_name="sid",
         lifetime=server_stg.session_lifetime,
-        rolling=False,
-        cookie_same_site="lax",
-        # cookie_https_only=True,
+        rolling=False,  # mb True
+        cookie_same_site="none",  # mb lax
+        cookie_https_only=True,
     )
     # app.add_middleware(TrustedHostMiddleware, allowed_hosts=server_stg.allowed_hosts)
 

@@ -78,7 +78,7 @@ class AuthHttpClient:
         try:
             self.client = AsyncClient(
                 headers=headers,
-                proxy=self._server_stg.proxy,
+                # proxy=self._server_stg.proxy,
                 limits=limits,
                 timeout=self._auth_stg.auth_timeout,
                 verify=self._server_stg.ssl_check,
