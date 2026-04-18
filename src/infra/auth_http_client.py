@@ -82,7 +82,7 @@ class AuthHttpClient:
                 limits=limits,
                 timeout=self._auth_stg.auth_timeout,
                 verify=self._server_stg.ssl_check,
-                http2=True,
+                # http2=True,
             )
 
             log_debug_http(

@@ -28,7 +28,7 @@ limits: Final[Limits] = Limits(
     keepalive_expiry=http_stg.keepalive_expiry,
 )
 client: Final[AsyncClient] = AsyncClient(
-    proxy=server_stg.proxy,
+    # proxy=server_stg.proxy,
     limits=limits,
     timeout=auth_stg.auth_timeout,
     verify=server_stg.ssl_check,
