@@ -46,7 +46,7 @@ class ServerSettings(BaseSettings):
 
     allowed_hosts: tuple[str, ...] = ("hspu1-the-greatest.loca.lt", "127.0.0.1")
     forwarded_ips: str = "127.0.0.1"  # + ip balancer
-    proxy: str | None = None  # for GitHub (check .env)
+    proxy: str | None = None  # for GitHub (check .env) (optional)
     ssl_check: bool = True
     session_lifetime: int = 604_800
 
@@ -55,9 +55,9 @@ class PostgresSettings(BaseSettings):
     model_config = CFG
     db_url: Annotated[PostgresDsn, AfterValidator(str)]
     pool_recycle: int = 1800
-    pool_size: int = 15
-    max_overflow: int = 5
-    pool_timeout: int = 5
+    pool_size: int = 50  # !!! 2 granian workers !!!, check limits
+    max_overflow: int = 20
+    pool_timeout: int = 30
 
 
 class RedisSettings(BaseSettings):
@@ -71,7 +71,7 @@ class RedisSettings(BaseSettings):
     def db_url(self) -> str:
         return f"redis://{self.host}:{self.port}/{self.db}"
 
-    max_connections: int = 250
+    max_connections: int = 250  # !!! 2 granian workers !!!, check limits
     socket_timeout: float = 0.5
     socket_connect_timeout: float = 1.5
     health_check_interval: int = 30

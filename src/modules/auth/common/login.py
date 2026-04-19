@@ -1,6 +1,5 @@
 from secrets import token_urlsafe
 from time import perf_counter
-from urllib.parse import urljoin
 
 from authlib.integrations.starlette_client.apps import StarletteOAuth2App
 from fastapi import Request, Response
