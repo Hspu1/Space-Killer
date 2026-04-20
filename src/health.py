@@ -12,11 +12,15 @@ health_router = APIRouter(prefix="/health", tags=["System"])
 @health_router.get("/readiness", status_code=HTTP_200_OK)
 async def readiness() -> dict[str, str]:
     try:
-        await wait_for(gather(PostgresManager.ping(), RedisManager.ping()), timeout=4)
+        print("Checking Postgres...", flush=True)
+        await PostgresManager.ping()
+        print("Postgres OK. Checking Redis...", flush=True)
+        await RedisManager.ping()
+        print("All OK", flush=True)
         return {"status": "infra is reachable"}
-
     except Exception as e:
+        print(f"HEALTHCHECK CRASHED: {type(e).__name__} - {e}", flush=True)
         raise HTTPException(
             status_code=HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Infra is not reachable",
-        ) from e
+            detail=f"Error: {e}",
+        )

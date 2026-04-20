@@ -24,6 +24,7 @@ ENV PATH="/app/.venv/bin:$PATH" \
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --chown=app:app ./src ./src
 COPY --chown=app:app ./templates ./templates
+COPY --chown=app:app ./frontend ./frontend
 COPY --chown=app:app ./alembic.ini ./
 
 USER app
@@ -33,4 +34,5 @@ CMD ["granian", "--interface", "asgi", "src.main:app", \
     "--port", "8000", \
     "--loop", "uvloop", \
     "--http", "1", \
-    "--workers", "2"]
+    "--workers", "2", \
+    "--proxy-headers"]

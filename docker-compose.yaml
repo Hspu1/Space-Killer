@@ -87,7 +87,7 @@ services:
     env_file: .env
     environment:
       GRANIAN_PROXY_HEADERS: "true"
-      GRANIAN_FORWARDED_ALLOW_IPS: "*"
+      GRANIAN_FORWARDED_ALLOW_IPS: "127.0.0.1,172.19.0.0/24"
     depends_on:
       db:
         condition: service_healthy
@@ -98,6 +98,22 @@ services:
     networks:
       - frontend
       - backend
+    healthcheck:
+      test: 
+        - "CMD-SHELL"
+        - |
+          python -c '
+          import urllib.request;
+          try:
+              resp = urllib.request.urlopen("http://127.0.0.1:8000/health/readiness", timeout=2);
+              exit(0) if resp.getcode() == 200 else exit(1)
+          except:
+              exit(1)
+          '
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
     deploy:
       resources:
         limits:
@@ -106,7 +122,18 @@ services:
 
 networks:
   frontend:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.19.0.0/24
   backend:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.0/24
+
 
 volumes:
   pg_data:
