@@ -45,9 +45,9 @@ class ServerSettings(BaseSettings):
     run_port: int = 8000
 
     allowed_hosts: tuple[str, ...] = ("hspu1-the-greatest.loca.lt", "127.0.0.1")
-    # forwarded_ips: str = "127.0.0.1"  # + ip balancer
-    # proxy: str | None = None  # for GitHub (check .env)
-    # ssl_check: bool = True
+    forwarded_ips: str = "127.0.0.1"  # + ip balancer
+    proxy: str | None = None  # for GitHub (check .env)
+    ssl_check: bool = True
     session_lifetime: int = 604_800
 
 

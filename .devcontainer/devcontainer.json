@@ -1,0 +1,10 @@
+{
+  "name": "App",
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "FastAPI App",
+      "visibility": "public"
+    }
+  }
+}

@@ -50,7 +50,3 @@ htmlcov/
 # IDE
 .idea/
 *.iml
-
-# other
-*.json
-*.txt

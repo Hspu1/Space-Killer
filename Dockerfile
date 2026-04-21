@@ -34,5 +34,4 @@ CMD ["granian", "--interface", "asgi", "src.main:app", \
     "--port", "8000", \
     "--loop", "uvloop", \
     "--http", "1", \
-    "--workers", "2", \
-    "--proxy-headers"]
+    "--workers", "2"]
