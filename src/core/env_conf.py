@@ -64,14 +64,14 @@ class RedisSettings(BaseSettings):
     model_config = CFG
     host: str = "redis"
     port: int = 6379
-    db: int = 2
+    db: int = 0  # !!! - have to be fixed if needed
     password: str | None = None
 
     @cached_property
     def db_url(self) -> str:
         return f"redis://{self.host}:{self.port}/{self.db}"
 
-    max_connections: int = 250  # !!! 2 granian workers !!!, check limits
+    max_connections: int = 500  # !!! 2 granian workers !!!, check limits
     socket_timeout: float = 0.5
     socket_connect_timeout: float = 1.5
     health_check_interval: int = 30

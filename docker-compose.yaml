@@ -25,20 +25,20 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.1"
-          memory: 128M
+          cpus: "0.1"  # with 2-core CPU
+          memory: 128M  # 1.5625% RAM
         reservations:
-          memory: 64M
+          memory: 64M  # 0.78125% RAM
 
   db:
     image: postgres:16-alpine
     container_name: db
     restart: unless-stopped
-    shm_size: 4gb
+    shm_size: 2gb  # (25% RAM) since shared_buffers = 2GB
     env_file: .env
     volumes:
-      - pg_data:/var/lib/postgresql/data
       - ./deploy/postgres/postgres.conf:/etc/postgresql/postgresql.conf:ro
+      - pg_data:/var/lib/postgresql/data
     command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
     networks:
       - backend
@@ -51,21 +51,24 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"
-          memory: 4GB
+          cpus: "1.0"  # with 2-core CPU
+          memory: 4GB  # 50% RAM
+        reservations:
+          cpus: "0.5"  # with 2-core CPU
+          memory: 2.5GB  # (37.5% RAM) since shared_buffers = shm_size = 2GB
 
   redis:
     image: redis:7.4-alpine
     container_name: redis
     restart: unless-stopped
-    command: ["redis-server"] 
     volumes:
-      - ./deploy/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./deploy/redis/redis.conf:/etc/redis/redis.conf:ro
       - redis_data:/data
+    command: ["redis-server", "/etc/redis/redis.conf"]
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 15s
       timeout: 3s
       retries: 3
@@ -73,8 +76,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: 512M
+          cpus: "0.4"  # with 2-core CPU
+          memory: 2GB  # 25% RAM
+        reservations:
+          cpus: "0.2"  # with 2-core CPU
+          memory: 1.2GB  # 15% RAM
 
   migrator:
     build: .
@@ -120,8 +126,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 1GB
+          cpus: "0.5"  # with 2-core CPU
+          memory: 2GB  # 25% RAM
+        reservations:
+          cpus: "0.25"  # with 2-core CPU
+          memory: 1GB  # 12.5% RAM
 
 networks:
   frontend:
