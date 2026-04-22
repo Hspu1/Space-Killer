@@ -110,7 +110,7 @@ if __name__ == "__main__":
         access_log=False,
         workers=1,
         http="httptools",
-        loop="asyncio",
+        # loop="asyncio",
         proxy_headers=True,
-        forwarded_allow_ips=server_stg.forwarded_ips,
+        # forwarded_allow_ips=server_stg.forwarded_ips,
     )
