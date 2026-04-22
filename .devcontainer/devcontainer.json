@@ -1,9 +1,9 @@
 {
   "name": "App",
-  "forwardPorts": [8000],
+  "forwardPorts": [80],
   "portsAttributes": {
-    "8000": {
-      "label": "FastAPI App",
+    "80": {
+      "label": "Gateway (Nginx)",
       "visibility": "public"
     }
   }
