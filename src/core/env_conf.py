@@ -13,7 +13,7 @@ CFG = SettingsConfigDict(env_file=ENV_FILE, env_file_encoding="utf-8", extra="ig
 
 class AuthSettings(BaseSettings):
     model_config = CFG
-    auth_timeout: float = 5.0
+    auth_timeout: float = 10.0
     google_client_id: str
     google_client_secret: str
 

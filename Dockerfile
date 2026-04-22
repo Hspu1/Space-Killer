@@ -10,6 +10,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project --no-dev
 
 FROM $BASE_IMAGE AS runtime
+ARG APP_PORT=8000
 WORKDIR /app
 
 RUN useradd -u 1000 app && mkdir -p /app && chown app:app /app
@@ -29,9 +30,12 @@ COPY --chown=app:app ./alembic.ini ./
 
 USER app
 
-CMD ["granian", "--interface", "asgi", "src.main:app", \
-    "--host", "0.0.0.0", \
-    "--port", "8000", \
-    "--loop", "uvloop", \
-    "--http", "1", \
-    "--workers", "2"]
+CMD ["sh", "-c", "exec granian --interface asgi src.main:app \
+    --host 0.0.0.0 \
+    --port ${APP_PORT} \
+    --loop uvloop \
+    --http 1 \
+    --workers 2"]
+
+
+EXPOSE ${APP_PORT}
