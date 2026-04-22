@@ -11,18 +11,24 @@ services:
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./deploy/nginx/snippets:/etc/nginx/snippets:ro
       - ./deploy/nginx/error.html:/var/www/html/error.html:ro
-      - /etc/letsencrypt/live:/etc/letsencrypt/live:ro
-      - /etc/letsencrypt/archive:/etc/letsencrypt/archive:ro
     depends_on:
       api:
-        condition: service_started
+        condition: service_healthy
     networks:
       - frontend
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --quiet http://127.0.0.1:80/healthz || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
     deploy:
       resources:
         limits:
-          cpus: "0.5"
-          memory: 256M
+          cpus: "0.1"
+          memory: 128M
+        reservations:
+          memory: 64M
 
   db:
     image: postgres:16-alpine
@@ -38,9 +44,10 @@ services:
       - backend
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
     deploy:
       resources:
         limits:
@@ -59,7 +66,10 @@ services:
       - backend
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 5s
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 7s
     deploy:
       resources:
         limits:
@@ -84,12 +94,11 @@ services:
       context: .
       args:
         - APP_PORT=${APP_PORT:-8000}
-    image: my-app-image:latest
+    image: custom-app-image:latest
     container_name: api
     restart: always
     env_file: .env
     environment:
-      APP_PORT: ${APP_PORT:-8000}
       GRANIAN_PROXY_HEADERS: "true"
       GRANIAN_FORWARDED_ALLOW_IPS: "127.0.0.1,172.19.0.0/24"
     depends_on:
@@ -103,18 +112,8 @@ services:
       - frontend
       - backend
     healthcheck:
-      test: 
-        - "CMD-SHELL"
-        - |
-          python3 -c "
-          import urllib.request, os
-          port = os.getenv('APP_PORT', '8000')
-          url = f'http://localhost:{port}/health/readiness'
-          try:
-              exit(0 if urllib.request.urlopen(url, timeout=2).getcode() == 200 else 1)
-          except:
-              exit(1)
-          "
+      test: ["CMD-SHELL", "python3 -c 'import http.client; conn = http.client.HTTPConnection(\"127.0.0.1\", ${APP_PORT:-8000}); conn.request(\"GET\", \"/health/readiness\"); resp = conn.getresponse(); exit(0) if resp.status == 200 else exit(1)'"]
+      interval: 15s
       timeout: 5s
       retries: 3
       start_period: 20s
