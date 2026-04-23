@@ -71,7 +71,9 @@ class RedisSettings(BaseSettings):
     def db_url(self) -> str:
         return f"redis://{self.host}:{self.port}/{self.db}"
 
-    max_connections: int = 500  # !!! 2 granian workers !!!, check limits
+    # !!! 2 granian workers !!!, check limits
+    general_max_connections: int = 200
+    limiter_max_connections: int = 300
     socket_timeout: float = 0.5
     socket_connect_timeout: float = 1.5
     health_check_interval: int = 30

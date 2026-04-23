@@ -1,3 +1,5 @@
+# 2-core CPU: nginx(0.1) + db(1.0) + redis(0.4) + api(0.4) => using 1.9/2
+# 8GB RAM: nginx(128M) + db(3G) + redis(2G) + api(1.5G) => using 6.625/8
 services:
   nginx:
     image: nginx:stable-alpine
@@ -10,14 +12,17 @@ services:
       - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./deploy/nginx/snippets:/etc/nginx/snippets:ro
-      - ./deploy/nginx/error.html:/var/www/html/error.html:ro
+      - ./deploy/nginx/error.html:/etc/nginx/error.html:ro
     depends_on:
-      api:
-        condition: service_healthy
+      - api
     networks:
       - frontend
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider --quiet http://127.0.0.1:80/healthz || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --spider --quiet http://127.0.0.1:80/healthz || exit 1",
+        ]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -25,16 +30,16 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.1"  # with 2-core CPU
-          memory: 128M  # 1.5625% RAM
+          cpus: "0.1" # with 2-core CPU
+          memory: 128M # 1.5625% RAM
         reservations:
-          memory: 64M  # 0.78125% RAM
+          memory: 64M # 0.78125% RAM
 
   db:
     image: postgres:16-alpine
     container_name: db
     restart: unless-stopped
-    shm_size: 2gb  # (25% RAM) since shared_buffers = 2GB
+    shm_size: 2g # (25% RAM) since shared_buffers = 2GB
     env_file: .env
     volumes:
       - ./deploy/postgres/postgres.conf:/etc/postgresql/postgresql.conf:ro
@@ -51,11 +56,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0"  # with 2-core CPU
-          memory: 4GB  # 50% RAM
+          cpus: "1.0" # with 2-core CPU
+          memory: 3G # 37.5% RAM
         reservations:
-          cpus: "0.5"  # with 2-core CPU
-          memory: 2.5GB  # (37.5% RAM) since shared_buffers = shm_size = 2GB
+          cpus: "0.5" # with 2-core CPU
+          memory: 2.5G # (31.25% RAM) since shared_buffers = shm_size = 2GB
 
   redis:
     image: redis:7.4-alpine
@@ -76,11 +81,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.4"  # with 2-core CPU
-          memory: 2GB  # 25% RAM
+          cpus: "0.4" # with 2-core CPU
+          memory: 2G # 25% RAM
         reservations:
-          cpus: "0.2"  # with 2-core CPU
-          memory: 1.2GB  # 15% RAM
+          cpus: "0.2" # with 2-core CPU
+          memory: 1.2G # 15% RAM
 
   migrator:
     build: .
@@ -118,7 +123,11 @@ services:
       - frontend
       - backend
     healthcheck:
-      test: ["CMD-SHELL", "python3 -c 'import http.client; conn = http.client.HTTPConnection(\"127.0.0.1\", ${APP_PORT:-8000}); conn.request(\"GET\", \"/health/readiness\"); resp = conn.getresponse(); exit(0) if resp.status == 200 else exit(1)'"]
+      test:
+        [
+          "CMD-SHELL",
+          'python3 -c ''import http.client; conn = http.client.HTTPConnection("127.0.0.1", ${APP_PORT:-8000}); conn.request("GET", "/health/readiness"); resp = conn.getresponse(); exit(0) if resp.status == 200 else exit(1)''',
+        ]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -126,11 +135,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"  # with 2-core CPU
-          memory: 2GB  # 25% RAM
+          cpus: "0.4" # with 2-core CPU
+          memory: 1.5G # 18.75% RAM
         reservations:
-          cpus: "0.25"  # with 2-core CPU
-          memory: 1GB  # 12.5% RAM
+          cpus: "0.2" # with 2-core CPU
+          memory: 1G # 12.5% RAM
 
 networks:
   frontend:
@@ -145,7 +154,6 @@ networks:
       driver: default
       config:
         - subnet: 172.18.0.0/24
-
 
 volumes:
   pg_data:

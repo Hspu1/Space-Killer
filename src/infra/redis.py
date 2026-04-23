@@ -26,7 +26,7 @@ class RedisManager:
             port=self._config.port,
             password=self._config.password,
             db=self._config.db,
-            max_connections=200,  # 200/500
+            max_connections=self._config.general_max_connections,
             socket_connect_timeout=self._config.socket_connect_timeout,
             socket_keepalive=True,
             socket_timeout=self._config.socket_timeout,
@@ -60,7 +60,7 @@ class RedisManager:
 
     def _get_options(self) -> dict[str, Any]:
         return {
-            "max_connections": 300,  # 300/500
+            "max_connections": self._config.limiter_max_connections,
             "socket_timeout": self._config.socket_timeout,
             "socket_connect_timeout": self._config.socket_connect_timeout,
             "socket_keepalive": True,
