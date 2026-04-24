@@ -62,14 +62,16 @@ class PostgresSettings(BaseSettings):
 
 class RedisSettings(BaseSettings):
     model_config = CFG
-    host: str = "redis"
-    port: int = 6379
-    db: int = 0  # !!! - have to be fixed if needed
-    password: str | None = None
+    redis_host: str = "redis"
+    redis_port: int = 6379
+    redis_db: int = 0  # !!! - have to be fixed if needed
+    redis_password: str | None = None
 
     @cached_property
     def db_url(self) -> str:
-        return f"redis://{self.host}:{self.port}/{self.db}"
+        if self.redis_password:
+            return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/{self.redis_db}"
+        return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
     # !!! 2 granian workers !!!, check limits
     general_max_connections: int = 200

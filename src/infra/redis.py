@@ -22,10 +22,10 @@ class RedisManager:
 
         start = perf_counter()
         self._client = Redis(
-            host=self._config.host,
-            port=self._config.port,
-            password=self._config.password,
-            db=self._config.db,
+            host=self._config.redis_host,
+            port=self._config.redis_port,
+            db=self._config.redis_db,
+            password=self._config.redis_password,
             max_connections=self._config.general_max_connections,
             socket_connect_timeout=self._config.socket_connect_timeout,
             socket_keepalive=True,
@@ -39,7 +39,7 @@ class RedisManager:
             log_debug_redis(
                 op="CONNECTED",
                 start_time=start,
-                detail=f"{self._config.host}:{self._config.port}/db={self._config.db}",
+                detail=f"{self._config.redis_host}:{self._config.redis_port}/db={self._config.redis_db}",
             )
 
         except (RedisConnError, TimeoutError, Exception) as e:
