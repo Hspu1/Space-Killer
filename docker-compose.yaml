@@ -1,10 +1,9 @@
-# 2-core CPU: nginx(0.1) + db(1.0) + redis(0.4) + api(0.4) => using 1.9/2
-# 8GB RAM: nginx(128M) + db(3G) + redis(2G) + api(1.5G) => using 6.625/8
+# 2-core CPU: nginx(0.1) + db(0.8) + redis(0.2) + nats(0.3) + api(0.5) => using 1.9/2 vCPU
+# 8GB RAM: nginx(128MB) + db(4GB) + redis(768MB) + nats(512MB) api(1.5GB) => using 6.87/8 GB
 services:
   nginx:
-    image: nginx:stable-alpine
+    image: nginx:mainline-alpine
     container_name: nginx
-    restart: always
     ports:
       - "80:80"
       - "443:443"
@@ -12,16 +11,17 @@ services:
       - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./deploy/nginx/snippets:/etc/nginx/snippets:ro
-      - ./deploy/nginx/error.html:/etc/nginx/error.html:ro
+      - ./deploy/nginx/error.html:/var/www/html/error.html:ro
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     networks:
       - frontend
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "wget --spider --quiet http://127.0.0.1:80/healthz || exit 1",
+          "nginx -t && wget --spider --quiet http://127.0.0.1:80/healthz || exit 1",
         ]
       interval: 30s
       timeout: 3s
@@ -30,16 +30,16 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.1" # with 2-core CPU
-          memory: 128M # 1.5625% RAM
+          cpus: "0.1"
+          memory: 128M
         reservations:
-          memory: 64M # 0.78125% RAM
+          memory: 64M
+    restart: unless-stopped
 
   db:
     image: postgres:16-alpine
     container_name: db
-    restart: unless-stopped
-    shm_size: 2g # (25% RAM) since shared_buffers = 2GB
+    shm_size: 2gb
     env_file: .env
     volumes:
       - ./deploy/postgres/postgres.conf:/etc/postgresql/postgresql.conf:ro
@@ -56,24 +56,36 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.0" # with 2-core CPU
-          memory: 3G # 37.5% RAM
+          cpus: "0.8"
+          memory: 4G
         reservations:
-          cpus: "0.5" # with 2-core CPU
-          memory: 2.5G # (31.25% RAM) since shared_buffers = shm_size = 2GB
+          cpus: "0.4"
+          memory: 2.5G
+    restart: unless-stopped
 
   redis:
     image: redis:7.4-alpine
     container_name: redis
-    restart: unless-stopped
     volumes:
       - ./deploy/redis/redis.conf:/etc/redis/redis.conf:ro
       - redis_data:/data
-    command: ["redis-server", "/etc/redis/redis.conf"]
+    command:
+      [
+        "redis-server",
+        "/etc/redis/redis.conf",
+        "--requirepass",
+        "${REDIS_PASSWORD}",
+      ]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     networks:
       - backend
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test:
+        [
+          "CMD-SHELL",
+          "redis-cli -a $$REDIS_PASSWORD ping | grep PONG || exit 1",
+        ]
       interval: 15s
       timeout: 3s
       retries: 3
@@ -81,11 +93,37 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.4" # with 2-core CPU
-          memory: 2G # 25% RAM
+          cpus: "0.2"
+          memory: 768M
         reservations:
-          cpus: "0.2" # with 2-core CPU
-          memory: 1.2G # 15% RAM
+          cpus: "0.1"
+          memory: 640M
+    restart: unless-stopped
+
+  nats:
+    image: nats:2.10-alpine
+    container_name: nats
+    volumes:
+      - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
+      - nats-data:/data
+    command: ["-c", "/etc/nats/nats.conf"]
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: "512M"
+        reservations:
+          cpus: "0.1"
+          memory: "256M"
+    restart: unless-stopped
 
   migrator:
     build: .
@@ -107,18 +145,17 @@ services:
         - APP_PORT=${APP_PORT:-8000}
     image: custom-app-image:latest
     container_name: api
-    restart: always
     env_file: .env
     environment:
       GRANIAN_PROXY_HEADERS: "true"
       GRANIAN_FORWARDED_ALLOW_IPS: "127.0.0.1,172.19.0.0/24"
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
       migrator:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
     networks:
       - frontend
       - backend
@@ -135,21 +172,24 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.4" # with 2-core CPU
-          memory: 1.5G # 18.75% RAM
+          cpus: "0.5"
+          memory: 1.5G
         reservations:
-          cpus: "0.2" # with 2-core CPU
-          memory: 1G # 12.5% RAM
+          cpus: "0.25"
+          memory: 1G
+    restart: unless-stopped
 
 networks:
   frontend:
     driver: bridge
+    enable_ipv6: false
     ipam:
       driver: default
       config:
         - subnet: 172.19.0.0/24
   backend:
     driver: bridge
+    enable_ipv6: false
     ipam:
       driver: default
       config:
@@ -157,4 +197,8 @@ networks:
 
 volumes:
   pg_data:
+    driver: local
   redis_data:
+    driver: local
+  nats-data:
+    driver: local
