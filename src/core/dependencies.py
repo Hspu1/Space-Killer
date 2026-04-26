@@ -7,6 +7,7 @@ from throttled.asyncio.store.redis import RedisStore
 from throttled.rate_limiter.base import per_duration
 
 from src.infra.auth_http_client import AuthHttpClient
+from src.infra.nats.manager import NATSManager
 from src.infra.persistence.postgres import PostgresManager
 from src.utils import log_error_infra
 from src.utils.log_helpers import log_debug_redis
@@ -14,6 +15,10 @@ from src.utils.log_helpers import log_debug_redis
 
 async def get_pg_manager(request: Request) -> PostgresManager:
     return request.app.state.pg_manager
+
+
+async def get_nats_manager(request: Request) -> NATSManager:
+    return request.app.state.nats_manager
 
 
 async def get_auth_http_client(request: Request) -> AuthHttpClient:

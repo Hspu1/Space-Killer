@@ -1,5 +1,5 @@
-# 2-core CPU: nginx(0.1) + db(0.8) + redis(0.2) + nats(0.3) + api(0.5) => using 1.9/2 vCPU
-# 8GB RAM: nginx(128MB) + db(4GB) + redis(768MB) + nats(512MB) api(1.5GB) => using 6.87/8 GB
+# 2-core CPU: nginx(0.1) + db(0.8) + redis(0.2) + nats(0.3) + app(0.5) => using 1.9/2 vCPU
+# 8GB RAM: nginx(128MB) + db(4GB) + redis(768MB) + nats(512MB) app(1.5GB) => using 6.87/8 GB
 services:
   nginx:
     image: nginx:mainline-alpine
@@ -13,7 +13,7 @@ services:
       - ./deploy/nginx/snippets:/etc/nginx/snippets:ro
       - ./deploy/nginx/error.html:/var/www/html/error.html:ro
     depends_on:
-      api:
+      app:
         condition: service_healthy
     networks:
       - frontend
@@ -138,13 +138,16 @@ services:
       - backend
     restart: "no"
 
-  api:
+  app:
     build:
       context: .
       args:
         - APP_PORT=${APP_PORT:-8000}
     image: custom-app-image:latest
-    container_name: api
+    container_name: app
+    volumes:
+      - .:/app
+      
     env_file: .env
     environment:
       GRANIAN_PROXY_HEADERS: "true"

@@ -13,6 +13,7 @@ CFG = SettingsConfigDict(env_file=ENV_FILE, env_file_encoding="utf-8", extra="ig
 
 class AuthSettings(BaseSettings):
     model_config = CFG
+
     auth_timeout: float = 10.0
     google_client_id: str
     google_client_secret: str
@@ -41,6 +42,7 @@ class AuthSettings(BaseSettings):
 
 class ServerSettings(BaseSettings):
     model_config = CFG
+
     run_host: str = "127.0.0.1"
     run_port: int = 8000
 
@@ -48,12 +50,14 @@ class ServerSettings(BaseSettings):
     forwarded_ips: str = "127.0.0.1"  # + ip balancer
     proxy: str | None = None  # for GitHub (check .env) (optional)
     ssl_check: bool = True
-    session_lifetime: int = 604_800
+    session_lifetime: int = 604_800  # 7 days
 
 
 class PostgresSettings(BaseSettings):
     model_config = CFG
+
     db_url: Annotated[PostgresDsn, AfterValidator(str)]
+
     pool_recycle: int = 1800
     pool_size: int = 50  # !!! 2 granian workers !!!, check limits
     max_overflow: int = 20
@@ -62,6 +66,7 @@ class PostgresSettings(BaseSettings):
 
 class RedisSettings(BaseSettings):
     model_config = CFG
+
     redis_host: str = "redis"
     redis_port: int = 6379
     redis_db: int = 0  # !!! - have to be fixed if needed
@@ -76,13 +81,33 @@ class RedisSettings(BaseSettings):
     # !!! 2 granian workers !!!, check limits
     general_max_connections: int = 200
     limiter_max_connections: int = 300
+
     socket_timeout: float = 0.5
     socket_connect_timeout: float = 1.5
+
     health_check_interval: int = 30
+
+
+class NATSSettings(BaseSettings):
+    model_config = CFG
+    
+    nats_user: str | None = None
+    nats_password: str | None = None
+    
+    nats_servers: list[str] = Field(default=["nats://nats:4222"])
+    connect_timeout: int = 10
+
+    allow_reconnect: bool = True
+    max_reconnect_attempts: int = -1  # endlessly
+    reconnect_time_wait: float = 2.0
+
+    ping_interval: int = 20
+    max_outstanding_pings: int = 5
 
 
 class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
     model_config = CFG
+    
     max_connections: int = 25
     max_keepalive_connections: int = 15
     keepalive_expiry: float = 20.0
@@ -92,10 +117,11 @@ class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
     )
 
 
-auth_stg, server_stg, pg_stg, redis_stg, http_stg = (
+auth_stg, server_stg, pg_stg, redis_stg, nats_stg, http_stg = (
     AuthSettings(),
     ServerSettings(),
     PostgresSettings(),
     RedisSettings(),
+    NATSSettings(),
     HTTPSettings(),
 )

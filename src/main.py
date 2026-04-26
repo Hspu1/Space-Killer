@@ -7,9 +7,10 @@ from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 from starsessions import SessionAutoloadMiddleware, SessionMiddleware
 from uvicorn import run
 
-from src.core.env_conf import auth_stg, pg_stg, redis_stg, server_stg
+from src.core.env_conf import auth_stg, pg_stg, redis_stg, nats_stg, server_stg
 from src.core.lifespan import get_lifespan
 from src.infra.auth_http_client import AuthHttpClient
+from src.infra.nats.manager import NATSManager
 from src.infra.persistence.postgres import PostgresManager
 from src.infra.redis import RedisManager
 from src.infra.serializer import OrjsonSerializer
@@ -25,9 +26,10 @@ setup_logging()
 
 
 def create_app() -> FastAPI:
-    pg_manager, redis_manager, auth_http_client = (
+    pg_manager, redis_manager, nats_manager, auth_http_client = (
         PostgresManager(config=pg_stg),
         RedisManager(config=redis_stg),
+        NATSManager(config=nats_stg)
         AuthHttpClient(auth_stg=auth_stg, server_stg=server_stg),
     )
 
@@ -36,6 +38,7 @@ def create_app() -> FastAPI:
         lifespan=get_lifespan(
             pg_manager=pg_manager,
             redis_manager=redis_manager,
+            nats_manager=nats_manager,
             auth_http_client=auth_http_client,
         ),
         default_response_class=ORJSONResponse,
