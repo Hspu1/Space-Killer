@@ -27,7 +27,7 @@ class OrjsonSerializer(Serializer):
             return res
 
         except (JSONEncodeError, TypeError) as e:
-            log_error_infra(service="CORE", op="SERIALIZE", exc=e)
+            log_error_infra(service="CORE", op="ORJSON SERIALIZE", exc=e)
             raise
 
     def deserialize(self, data: bytes) -> Any:
@@ -41,5 +41,5 @@ class OrjsonSerializer(Serializer):
             return res
 
         except (JSONDecodeError, TypeError) as e:
-            log_error_infra(service="CORE", op="DESERIALIZE", exc=e)
+            log_error_infra(service="CORE", op="ORJSON DESERIALIZE", exc=e)
             return {}
