@@ -29,7 +29,7 @@ def create_app() -> FastAPI:
     pg_manager, redis_manager, nats_manager, auth_http_client = (
         PostgresManager(config=pg_stg),
         RedisManager(config=redis_stg),
-        NATSManager(config=nats_stg)
+        NATSManager(config=nats_stg),
         AuthHttpClient(auth_stg=auth_stg, server_stg=server_stg),
     )
 

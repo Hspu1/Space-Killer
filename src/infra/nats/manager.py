@@ -1,6 +1,8 @@
 from nats import NATS, connect
 from nats.js import JetStreamContext
 
+from src.core.env_conf import NATSSettings
+
 
 class NATSManager:
     def __init__(self, config: NATSSettings) -> None:
@@ -17,11 +19,12 @@ class NATSManager:
                 servers=self._config.nats_servers,
                 user=self._config.nats_user,
                 password=self._config.nats_password,
-                connect_timeout=self._config.nats_connect_timeout,
-                reconnect_time_wait=self._config.nats_reconnect_wait,
-                max_reconnect_attempts=self._config.nats_max_reconnect,
-                ping_interval=self._config.nats_ping_interval,
-                max_outstanding_pings=self._config.nats_max_pings,
+                connect_timeout=self._config.connect_timeout,
+                allow_reconnect=self._config.allow_reconnect,
+                reconnect_time_wait=self._config.reconnect_time_wait,
+                max_reconnect_attempts=self._config.max_reconnect_attempts,
+                ping_interval=self._config.ping_interval,
+                max_outstanding_pings=self._config.max_outstanding_pings,
             )
             
             self._js = self._client.jetstream()

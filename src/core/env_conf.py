@@ -94,7 +94,7 @@ class NATSSettings(BaseSettings):
     nats_user: str | None = None
     nats_password: str | None = None
     
-    nats_servers: list[str] = Field(default=["nats://nats:4222"])
+    nats_servers: list[str] = ["nats://nats:4222"]
     connect_timeout: int = 10
 
     allow_reconnect: bool = True
