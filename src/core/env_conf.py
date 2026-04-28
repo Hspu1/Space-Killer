@@ -95,7 +95,7 @@ class NATSSettings(BaseSettings):
     nats_password: str | None = None
     
     nats_servers: list[str] = ["nats://nats:4222"]
-    connect_timeout: int = 10
+    connect_timeout: int = 5
 
     allow_reconnect: bool = True
     max_reconnect_attempts: int = -1  # endlessly

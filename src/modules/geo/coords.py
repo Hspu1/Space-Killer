@@ -9,6 +9,7 @@ from httpx import (
     Limits,
     RequestError,
 )
+import orjson
 from skyfield.api import EarthSatellite, load
 from starlette.status import HTTP_429_TOO_MANY_REQUESTS, HTTP_500_INTERNAL_SERVER_ERROR
 from tenacity import (
@@ -19,7 +20,8 @@ from tenacity import (
     wait_random_exponential,
 )
 
-from src.core.env_conf import auth_stg, http_stg, server_stg
+from src.infra.nats.core_manager import CoreNATSManager
+from src.core.env_conf import auth_stg, http_stg, server_stg, nats_stg
 from src.utils.log_helpers import log_warn_auth
 
 limits: Final[Limits] = Limits(
@@ -78,7 +80,8 @@ do_retry: Final = retry(
 
 
 class ISSData:
-    def __init__(self):
+    def __init__(self, nats: CoreNATSManager):
+        self.nats = nats
         self.l1, self.l2 = None, None
         self.satellite = None
         self.ts = load.timescale()
@@ -91,6 +94,9 @@ class ISSData:
         self.is_ready.set()
 
     def get_current_telemetry(self):
+        if self.satellite is None:
+            raise RuntimeError("Satellite not initialized (TLE missing)")
+
         now = self.ts.from_datetime(datetime.now(UTC))
         geocentric = self.satellite.at(now)
         sub = geocentric.subpoint()
@@ -106,37 +112,37 @@ class ISSData:
             "data_epoch": data_epoch,
         }
 
-    async def broadcast_iss_coords(self):
-        await self.is_ready.wait()
-        print("\n[ISS High-Precision Orbital Tracker via Celestrak & SGP4]")
+    async def broadcast(self):
+        print("[ISS] BROADCAST: Task spawned", flush=True)
         try:
+            print(f"[ISS] BROADCAST: Waiting for is_ready event (current state: {self.is_ready.is_set()})", flush=True)
+            await self.is_ready.wait()
+            print("[ISS] BROADCAST: Event RECEIVED, starting loop", flush=True)
+            
+            loop = asyncio.get_running_loop()
             while True:
-                coords = self.get_current_telemetry()
-                print(
-                    f"\rLat: {coords['lat']:>8.4f} | "
-                    f"Lon: {coords['lng']:>9.4f} | "
-                    f"Alt: {coords['alt']:>8.4f} km | "
-                    f"Spd: {coords['speed']:>10.4f} km/h | "
-                    f"Epoch: {coords['data_epoch']}  ",
-                    end="",
-                    flush=True,
-                )
-                await asyncio.sleep(0.1)
-
+                start_calc = datetime.now()
+                raw = await loop.run_in_executor(None, self.get_current_telemetry)
+                payload = orjson.dumps(raw, option=orjson.OPT_SERIALIZE_NUMPY)
+                
+                print(f"[ISS] BROADCAST: Prepared payload, sending to NATS... (lat: {raw['lat']:.2f})", flush=True)
+                await self.nats.publish("skyfield.iss.coords", payload)
+                print(f"[ISS] BROADCAST: NATS Publish OK. Tick took: {(datetime.now() - start_calc).total_seconds():.4f}s", flush=True)
+                await asyncio.sleep(0.5)
+                
         except asyncio.CancelledError:
-            return
+            print("[ISS] BROADCAST: Task cancelled safely", flush=True)
+            raise
 
         except Exception as e:
-            print(f"\n[Unknown error in broadcast loop]: {e}")
-            return
+            print(f"[ISS] BROADCAST: CRITICAL ERROR: {type(e).__name__}: {e}", flush=True)
+            await asyncio.sleep(5)
 
 
-iss_data = ISSData()
-scheduler = AsyncIOScheduler()
 
 
 @do_retry
-async def update_tle() -> None:
+async def update_tle(iss_data: ISSData) -> None:
     print(
         f"\n[deprecated TLEs]\n"
         f"L1: {iss_data.l1 or 'no data'}\n"
@@ -151,18 +157,3 @@ async def update_tle() -> None:
     if len(lines := response.text.strip().splitlines()) >= 3:  # noqa
         iss_data.set_tle(lines[1], lines[2])
         print(f"\n[new TLEs]\nL1: {iss_data.l1}\nL2: {iss_data.l2}")
-
-
-async def main():
-    scheduler.add_job(update_tle, "interval", hours=1, next_run_time=datetime.now(UTC))
-    scheduler.start()
-
-    try:
-        await iss_data.broadcast_iss_coords()
-    except (asyncio.CancelledError, KeyboardInterrupt):
-        scheduler.shutdown(wait=False)
-        return
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
