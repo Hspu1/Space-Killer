@@ -12,7 +12,8 @@ from src.infra.nats.core_manager import CoreNATSManager
 from src.infra.persistence.postgres import PostgresManager
 from src.infra.redis import RedisManager
 from src.utils.log_helpers import log_error_infra
-from src.modules.geo.coords import ISSData, update_tle
+from src.modules.geo.coords import update_tle
+from src.modules.geo.satellite_manager import SatelliteManager
 
 
 async def safe_start(service_name: str, coroutine: Awaitable) -> None:
@@ -70,27 +71,20 @@ def get_lifespan(
             auth_http_client,
         )
 
-        iss = ISSData(nats=core_nats_manager)
-        app.state.iss = iss
-
-        iss_task = create_task(iss.broadcast())
+        sat_manager = SatelliteManager(nats=core_nats_manager)
         scheduler = AsyncIOScheduler()
-        scheduler.add_job(
-            update_tle,
-            "interval",
-            args=[iss],
-            hours=1,
-            next_run_time=datetime.now(UTC),
-        )
+
+        app.state.sat_manager = sat_manager
+        
+        await sat_manager.start(scheduler)
         scheduler.start()
+
 
         try:
             yield
         finally:
-            iss_task.cancel()
-            with suppress(asyncio.CancelledError):
-                await iss_task
             scheduler.shutdown(wait=False)
+            await sat_manager.stop()
 
             await silent_close(service_name="HTTP", coroutine=auth_http_client.disconnect())
             await silent_close(service_name="NATS (Core)", coroutine=core_nats_manager.disconnect())

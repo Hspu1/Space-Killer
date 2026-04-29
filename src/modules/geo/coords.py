@@ -113,25 +113,16 @@ class ISSData:
         }
 
     async def broadcast(self):
-        print("[ISS] BROADCAST: Task spawned", flush=True)
         try:
-            print(f"[ISS] BROADCAST: Waiting for is_ready event (current state: {self.is_ready.is_set()})", flush=True)
             await self.is_ready.wait()
-            print("[ISS] BROADCAST: Event RECEIVED, starting loop", flush=True)
             
-            loop = asyncio.get_running_loop()
             while True:
-                start_calc = datetime.now()
-                raw = await loop.run_in_executor(None, self.get_current_telemetry)
-                payload = orjson.dumps(raw, option=orjson.OPT_SERIALIZE_NUMPY)
-                
-                print(f"[ISS] BROADCAST: Prepared payload, sending to NATS... (lat: {raw['lat']:.2f})", flush=True)
-                await self.nats.publish("skyfield.iss.coords", payload)
-                print(f"[ISS] BROADCAST: NATS Publish OK. Tick took: {(datetime.now() - start_calc).total_seconds():.4f}s", flush=True)
+                raw = await asyncio.to_thread(self.get_current_telemetry)
+                await self.nats.publish("skyfield.iss.coords", raw)
                 await asyncio.sleep(0.5)
                 
-        except asyncio.CancelledError:
-            print("[ISS] BROADCAST: Task cancelled safely", flush=True)
+        except asyncio.CancelledError as e:
+            print(f"[ISS] BROADCAST: Task cancelled safely: {e}", flush=True)
             raise
 
         except Exception as e:

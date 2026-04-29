@@ -24,9 +24,21 @@ class CoreNATSManager:
             max_reconnect_attempts=self._config.max_reconnect_attempts,
             ping_interval=self._config.ping_interval,
             max_outstanding_pings=self._config.max_outstanding_pings,
+            error_cb=self.error_cb,
+            disconnected_cb=self.disconnected_cb,
+            reconnected_cb=self.reconnected_cb,
         )
 
         print("NATS CONNECTED", flush=True)
+
+    async def error_cb(self, e):
+        print(f"NATS Error: {e}", flush=True)
+
+    async def disconnected_cb(self):
+        print("NATS Disconnected", flush=True)
+
+    async def reconnected_cb(self):
+        print(f"NATS Reconnected to {self._nc.connected_url.netloc}", flush=True)
 
     async def disconnect(self):
         if not self._nc:
@@ -41,15 +53,17 @@ class CoreNATSManager:
             print("NATS DISCONNECTED", flush=True)
             self._nc = None
 
-    async def publish(self, subject: str, payload: bytes):
+    async def publish(self, subject: str, raw: bytes):
         if not self._nc or not self._nc.is_connected:
             raise RuntimeError("NATS not connected")
 
-        print("[NATS] publish", subject, payload, flush=True)
-        await self._nc.publish(subject, payload)
+        try:
+            payload = orjson.dumps(raw, option=orjson.OPT_SERIALIZE_NUMPY)
+            await self._nc.publish(subject, payload)
+   
+        except Exception as e:
+            print(f"NATS publish error on {subject}: {e}", flush=True)
 
-    async def publish_json(self, subject: str, data: dict):
-        await self.publish(subject, orjson.dumps(data))
 
     async def subscribe(self, subject: str, handler: Callable[[bytes], Awaitable[None]], queue: str | None = None):
         if not self._nc or not self._nc.is_connected:
