@@ -1,7 +1,6 @@
-from asyncio import gather, wait_for, create_task
+from asyncio import gather, wait_for
 from collections.abc import Awaitable
-from contextlib import asynccontextmanager, suppress
-from datetime import UTC, datetime
+from contextlib import asynccontextmanager
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
@@ -11,9 +10,8 @@ from src.infra.auth_http_client import AuthHttpClient
 from src.infra.nats.core_manager import CoreNATSManager
 from src.infra.persistence.postgres import PostgresManager
 from src.infra.redis import RedisManager
-from src.utils.log_helpers import log_error_infra
-from src.modules.geo.coords import update_tle
 from src.modules.geo.satellite_manager import SatelliteManager
+from src.utils.log_helpers import log_error_infra
 
 
 async def safe_start(service_name: str, coroutine: Awaitable) -> None:
@@ -52,7 +50,9 @@ def get_lifespan(
             await silent_close(
                 service_name="HTTP", coroutine=auth_http_client.disconnect()
             )
-            await silent_close(service_name="NATS (Core)", coroutine=core_nats_manager.disconnect())
+            await silent_close(
+                service_name="NATS (Core)", coroutine=core_nats_manager.disconnect()
+            )
             await silent_close(service_name="Redis", coroutine=redis_manager.disconnect())
             await silent_close(service_name="Postgres", coroutine=pg_manager.disconnect())
             raise SafeStartError(error_count=len(errors)) from errors[
@@ -75,10 +75,9 @@ def get_lifespan(
         scheduler = AsyncIOScheduler()
 
         app.state.sat_manager = sat_manager
-        
+
         await sat_manager.start(scheduler)
         scheduler.start()
-
 
         try:
             yield
@@ -86,8 +85,12 @@ def get_lifespan(
             scheduler.shutdown(wait=False)
             await sat_manager.stop()
 
-            await silent_close(service_name="HTTP", coroutine=auth_http_client.disconnect())
-            await silent_close(service_name="NATS (Core)", coroutine=core_nats_manager.disconnect())
+            await silent_close(
+                service_name="HTTP", coroutine=auth_http_client.disconnect()
+            )
+            await silent_close(
+                service_name="NATS (Core)", coroutine=core_nats_manager.disconnect()
+            )
             await silent_close(service_name="Redis", coroutine=redis_manager.disconnect())
             await silent_close(service_name="Postgres", coroutine=pg_manager.disconnect())
 

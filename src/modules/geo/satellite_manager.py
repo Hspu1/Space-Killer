@@ -5,14 +5,15 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from src.infra.nats.core_manager import CoreNATSManager
 
-from .coords import ISSData, update_tle
+from .satellites.iss import ISS
+from .update_tle import update_tle
 
 
 class SatelliteManager:
     def __init__(self, nats: CoreNATSManager):
         self.nats = nats
-        self.satellites: dict[str, ISSData] = {
-            "ISS": ISSData(nats=nats)
+        self.satellites: dict[str, BaseSatellite] = {
+            "ISS": ISS(nats=nats)
         }
         self._tasks: list[asyncio.Task] = []
 

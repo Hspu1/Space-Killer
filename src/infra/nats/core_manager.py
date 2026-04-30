@@ -1,8 +1,8 @@
 import asyncio
-from typing import Callable, Awaitable, Any
+from typing import Any, Awaitable, Callable
 
-import orjson
 import nats
+import orjson
 
 
 class CoreNATSManager:
@@ -54,19 +54,23 @@ class CoreNATSManager:
             self._nc = None
 
     async def publish(self, subject: str, raw: dict[str, Any]):
-        # raw is the dict with numpy objs
+        """raw is the dict with numpy objs"""
         if not self._nc or not self._nc.is_connected:
             raise RuntimeError("NATS not connected")
 
         try:
             payload = orjson.dumps(raw, option=orjson.OPT_SERIALIZE_NUMPY)
             await self._nc.publish(subject, payload)
-   
+
         except Exception as e:
             print(f"NATS publish error on {subject}: {e}", flush=True)
 
-
-    async def subscribe(self, subject: str, handler: Callable[[bytes], Awaitable[None]], queue: str | None = None):
+    async def subscribe(
+        self,
+        subject: str,
+        handler: Callable[[bytes], Awaitable[None]],
+        queue: str | None = None,
+    ):
         if not self._nc or not self._nc.is_connected:
             raise RuntimeError("NATS not connected")
 
