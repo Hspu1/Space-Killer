@@ -6,6 +6,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from src.infra.nats.core_manager import CoreNATSManager
 
 from .satellites.iss import ISS
+from .satellites.hubble import Hubble
 from .update_tle import update_tle
 
 
@@ -13,7 +14,8 @@ class SatelliteManager:
     def __init__(self, nats: CoreNATSManager):
         self.nats = nats
         self.satellites: dict[str, BaseSatellite] = {
-            "ISS": ISS(nats=nats)
+            "ISS": ISS(nats=nats),
+            "Hubble": Hubble(nats=nats)
         }
         self._tasks: list[asyncio.Task] = []
 
