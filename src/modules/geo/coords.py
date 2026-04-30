@@ -117,7 +117,7 @@ class ISSData:
             await self.is_ready.wait()
             
             while True:
-                raw = await asyncio.to_thread(self.get_current_telemetry)
+                raw = self.get_current_telemetry()  # !!! Vectorizarion (and stuff) impl for the future !!!
                 await self.nats.publish("skyfield.iss.coords", raw)
                 await asyncio.sleep(0.5)
                 

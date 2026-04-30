@@ -1,5 +1,5 @@
 import asyncio
-from typing import Callable, Awaitable
+from typing import Callable, Awaitable, Any
 
 import orjson
 import nats
@@ -53,7 +53,8 @@ class CoreNATSManager:
             print("NATS DISCONNECTED", flush=True)
             self._nc = None
 
-    async def publish(self, subject: str, raw: bytes):
+    async def publish(self, subject: str, raw: dict[str, Any]):
+        # raw is the dict with numpy objs
         if not self._nc or not self._nc.is_connected:
             raise RuntimeError("NATS not connected")
 
