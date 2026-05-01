@@ -1,0 +1,54 @@
+{
+  "admin": {
+    "enabled": true,
+    "password": "${CENTRIFUGO_ADMIN_PASSWORD}",
+    "secret": "${CENTRIFUGO_ADMIN_SECRET}"
+  },
+  "engine": {
+    "type": "redis",
+    "redis": {
+      "address": "${CENTRIFUGO_REDIS_ADDRESS}",
+      "password": "${CENTRIFUGO_REDIS_PASSWORD}"
+    }
+  },
+  "broker": {
+    "type": "nats",
+    "nats": {
+      "url": "${CENTRIFUGO_NATS_URL}",
+      "raw_mode": {
+        "enabled": true,
+        "prefix": "skyfield."
+      }
+    }
+  },
+  "client": {
+    "token": {
+      "hmac_secret_key": "${CENTRIFUGO_TOKEN_HMAC_SECRET_KEY}"
+    },
+    "allowed_origins": [
+      "http://localhost",
+      "http://127.0.0.1",
+      "http://localhost:8000",
+      "http://127.0.0.1:8000"
+    ]
+  },
+  "http_api": {
+    "key": "${CENTRIFUGO_HTTP_API_KEY}"
+  },
+  "channel": {
+    "namespaces": [
+      {
+        "name": "satellites",
+        "history_size": 100,
+        "history_ttl": "300s",
+        "presence": true
+      }
+    ]
+  },
+  "log": {
+    "level": "debug"
+  },
+  "health": {
+    "enabled": true
+  }
+}
