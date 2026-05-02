@@ -34,7 +34,7 @@ client: Final[AsyncClient] = AsyncClient(
 )
 headers: Final[dict[str, str]] = {
     "Accept": "text/plain",
-    "User-Agent": "Smth-P",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 }
 
 
@@ -78,9 +78,13 @@ do_retry: Final = retry(
 
 @do_retry
 async def update_tle(sat_obj: BaseSatellite) -> None:
-    url = (
-        f"https://celestrak.org/NORAD/elements/gp.php?CATNR={sat_obj.norad_id}&FORMAT=tle"
-    )
+    # url = (
+    #     f"https://celestrak.org/NORAD/elements/gp.php?CATNR={sat_obj.norad_id}&FORMAT=tle"
+    # )
+    # FUCKINH CELESTRACK
+    url = """HST                     
+1 20580U 90037B   26122.43333647  .00007822  00000+0  25196-3 0  9994
+2 20580  28.4763  33.1524 0001892   3.4266 356.6343 15.30244423781550"""
 
     response = await client.get(url=url, headers=headers)
     response.raise_for_status()

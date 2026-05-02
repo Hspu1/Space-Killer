@@ -15,7 +15,7 @@ class BaseSatellite:
         self.satellite = None
         self.ts = load.timescale()
         self.is_ready = asyncio.Event()
-        self.subject = f"skyfield.{self.name.lower()}.coords"
+        self.subject = f"skyfield.satellites:{self.name.lower()}.coords"
 
     def set_tle(self, l1: str, l2: str):
         self.l1, self.l2 = l1, l2
@@ -27,8 +27,9 @@ class BaseSatellite:
     def get_current_telemetry(self):
         if self.satellite is None:
             raise RuntimeError(f"Satellite {self.name} not initialized")
-
-        now = self.ts.from_datetime(datetime.now(UTC))
+    
+        now_dt = datetime.now(UTC)
+        now = self.ts.from_datetime(now_dt)
         geocentric = self.satellite.at(now)
         sub = geocentric.subpoint()
         vel = geocentric.velocity.km_per_s
@@ -40,7 +41,9 @@ class BaseSatellite:
             "lat": sub.latitude.degrees,
             "lng": sub.longitude.degrees,
             "alt": sub.elevation.km,
+            "vel_lst": vel.tolist(),
             "speed": speed,
+            "ts": now_dt.timestamp(),
             "data_epoch": data_epoch,
         }
 
@@ -51,7 +54,7 @@ class BaseSatellite:
             print(f"[{self.name}] BROADCAST: Started", flush=True)
 
             while True:
-                raw = self.get_current_telemetry()
+                raw = await asyncio.to_thread(self.get_current_telemetry)
                 await self.nats.publish(self.subject, raw)
                 await asyncio.sleep(self.interval)
 

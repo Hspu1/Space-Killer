@@ -11,9 +11,10 @@
     "namespaces": [
       {
         "name": "satellites",
-        "history_size": 100,
-        "history_ttl": "300s",
-        "presence": true
+        "allow_publish_for_subscriber": true,
+        "presence": true,
+        "history_size": 10,
+        "history_ttl": "300s"
       }
     ]
   },
