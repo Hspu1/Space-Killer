@@ -1,7 +1,9 @@
-ARG BASE_IMAGE=ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+ARG BASE_IMAGE=python:3.12-slim-bookworm
 ARG APP_PORT=8000
 
 FROM ${BASE_IMAGE} AS builder
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvbin/uv
+ENV PATH="/uvbin:${PATH}"
 WORKDIR /app
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \

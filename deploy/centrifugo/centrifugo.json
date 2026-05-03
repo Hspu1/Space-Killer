@@ -7,14 +7,6 @@
       "http://127.0.0.1:8000"
     ]
   },
-  "grpc_api": {
-    "enabled": true,
-    "port": 10000,
-    "max_receive_message_size": 10485760 
-  },
-  "engine": {
-    "max_publish_payload_size": 10485760
-  },
   "channel": {
     "namespaces": [
       {
@@ -22,8 +14,8 @@
         "allow_history_for_subscriber": true,
         "allow_presence_for_subscriber": true,
         "presence": true,
-        "history_size": 10,
-        "history_ttl": "300s"
+        "history_size": 1000,
+        "history_ttl": "24h"
       }
     ]
   },

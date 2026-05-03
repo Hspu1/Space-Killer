@@ -150,22 +150,16 @@ services:
       - CENTRIFUGO_ENGINE_REDIS_PASSWORD=${REDIS_PASSWORD}
       - CENTRIFUGO_ENGINE_REDIS_DB=${CENTRIFUGO_ENGINE_REDIS_DB}
 
-      - CENTRIFUGO_BROKER_ENABLED=true
-      - CENTRIFUGO_BROKER_TYPE=nats
-      - CENTRIFUGO_BROKER_NATS_URL=nats://${NATS_USER}:${NATS_PASSWORD}@nats:4222
-      - CENTRIFUGO_BROKER_NATS_RAW_MODE_ENABLED=true
-      - CENTRIFUGO_BROKER_NATS_RAW_MODE_PREFIX=skyfield.
-
-      - CENTRIFUGO_GRPC_API_ENABLED=true
-      - CENTRIFUGO_GRPC_API_PORT=10000
-      - CENTRIFUGO_GRPC_API_MAX_RECEIVE_MESSAGE_SIZE=10485760
-
+      # - CENTRIFUGO_BROKER_ENABLED=true
+      # - CENTRIFUGO_BROKER_TYPE=nats
+      # - CENTRIFUGO_BROKER_NATS_URL=nats://${NATS_USER}:${NATS_PASSWORD}@nats:4222
+      # - CENTRIFUGO_BROKER_NATS_RAW_MODE_ENABLED=true
+      # - CENTRIFUGO_BROKER_NATS_RAW_MODE_PREFIX=skyfield.
     networks:
       - frontend
       - backend
     ports:
       - "8000:8000"
-      - "10000:10000"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8000/health"]
       interval: 10s
@@ -212,6 +206,7 @@ services:
     environment:
       GRANIAN_PROXY_HEADERS: "true"
       GRANIAN_FORWARDED_ALLOW_IPS: "127.0.0.1,172.19.0.0/24"
+      CENTRIFUGO_HTTP_API_KEY: ${CENTRIFUGO_HTTP_API_KEY}
     depends_on:
       migrator:
         condition: service_completed_successfully

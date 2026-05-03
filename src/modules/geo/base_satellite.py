@@ -9,7 +9,7 @@ from src.infra.nats.core_manager import CoreNATSManager
 class BaseSatellite:
     def __init__(self, name: str, nats: CoreNATSManager = None, interval: float = 0.5):
         self.name = name
-        self.nats = nats | None
+        # self.nats = nats
         self.interval = interval
         self.l1, self.l2 = None, None
         self.satellite = None
