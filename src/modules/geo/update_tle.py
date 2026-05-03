@@ -18,8 +18,6 @@ from tenacity import (
 from src.core.env_conf import auth_stg, http_stg, server_stg
 from src.utils.log_helpers import log_warn_auth
 
-from .base_satellite import BaseSatellite
-
 
 limits: Final[Limits] = Limits(
     max_connections=http_stg.max_connections,
@@ -75,20 +73,7 @@ do_retry: Final = retry(
     before_sleep=log_retry,
 )
 
-
-@do_retry
-async def update_tle(sat_obj: BaseSatellite) -> None:
-    # url = (
-    #     f"https://celestrak.org/NORAD/elements/gp.php?CATNR={sat_obj.norad_id}&FORMAT=tle"
-    # )
-    # FUCKINH CELESTRACK
-    url = """HST                     
-1 20580U 90037B   26122.43333647  .00007822  00000+0  25196-3 0  9994
-2 20580  28.4763  33.1524 0001892   3.4266 356.6343 15.30244423781550"""
-
-    response = await client.get(url=url, headers=headers)
-    response.raise_for_status()
-
-    lines = response.text.strip().splitlines()
-    if len(lines) >= 3:
-        sat_obj.set_tle(lines[1], lines[2])
+# Final, tuple etc
+TLE_GROUPS = [
+    "galileo"
+]

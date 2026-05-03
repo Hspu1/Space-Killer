@@ -13,6 +13,7 @@ health_router = APIRouter(prefix="/health", tags=["System"])
 
 @health_router.get("/readiness", status_code=HTTP_200_OK)
 async def readiness():
+    # Duh
     try:
         await wait_for(
             gather(

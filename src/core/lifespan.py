@@ -10,6 +10,7 @@ from src.infra.auth_http_client import AuthHttpClient
 from src.infra.nats.core_manager import CoreNATSManager
 from src.infra.persistence.postgres import PostgresManager
 from src.infra.redis import RedisManager
+from src.infra.centrifugo import CentrifugoManager
 from src.modules.geo.satellite_manager import SatelliteManager
 from src.utils.log_helpers import log_error_infra
 
@@ -33,6 +34,7 @@ def get_lifespan(
     pg_manager: PostgresManager,
     redis_manager: RedisManager,
     core_nats_manager: CoreNATSManager,
+    centrifugo_manager: CentrifugoManager,
     auth_http_client: AuthHttpClient,
 ):
     @asynccontextmanager
@@ -41,6 +43,7 @@ def get_lifespan(
             safe_start(service_name="Postgres", coroutine=pg_manager.connect()),
             safe_start(service_name="Redis", coroutine=redis_manager.connect()),
             safe_start(service_name="NATS (Core)", coroutine=core_nats_manager.connect()),
+            safe_start(service_name="Centrifugo (gRPC)", coroutine=centrifugo_manager.connect()),
             safe_start(service_name="HTTP", coroutine=auth_http_client.connect()),
             return_exceptions=True,
         )
@@ -50,6 +53,7 @@ def get_lifespan(
             await silent_close(
                 service_name="HTTP", coroutine=auth_http_client.disconnect()
             )
+            await silent_close(service_name="Centrifugo", coroutine=centrifugo_manager.disconnect())
             await silent_close(
                 service_name="NATS (Core)", coroutine=core_nats_manager.disconnect()
             )
@@ -63,15 +67,20 @@ def get_lifespan(
             app.state.pg_manager,
             app.state.redis_manager,
             app.state.core_nats_manager,
+            app.state.centrifugo_manager,
             app.state.auth_http_client,
         ) = (
             pg_manager,
             redis_manager,
             core_nats_manager,
+            centrifugo_manager,
             auth_http_client,
         )
 
-        sat_manager = SatelliteManager(nats=core_nats_manager)
+        sat_manager = SatelliteManager(
+            nats=core_nats_manager, 
+            centrifugo=centrifugo_manager
+        )
         scheduler = AsyncIOScheduler()
 
         app.state.sat_manager = sat_manager
@@ -88,6 +97,7 @@ def get_lifespan(
             await silent_close(
                 service_name="HTTP", coroutine=auth_http_client.disconnect()
             )
+            await silent_close(service_name="Centrifugo", coroutine=centrifugo_manager.disconnect())
             await silent_close(
                 service_name="NATS (Core)", coroutine=core_nats_manager.disconnect()
             )
