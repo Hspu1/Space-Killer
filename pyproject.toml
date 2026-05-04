@@ -9,7 +9,6 @@ dependencies = [
     "apscheduler>=3.11.2",
     "asyncpg>=0.31.0",
     "authlib>=1.6.6",
-    "cent>=5.2.0",
     "curl-cffi>=0.14.0",
     "fastapi[standard]>=0.128.0",
     "granian",

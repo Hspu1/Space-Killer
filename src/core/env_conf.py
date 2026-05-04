@@ -105,6 +105,12 @@ class NATSSettings(BaseSettings):
     max_outstanding_pings: int = 5
 
 
+class CentrifugoSettings(BaseSettings):
+    model_config = CFG
+
+    centrifugo_http_api_key: str
+
+
 class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
     model_config = CFG
     
@@ -117,11 +123,12 @@ class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
     )
 
 
-auth_stg, server_stg, pg_stg, redis_stg, nats_stg, http_stg = (
+auth_stg, server_stg, pg_stg, redis_stg, nats_stg, centrifugo_stg, http_stg = (
     AuthSettings(),
     ServerSettings(),
     PostgresSettings(),
     RedisSettings(),
     NATSSettings(),
+    CentrifugoSettings(),
     HTTPSettings(),
 )

@@ -78,7 +78,6 @@ def get_lifespan(
         )
 
         sat_manager = SatelliteManager(
-            nats=core_nats_manager, 
             centrifugo=centrifugo_manager
         )
         scheduler = AsyncIOScheduler()

@@ -10,7 +10,7 @@
   "channel": {
     "namespaces": [
       {
-        "name": "satellites",
+        "name": "satellite",
         "allow_history_for_subscriber": true,
         "allow_presence_for_subscriber": true,
         "presence": true,
