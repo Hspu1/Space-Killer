@@ -25,7 +25,7 @@ async def readiness():
                 CentrifugoManager(config=centrifugo_stg).connect(),
                 AuthHttpClient(auth_stg=auth_stg, server_stg=server_stg).connect()
                 ), 
-            timeout=4.0
+            timeout=7.0
         )
         print("NICE", flush=True)
 
@@ -46,5 +46,5 @@ async def readiness():
                 AuthHttpClient(auth_stg=auth_stg, server_stg=server_stg).disconnect(),
                 return_exceptions=True
                 ),
-            timeout=4.0
+            timeout=7.0
         )
