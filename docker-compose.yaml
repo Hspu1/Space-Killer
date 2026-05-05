@@ -1,5 +1,6 @@
 # 2-core CPU: nginx(0.1) + db(0.8) + redis(0.2) + nats(0.3) + centrifugo(0.1) + app(0.5) => using 2/2 vCPU
 # 8GB RAM: nginx(128MB) + db(4GB) + redis(768MB) + nats(512MB) + centrifugo(128MB) + app(1.5GB) => using 7/8 GB
+# !!! please adjust, now it is wrong and overall thats fucked
 services:
   nginx:
     image: nginx:mainline-alpine
@@ -60,14 +61,18 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.8"
-          memory: 4G
+          cpus: "0.1"
+          memory: 128M
+          # cpus: "0.8"
+          # memory: 4G
         reservations:
-          cpus: "0.4"
-          memory: 2.5G
+          cpus: "0.1"
+          memory: 128M
+          # cpus: "0.4"
+          # memory: 2.5G
     restart: unless-stopped
 
-  redis:
+  redis: # wb AOF? security vs performance
     image: redis:7.4-alpine
     container_name: redis
     volumes:
@@ -97,10 +102,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.2"
+          cpus: "0.7" # testing
           memory: 768M
         reservations:
-          cpus: "0.1"
+          cpus: "0.7" # testing
           memory: 640M
     restart: unless-stopped
 
@@ -124,7 +129,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.3"
+          cpus: "0.1" # !!!
           memory: "512M"
         reservations:
           cpus: "0.1"
@@ -168,9 +173,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.1"
+          cpus: "0.6" # testing
           memory: 128M
         reservations:
+          cpus: "0.6" # testing
           memory: 64M
     ulimits:
       nofile:
