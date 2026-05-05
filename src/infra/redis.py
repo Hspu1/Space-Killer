@@ -24,7 +24,7 @@ class RedisManager:
         self._client = Redis(
             host=self._config.redis_host,
             port=self._config.redis_port,
-            db=self._config.redis_db,
+            db=self._config.redis_sessions_db,
             password=self._config.redis_password,
             max_connections=self._config.general_max_connections,
             socket_connect_timeout=self._config.socket_connect_timeout,
@@ -39,7 +39,7 @@ class RedisManager:
             log_debug_redis(
                 op="CONNECTED",
                 start_time=start,
-                detail=f"{self._config.redis_host}:{self._config.redis_port}/db={self._config.redis_db}",
+                detail=f"{self._config.redis_host}:{self._config.redis_port}/db={self._config.redis_sessions_db}",
             )
 
         except (RedisConnError, TimeoutError, Exception) as e:
@@ -74,7 +74,7 @@ class RedisManager:
     def get_rate_limiter(self) -> RedisStore:
         if self._rate_limiter is None:
             self._rate_limiter = RedisStore(
-                server=self._config.db_url, options=self._get_options()
+                server=self._config.rl_db_url, options=self._get_options()
             )
         return self._rate_limiter
 
