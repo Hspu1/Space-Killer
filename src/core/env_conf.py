@@ -108,6 +108,7 @@ class NATSSettings(BaseSettings):
 class CentrifugoSettings(BaseSettings):
     model_config = CFG
 
+    centrifugo_api_url: str
     centrifugo_http_api_key: str
 
 

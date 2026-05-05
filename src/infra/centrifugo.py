@@ -1,14 +1,13 @@
 import orjson
 import httpx
 
+from src.core.env_conf import CentrifugoSettings
 
-from src.core.env_conf import centrifugo_stg
 
-# УБРАТЬ ХАРДКОД, ПАРАМЕТРЫ В МЕНЕДЖЕРЕ, ПРОКИНУТЬ В ФАБРРИКУ ПРИЛОЖЕНИЯ
 class CentrifugoManager:
-    def __init__(self):
-        self._api_url = "http://centrifugo:8000/api"
-        self._api_key = centrifugo_stg.centrifugo_http_api_key
+    def __init__(self, config: CentrifugoSettings) -> None:
+        self._api_url = config.centrifugo_api_url
+        self._api_key = config.centrifugo_http_api_key
         self._client: httpx.AsyncClient | None = None
 
     async def connect(self) -> None:
@@ -45,7 +44,7 @@ class CentrifugoManager:
         if not commands or self._client is None:
             return
 
-        print(f"IN PUBLISHING to CENTRIFUGO, commands: {commands}", flush=True)
+        # print(f"IN PUBLISHING to CENTRIFUGO, commands: {commands}", flush=True)
         payload = orjson.dumps(
         {"commands": commands, "parallel": True},
         option=orjson.OPT_SERIALIZE_NUMPY | orjson.OPT_UTC_Z,

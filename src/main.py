@@ -7,7 +7,7 @@ from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 from starsessions import SessionAutoloadMiddleware, SessionMiddleware
 from uvicorn import run
 
-from src.core.env_conf import auth_stg, pg_stg, redis_stg, nats_stg, server_stg
+from src.core.env_conf import auth_stg, pg_stg, redis_stg, nats_stg, centrifugo_stg, server_stg
 from src.core.lifespan import get_lifespan
 from src.infra.auth_http_client import AuthHttpClient
 from src.infra.nats.core_manager import CoreNATSManager
@@ -31,7 +31,7 @@ def create_app() -> FastAPI:
         PostgresManager(config=pg_stg),
         RedisManager(config=redis_stg),
         CoreNATSManager(config=nats_stg),
-        CentrifugoManager(),
+        CentrifugoManager(config=centrifugo_stg),
         AuthHttpClient(auth_stg=auth_stg, server_stg=server_stg),
     )
 

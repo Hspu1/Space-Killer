@@ -49,7 +49,7 @@ class SatelliteManager:
                 try:
                     telemetry = sat.get_current_telemetry()
                     if telemetry is not None:
-                        print(f"SUCCESSFULLY recieved TELEMETRY: {telemetry} for sat: {sat}", flush=True)
+                        # print(f"SUCCESSFULLY recieved TELEMETRY: {telemetry} for sat: {sat}", flush=True)
                         commands.append({
                             "publish": {
                                 "channel": f"satellite:{telemetry["n"].split()[0]}",
@@ -59,16 +59,18 @@ class SatelliteManager:
                             }
                         })
                     else:
-                        print(f"NO TELEMETRY is None: {telemetry} for sat: {sat}", flush=True)
+                        pass
+                        # print(f"NO TELEMETRY is None: {telemetry} for sat: {sat}", flush=True)
   
                 except Exception as e:
-                    print(f"FUCKINH BULK TICKER: {e}")
+                    pass
+                    # print(f"FUCKINH BULK TICKER: {e}")
 
             if commands:
-                print(f"TRYING to PUBLISH to CENTRIFUGO, channel: satellite:{telemetry['n']}", flush=True)
+                # print(f"TRYING to PUBLISH to CENTRIFUGO, channel: satellite:{telemetry['n']}", flush=True)
                 await self.centrifugo.batch_publish(commands)
 
-            print(f"SUCCESSFULLY PUBLISHED {len(commands)} commands to CENTRIFUGO", flush=True)
+            # print(f"SUCCESSFULLY PUBLISHED {len(commands)} commands to CENTRIFUGO", flush=True)
             elapsed = time.perf_counter() - start_tick
             await asyncio.sleep(max(0.0, self.interval - elapsed))
 
