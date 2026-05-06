@@ -8,16 +8,17 @@ from skyfield.timelib import Timescale
 class BaseSatellite:
     def __init__(self, name: str, ts: Timescale):
         self.name = name
+        self.norad_id = None 
         self.l1, self.l2 = None, None
         self.satellite = None
         self.ts = ts
         self.is_ready = asyncio.Event()
-        self.subject = f"skyfield.satellites:{self.name.lower()}.coords"
 
-    def set_tle(self, l1: str, l2: str):
+    def set_tle(self, l1: str, l2: str, norad_id: int):
         self.l1, self.l2 = l1, l2
         new_satellite = EarthSatellite(l1, l2, self.name, self.ts)
         self.satellite = new_satellite
+        self.norad_id = norad_id
         self.is_ready.set()
 
 
@@ -29,16 +30,16 @@ class BaseSatellite:
         geocentric = self.satellite.at(now)
         sub = geocentric.subpoint()
         vel = geocentric.velocity.km_per_s
-        speed = (vel @ vel) ** 0.5 * 3600
+        speed = (vel @ vel) ** 0.5
         data_epoch = self.satellite.epoch.utc_strftime("%Y-%m-%d %H:%M")
 
         return {
-            "n": self.name,
-            "lat": sub.latitude.degrees,
-            "lng": sub.longitude.degrees,
-            "alt": sub.elevation.km,
+            "id": self.norad_id,
+            "lat": round(sub.latitude.degrees, 6),
+            "lng": round(sub.longitude.degrees, 6),
+            "alt": round(sub.elevation.km, 3),
             "lst": vel.tolist(),
-            "v": speed,
             "ts": now_dt.timestamp(),
+            "v": round(speed, 2), 
             "ep": data_epoch,
         }

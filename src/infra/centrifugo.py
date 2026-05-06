@@ -16,9 +16,9 @@ class CentrifugoManager:
 
         self._client = httpx.AsyncClient(
             base_url=self._api_url,
-            headers={"X-API-Key": self._api_key, "Content-Type": "application/json"},  # ADJUST
-            limits=httpx.Limits(max_connections=5, max_keepalive_connections=2, keepalive_expiry=60.0),  # ADJUST
-            timeout=httpx.Timeout(15.0, connect=2.0),  # ADJUST
+            headers={"X-API-Key": self._api_key, "Content-Type": "application/json"},
+            limits=httpx.Limits(max_connections=5, max_keepalive_connections=2, keepalive_expiry=60.0),
+            timeout=httpx.Timeout(1.0, connect=2.0),  # magic ahh nums
             http2=True,
         )
 

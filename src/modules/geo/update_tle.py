@@ -74,6 +74,9 @@ do_retry: Final = retry(
 )
 
 # Final, tuple etc
-TLE_GROUPS = [
+TLE_GROUPS = (
+    "kuiper",
+    "qianfan",
+    "geo",
     "galileo"
-]
+)

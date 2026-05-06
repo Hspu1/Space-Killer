@@ -7,9 +7,9 @@ from skyfield.api import load
 from skyfield.timelib import Timescale
 
 from src.infra.centrifugo import CentrifugoManager
-from src.env_conf import centrifugo_stg
+from src.core.env_conf import centrifugo_stg
 
-from .update_tle import do_retry, TLE_GROUPS, client
+from .update_tle import do_retry, TLE_GROUPS, client, headers
 from .local_tles import TLES
 from .base_satellite import BaseSatellite
 
@@ -39,28 +39,35 @@ class SatelliteManager:
     def update_or_create(self, name: str, l1: str, l2: str) -> None:
         if name not in self.satellites:
             self.satellites[name] = BaseSatellite(name=name, ts=self.ts)
-        self.satellites[name].set_tle(l1, l2)
+        self.satellites[name].set_tle(l1=l1, l2=l2, norad_id=int(l1[2:7].strip()))
 
     async def _bulk_ticker(self) -> None:
+        print("starting ticker", flush=True)
         while True:
             start_tick = time.perf_counter()
             current_now_dt = datetime.now(UTC)
             commands = []
-            for sat in self.satellites.values():
-                telemetry = sat.get_current_telemetry(now_dt=current_now_dt)
-                if telemetry is not None:
-                    commands.append({
-                        "publish": {
-                            "channel": f"satellite:{telemetry["n"].split()[0]}",
-                            "data": telemetry,
-                            "history_size": 100,
-                            "history_ttl": "24h",
-                        }
-                    })
+            try:
+                for sat in self.satellites.values():
+                    telemetry = sat.get_current_telemetry(now_dt=current_now_dt)
+                    if telemetry is not None:
+                        commands.append({
+                            "publish": {
+                                "channel": f"satellite:{telemetry["id"]}",
+                                "data": telemetry,
+                                "history_size": 100,
+                                "history_ttl": "24h",
+                            }
+                        })
+                    else:
+                        print("telemetry is None", flush=True)
 
-            if commands:
-                await self.centrifugo.batch_publish(commands)
+                if commands:
+                    await self.centrifugo.batch_publish(commands)
+            except Exception as e:
+                print(e, flush=True)
 
+            print(f"SUCCESS PUBLISHED: {len(commands)} commands", flush=True) 
             elapsed = time.perf_counter() - start_tick
             await asyncio.sleep(max(0.0, self.interval - elapsed))
 
@@ -87,11 +94,11 @@ async def update_tle(manager: SatelliteManager) -> None:
     for group in TLE_GROUPS:
         url = f"https://celestrak.org/NORAD/elements/gp.php?GROUP={group}&FORMAT=tle"
         try:
-            # response = await client.get(url=url, headers=headers)
-            # response.raise_for_status()
-            response = TLES  # avoid CelesTrak rate limits
-            # content = response.text.strip().splitlines()
-            content = response.strip().splitlines()
+            response = await client.get(url=url, headers=headers)
+            response.raise_for_status()
+            # response = TLES  # avoid CelesTrak rate limits
+            # content = response.strip().splitlines()
+            content = response.text.strip().splitlines()
 
             for i in range(0, len(content) - 2, 3):
                 name = content[i].strip()
