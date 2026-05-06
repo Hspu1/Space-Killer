@@ -4,8 +4,10 @@ from datetime import datetime, UTC
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from skyfield.api import load
+from skyfield.timelib import Timescale
 
 from src.infra.centrifugo import CentrifugoManager
+from src.env_conf import centrifugo_stg
 
 from .update_tle import do_retry, TLE_GROUPS, client
 from .local_tles import TLES
@@ -13,20 +15,19 @@ from .base_satellite import BaseSatellite
 
 
 class SatelliteManager:
-    def __init__(self, centrifugo: CentrifugoManager):
-        self.ts = load.timescale()
+    def __init__(self, centrifugo: CentrifugoManager) -> None:
+        self.ts: Timescale = load.timescale()
         self.centrifugo = centrifugo
-        self.hz = 2
+        self.hz = centrifugo_stg.centrifugo_hz
         self.interval = 1.0 / self.hz
         self.satellites: dict[str, BaseSatellite] = {}
         self._ticker_task: asyncio.Task | None = None
 
     async def start(self, scheduler: AsyncIOScheduler) -> None:
-        await update_tle(self)  # AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
         scheduler.add_job(
             update_tle,
             "interval",
-            args=[self],  # self -> manager
+            args=[self],
             hours=1,
             next_run_time=datetime.now(UTC),
             replace_existing=True,
@@ -37,41 +38,29 @@ class SatelliteManager:
 
     def update_or_create(self, name: str, l1: str, l2: str) -> None:
         if name not in self.satellites:
-            self.satellites[name] = BaseSatellite(name)
+            self.satellites[name] = BaseSatellite(name=name, ts=self.ts)
         self.satellites[name].set_tle(l1, l2)
 
     async def _bulk_ticker(self) -> None:
         while True:
             start_tick = time.perf_counter()
-            ### ВЕЗДЕ ПРОЖАРЬ AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-            ### ERRORS HANDLINGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+            current_now_dt = datetime.now(UTC)
             commands = []
             for sat in self.satellites.values():
-                try:
-                    telemetry = sat.get_current_telemetry()
-                    if telemetry is not None:
-                        # print(f"SUCCESSFULLY recieved TELEMETRY: {telemetry} for sat: {sat}", flush=True)
-                        commands.append({
-                            "publish": {
-                                "channel": f"satellite:{telemetry["n"].split()[0]}",
-                                "data": telemetry,
-                                "history_size": 100,
-                                "history_ttl": "24h",
-                            }
-                        })
-                    else:
-                        pass
-                        # print(f"NO TELEMETRY is None: {telemetry} for sat: {sat}", flush=True)
-  
-                except Exception as e:
-                    pass
-                    # print(f"FUCKINH BULK TICKER: {e}")
+                telemetry = sat.get_current_telemetry(now_dt=current_now_dt)
+                if telemetry is not None:
+                    commands.append({
+                        "publish": {
+                            "channel": f"satellite:{telemetry["n"].split()[0]}",
+                            "data": telemetry,
+                            "history_size": 100,
+                            "history_ttl": "24h",
+                        }
+                    })
 
             if commands:
-                # print(f"TRYING to PUBLISH to CENTRIFUGO, channel: satellite:{telemetry['n']}", flush=True)
                 await self.centrifugo.batch_publish(commands)
 
-            # print(f"SUCCESSFULLY PUBLISHED {len(commands)} commands to CENTRIFUGO", flush=True)
             elapsed = time.perf_counter() - start_tick
             await asyncio.sleep(max(0.0, self.interval - elapsed))
 
@@ -82,11 +71,15 @@ class SatelliteManager:
         self._ticker_task.cancel()
         try:
             await asyncio.wait_for(self._ticker_task, timeout=3.0)
+
         except (asyncio.CancelledError, asyncio.TimeoutError):
             pass
+        
+        except Exception as e:
+            print(f"Unexpected error canceling ticker task: {e}", flush=True)
+
         finally:
             self._ticker_task = None
-            print("Satellite ticker stopped", flush=True)
 
 
 @do_retry

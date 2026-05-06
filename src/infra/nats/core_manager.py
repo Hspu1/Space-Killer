@@ -11,7 +11,7 @@ class CoreNATSManager:
         self._nc: nats.NATS | None = None
 
     async def connect(self):
-        if self._nc and self._nc.is_connected:
+        if self._nc:
             return
 
         self._nc = await nats.connect(
@@ -54,12 +54,11 @@ class CoreNATSManager:
             self._nc = None
 
     async def publish(self, subject: str, raw: dict[str, Any]):
-        """raw is the dict with numpy objs"""
-        if not self._nc or not self._nc.is_connected:
+        if not self._nc:
             raise RuntimeError("NATS not connected")
 
         try:
-            payload = orjson.dumps(raw, option=orjson.OPT_SERIALIZE_NUMPY)
+            payload = orjson.dumps(raw)
             await self._nc.publish(subject, payload)
 
         except Exception as e:
@@ -71,7 +70,7 @@ class CoreNATSManager:
         handler: Callable[[bytes], Awaitable[None]],
         queue: str | None = None,
     ):
-        if not self._nc or not self._nc.is_connected:
+        if not self._nc:
             raise RuntimeError("NATS not connected")
 
         async def _wrapper(msg):

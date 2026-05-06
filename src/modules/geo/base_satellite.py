@@ -2,18 +2,15 @@ import asyncio
 from datetime import UTC, datetime
 
 from skyfield.api import EarthSatellite, load
-
-from src.infra.nats.core_manager import CoreNATSManager
+from skyfield.timelib import Timescale
 
 
 class BaseSatellite:
-    def __init__(self, name: str, nats: CoreNATSManager = None, interval: float = 0.5):
+    def __init__(self, name: str, ts: Timescale):
         self.name = name
-        # self.nats = nats
-        self.interval = interval
         self.l1, self.l2 = None, None
         self.satellite = None
-        self.ts = load.timescale()
+        self.ts = ts
         self.is_ready = asyncio.Event()
         self.subject = f"skyfield.satellites:{self.name.lower()}.coords"
 
@@ -24,11 +21,10 @@ class BaseSatellite:
         self.is_ready.set()
 
 
-    def get_current_telemetry(self):
+    def get_current_telemetry(self, now_dt):
         if self.satellite is None:
             return
     
-        now_dt = datetime.now(UTC)
         now = self.ts.from_datetime(now_dt)
         geocentric = self.satellite.at(now)
         sub = geocentric.subpoint()
@@ -46,22 +42,3 @@ class BaseSatellite:
             "ts": now_dt.timestamp(),
             "ep": data_epoch,
         }
-
-    # async def broadcast(self):
-    #     try:
-    #         print(f"[{self.name}] BROADCAST: Waiting for TLE...", flush=True)
-    #         await self.is_ready.wait()
-    #         print(f"[{self.name}] BROADCAST: Started", flush=True)
-
-    #         while True:
-    #             raw = await asyncio.to_thread(self.get_current_telemetry)
-    #             await self.nats.publish(self.subject, raw)
-    #             await asyncio.sleep(self.interval)
-
-    #     except asyncio.CancelledError:
-    #         print(f"[{self.name}] BROADCAST: Cancelled safely", flush=True)
-    #         raise
-
-    #     except Exception as e:
-    #         print(f"[{self.name}] BROADCAST ERROR: {type(e).__name__}: {e}", flush=True)
-    #         await asyncio.sleep(5)

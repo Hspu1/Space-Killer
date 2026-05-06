@@ -110,6 +110,8 @@ class CentrifugoSettings(BaseSettings):
 
     centrifugo_api_url: str
     centrifugo_http_api_key: str
+    
+    centrifugo_hz: int
 
 
 class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
