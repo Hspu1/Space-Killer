@@ -14,8 +14,10 @@
         "allow_history_for_subscriber": true,
         "allow_presence_for_subscriber": true,
         "presence": true,
-        "history_size": 1000,
-        "history_ttl": "24h"
+        "history_size": 1,
+        "history_ttl": "60s",
+        "force_push_history": true,
+        "history_recover": true
       }
     ]
   },

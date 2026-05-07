@@ -18,6 +18,7 @@ class SatelliteManager:
     def __init__(self, centrifugo: CentrifugoManager) -> None:
         self.centrifugo = centrifugo
         self.hz = centrifugo_stg.centrifugo_hz
+        self.ts = load.timescale()
         self.interval = 1.0 / self.hz
         self.satellites: dict[str, BaseSatellite] = {}
         self._ticker_task: asyncio.Task | None = None
@@ -38,7 +39,7 @@ class SatelliteManager:
     def update_or_create(self, name: str, l1: str, l2: str) -> None:
         if name not in self.satellites:
             self.satellites[name] = BaseSatellite(name=name)
-        self.satellites[name].set_tle(l1=l1, l2=l2, norad_id=int(l1[2:7].strip()))
+        self.satellites[name].set_tle(l1=l1, l2=l2, norad_id=int(l1[2:7].strip()), ts=self.ts)
 
     async def _bulk_ticker(self) -> None:
         print("starting ticker", flush=True)
@@ -48,14 +49,12 @@ class SatelliteManager:
             commands = []
             try:
                 for sat in self.satellites.values():
-                    telemetry = sat.get_current_telemetry(now_dt=current_now_dt)
+                    telemetry = sat.get_current_telemetry(now_dt=current_now_dt, ts=self.ts)
                     if telemetry is not None:
                         commands.append({
                             "publish": {
-                                "channel": f"satellite:{telemetry["id"]}",
-                                "data": telemetry,
-                                "history_size": 100,
-                                "history_ttl": "24h",
+                                "channel": f"satellite:{telemetry['id']}",
+                                "data": telemetry
                             }
                         })
                     else:
@@ -91,8 +90,11 @@ class SatelliteManager:
 @do_retry
 async def update_tle(manager: SatelliteManager) -> None:
     for group in TLE_GROUPS:
-        url = f"https://celestrak.org/NORAD/elements/gp.php?GROUP={group}&FORMAT=tle"
+        # url = f"https://celestrak.org/NORAD/elements/gp.php?GROUP={group}&FORMAT=tle"
+        
         try:
+            url = "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=tle"
+            # url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle"
             response = await client.get(url=url, headers=headers)
             response.raise_for_status()
             # response = TLES  # avoid CelesTrak rate limits
