@@ -53,7 +53,7 @@ class SatelliteManager:
                     if telemetry is not None:
                         commands.append({
                             "publish": {
-                                "channel": f"satellite:{telemetry['id']}",
+                                "channel": "satellites",
                                 "data": telemetry
                             }
                         })
@@ -93,13 +93,13 @@ async def update_tle(manager: SatelliteManager) -> None:
         # url = f"https://celestrak.org/NORAD/elements/gp.php?GROUP={group}&FORMAT=tle"
         
         try:
-            url = "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=tle"
+            # url = "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=tle"
             # url = "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle"
-            response = await client.get(url=url, headers=headers)
-            response.raise_for_status()
-            # response = TLES  # avoid CelesTrak rate limits
-            # content = response.strip().splitlines()
-            content = response.text.strip().splitlines()
+            # response = await client.get(url=url, headers=headers)
+            # response.raise_for_status()
+            response = TLES  # avoid CelesTrak rate limits
+            content = response.strip().splitlines()
+            # content = response.text.strip().splitlines()
 
             for i in range(0, len(content) - 2, 3):
                 name = content[i].strip()
