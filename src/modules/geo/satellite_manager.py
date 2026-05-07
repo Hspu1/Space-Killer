@@ -16,7 +16,6 @@ from .base_satellite import BaseSatellite
 
 class SatelliteManager:
     def __init__(self, centrifugo: CentrifugoManager) -> None:
-        self.ts: Timescale = load.timescale()
         self.centrifugo = centrifugo
         self.hz = centrifugo_stg.centrifugo_hz
         self.interval = 1.0 / self.hz
@@ -38,7 +37,7 @@ class SatelliteManager:
 
     def update_or_create(self, name: str, l1: str, l2: str) -> None:
         if name not in self.satellites:
-            self.satellites[name] = BaseSatellite(name=name, ts=self.ts)
+            self.satellites[name] = BaseSatellite(name=name)
         self.satellites[name].set_tle(l1=l1, l2=l2, norad_id=int(l1[2:7].strip()))
 
     async def _bulk_ticker(self) -> None:
