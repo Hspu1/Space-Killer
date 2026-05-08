@@ -73,7 +73,7 @@ class SatelliteManager:
             return
 
         self._satrec_array = SatrecArray([s.satrec for s in ready_sats])
-        self._id_map = np.array([s.norad_id for s in ready_sats], dtype=np.float64)
+        self._id_map = np.array([s.norad_id for s in ready_sats], dtype=np.int32)
         self._needs_rebuild = False
         print(f"Matrix rebuilt: {len(self._id_map)} objects")
 
@@ -84,56 +84,66 @@ class SatelliteManager:
                 
                 if self._needs_rebuild:
                     self._rebuild_matrix()
+
                 if self._satrec_array:
+                    try:
+                        t = self.ts.from_datetime(datetime.now(UTC))
+                        jd_arr = np.full(len(self._id_map), t.ut1)
+                        fr_arr = np.full(len(self._id_map), 0.0)
+                        error, r, v = self._satrec_array.sgp4(jd_arr, fr_arr)
+                        r = np.array(r).reshape(-1, 3)
+                        v = np.array(v).reshape(-1, 3)
+                        print(0, flush=True)
 
-                    t = self.ts.from_datetime(datetime.now(UTC))
-                    jd_arr = np.full(len(self._id_map), t.ut1)
-                    fr_arr = np.full(len(self._id_map), 0.0)
-                    error, r, v = self._satrec_array.sgp4(jd_arr, fr_arr)
-                    r = np.array(r).reshape(-1, 3)
-                    v = np.array(v).reshape(-1, 3)
+                        theta = t.gast * np.pi / 12.0
+                        cos_t, sin_t = np.cos(theta), np.sin(theta)
+                        rot_matrix = np.array([
+                            [cos_t, sin_t, 0],
+                            [-sin_t, cos_t, 0],
+                            [0, 0, 1]
+                        ])
+                        print(1, flush=True)
 
-                    theta = t.gast * np.pi / 12.0
-                    cos_t, sin_t = np.cos(theta), np.sin(theta)
-                    rot_matrix = np.array([
-                        [cos_t, sin_t, 0],
-                        [-sin_t, cos_t, 0],
-                        [0, 0, 1]
-                    ])
+                        r_itrs = r @ rot_matrix.T
+                        x, y, z = r_itrs[:, 0], r_itrs[:, 1], r_itrs[:, 2]
+                        p = np.sqrt(x**2 + y**2)
+                        print(2, flush=True)
 
-                    r_itrs = r @ rot_matrix.T
-                    x, y, z = r_itrs[:, 0], r_itrs[:, 1], r_itrs[:, 2]
-                    p = np.sqrt(x**2 + y**2)
+                        theta_b = np.arctan2(z * WGS84_A, p * WGS84_B)
+                        sin_tb, cos_tb = np.sin(theta_b), np.cos(theta_b)
+                        lat_rad = np.arctan2(z + EP2 * WGS84_B * (sin_tb**3), p - E2 * WGS84_A * (cos_tb**3))
+                        lng_rad = np.arctan2(y, x)
+                        print(3, flush=True)
 
-                    theta_b = np.arctan2(z * WGS84_A, p * WGS84_B)
-                    sin_tb, cos_tb = np.sin(theta_b), np.cos(theta_b)
-                    lat_rad = np.arctan2(z + EP2 * WGS84_B * (sin_tb**3), p - E2 * WGS84_A * (cos_tb**3))
-                    lng_rad = np.arctan2(y, x)
+                        sin_lat = np.sin(lat_rad)
+                        n_rad = WGS84_A / np.sqrt(1 - E2 * (sin_lat**2))
+                        alt_km = (p / np.cos(lat_rad)) - n_rad
+                        print(4, flush=True)
 
-                    sin_lat = np.sin(lat_rad)
-                    n_rad = WGS84_A / np.sqrt(1 - E2 * (sin_lat**2))
-                    alt_km = (p / np.cos(lat_rad)) - n_rad
+                        speed = np.linalg.norm(v, axis=1)
+                        combined = np.column_stack((
+                            self._id_map,
+                            np.degrees(lat_rad),
+                            np.degrees(lng_rad),
+                            alt_km,
+                            speed
+                        ))
+                        print(5, flush=True)
 
-                    speed = np.linalg.norm(v, axis=1)
-                    combined = np.column_stack((
-                        self._id_map,
-                        np.degrees(lat_rad),
-                        np.degrees(lng_rad),
-                        alt_km,
-                        speed
-                    ))
-
-                    payload = combined.flatten().tolist()
-                    commands = ({
-                        "publish": {
-                            "channel": "satellites:all",
-                            "data": {
-                                "v": payload,
-                                "ts": datetime.now(UTC).timestamp()
+                        payload = combined.flatten().tolist()
+                        commands = ({
+                            "publish": {
+                                "channel": "satellites:all",
+                                "data": {
+                                    "v": payload,
+                                    "ts": datetime.now(UTC).timestamp()
+                                }
                             }
-                        }
-                    }, )
-                    await self.centrifugo.batch_publish(commands)
+                        }, )
+                        await self.centrifugo.batch_publish(commands)
+
+                    except Exception as e:
+                        print(f"local fuck: {e}", flush=True)
 
                 elapsed = time.perf_counter() - start_tick
                 await asyncio.sleep(max(0.0, self.interval - elapsed))
