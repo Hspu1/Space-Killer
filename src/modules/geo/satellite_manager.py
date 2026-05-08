@@ -154,12 +154,12 @@ async def update_tle(manager: SatelliteManager) -> None:
             # response.raise_for_status()
             # content = response.text.strip().splitlines()
             # response = TLES  # avoid CelesTrak rate limits
-            # response = """
-            #     ISS (ZARYA)             
-            #     1 25544U 98067A   26128.19937109  .00004920  00000+0  96926-4 0  9998
-            #     2 25544  51.6308 138.0417 0007476  35.9089 324.2400 15.49139257565554
-            # """
-            # content = response.strip().splitlines()
+            response = """
+                ISS (ZARYA)             
+                1 25544U 98067A   26128.19937109  .00004920  00000+0  96926-4 0  9998
+                2 25544  51.6308 138.0417 0007476  35.9089 324.2400 15.49139257565554
+            """
+            content = response.strip().splitlines()
 
             for i in range(0, len(content) - 2, 3):
                 name = content[i].strip()

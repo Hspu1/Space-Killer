@@ -103,10 +103,10 @@ services:
       resources:
         limits:
           cpus: "0.7" # testing
-          memory: 768M
+          memory: 1G
         reservations:
           cpus: "0.7" # testing
-          memory: 640M
+          memory: 1G
     restart: unless-stopped
 
   nats:
@@ -174,10 +174,10 @@ services:
       resources:
         limits:
           cpus: "0.6" # testing
-          memory: 128M
+          memory: 1G
         reservations:
           cpus: "0.6" # testing
-          memory: 64M
+          memory: 1G
     ulimits:
       nofile:
         soft: 65535
@@ -235,14 +235,14 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
-    deploy:
-      resources:
-        limits:
-          cpus: "1"
-          memory: 4G
-        reservations:
-          cpus: "1"
-          memory: 4G
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "2"
+    #       memory: 8G
+    #     reservations:
+    #       cpus: "2"
+    #       memory: 8G
     restart: unless-stopped
 
 networks:
