@@ -31,7 +31,7 @@ class CentrifugoManager:
         finally:
             self._client = None
 
-    async def batch_publish(self, commands: list[dict]) -> None:
+    async def batch_publish(self, commands: tuple[dict]) -> None:
         if not commands or self._client is None:
             return
 
