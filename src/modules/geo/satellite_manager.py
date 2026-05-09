@@ -87,9 +87,9 @@ class SatelliteManager:
 
                 if self._satrec_array:
                     try:
-                        t = self.ts.from_datetime(datetime.now(UTC))
-                        jd_arr = np.full(len(self._id_map), t.ut1)
-                        fr_arr = np.full(len(self._id_map), 0.0)
+                        t = self.ts.now() 
+                        jd_arr = np.full(len(self._id_map), t.ut1_fraction[0])
+                        fr_arr = np.full(len(self._id_map), t.ut1_fraction[1])
                         error, r, v = self._satrec_array.sgp4(jd_arr, fr_arr)
                         r = np.array(r).reshape(-1, 3)
                         v = np.array(v).reshape(-1, 3)
@@ -104,9 +104,10 @@ class SatelliteManager:
                         ])
                         print(1, flush=True)
 
-                        r_itrs = r @ rot_matrix.T
-                        x, y, z = r_itrs[:, 0], r_itrs[:, 1], r_itrs[:, 2]
-                        p = np.sqrt(x**2 + y**2)
+                        x = r[:, 0] * cos_t + r[:, 1] * sin_t
+                        y = -r[:, 0] * sin_t + r[:, 1] * cos_t
+                        z = r[:, 2]
+                        p = np.hypot(x, y)
                         print(2, flush=True)
 
                         theta_b = np.arctan2(z * WGS84_A, p * WGS84_B)
