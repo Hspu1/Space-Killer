@@ -1,5 +1,5 @@
-import orjson
 import httpx
+import orjson
 
 from src.core.env_conf import CentrifugoSettings
 
@@ -17,7 +17,9 @@ class CentrifugoManager:
         self._client = httpx.AsyncClient(
             base_url=self._api_url,
             headers={"X-API-Key": self._api_key, "Content-Type": "application/json"},
-            limits=httpx.Limits(max_connections=5, max_keepalive_connections=2, keepalive_expiry=60.0),
+            limits=httpx.Limits(
+                max_connections=5, max_keepalive_connections=2, keepalive_expiry=60.0
+            ),
             timeout=httpx.Timeout(1.0, connect=2.0),  # magic ahh nums
             http2=True,
         )
@@ -25,7 +27,7 @@ class CentrifugoManager:
     async def disconnect(self) -> None:
         if self._client is None:
             return
-        
+
         try:
             await self._client.aclose()
         finally:
@@ -45,9 +47,9 @@ class CentrifugoManager:
             for reply in orjson.loads(resp.content).get("replies", []):
                 if error := reply.get("error"):
                     print(f"batch reply error: {error}", flush=True)
-   
+
         except httpx.HTTPError as e:
             print(f"batch_publish failed, frame dropped: {e}", flush=True)
-        
+
         except Exception as e:
             print(f"Unexpected error batch publishing to Centrifugo: {e}", flush=True)

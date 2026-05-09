@@ -29,8 +29,6 @@ class CoreNATSManager:
             reconnected_cb=self.reconnected_cb,
         )
 
-        print("NATS CONNECTED", flush=True)
-
     async def error_cb(self, e):
         print(f"NATS Error: {e}", flush=True)
 
