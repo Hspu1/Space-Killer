@@ -87,39 +87,30 @@ class SatelliteManager:
 
                 if self._satrec_array:
                     try:
-                        t = self.ts.now() 
-                        jd_arr = np.full(len(self._id_map), t.ut1_fraction[0])
-                        fr_arr = np.full(len(self._id_map), t.ut1_fraction[1])
+                        t = self.ts.from_datetime(datetime.now(UTC))
+                        jd_arr = np.array([t.ut1])
+                        fr_arr = np.array([0.0])
                         error, r, v = self._satrec_array.sgp4(jd_arr, fr_arr)
-                        r = np.array(r).reshape(-1, 3)
-                        v = np.array(v).reshape(-1, 3)
-                        print(0, flush=True)
 
-                        theta = t.gast * np.pi / 12.0
+                        r = np.asarray(r).reshape(-1, 3)
+                        v = np.asarray(v).reshape(-1, 3)
+
+                        theta = float(t.gast * np.pi / 12.0)
                         cos_t, sin_t = np.cos(theta), np.sin(theta)
-                        rot_matrix = np.array([
-                            [cos_t, sin_t, 0],
-                            [-sin_t, cos_t, 0],
-                            [0, 0, 1]
-                        ])
-                        print(1, flush=True)
 
-                        x = r[:, 0] * cos_t + r[:, 1] * sin_t
-                        y = -r[:, 0] * sin_t + r[:, 1] * cos_t
+                        x = (r[:, 0] * cos_t + r[:, 1] * sin_t)
+                        y = (-r[:, 0] * sin_t + r[:, 1] * cos_t)
                         z = r[:, 2]
                         p = np.hypot(x, y)
-                        print(2, flush=True)
 
                         theta_b = np.arctan2(z * WGS84_A, p * WGS84_B)
                         sin_tb, cos_tb = np.sin(theta_b), np.cos(theta_b)
                         lat_rad = np.arctan2(z + EP2 * WGS84_B * (sin_tb**3), p - E2 * WGS84_A * (cos_tb**3))
                         lng_rad = np.arctan2(y, x)
-                        print(3, flush=True)
 
                         sin_lat = np.sin(lat_rad)
                         n_rad = WGS84_A / np.sqrt(1 - E2 * (sin_lat**2))
                         alt_km = (p / np.cos(lat_rad)) - n_rad
-                        print(4, flush=True)
 
                         speed = np.linalg.norm(v, axis=1)
                         combined = np.column_stack((
@@ -129,7 +120,6 @@ class SatelliteManager:
                             alt_km,
                             speed
                         ))
-                        print(5, flush=True)
 
                         payload = combined.flatten().tolist()
                         commands = ({
@@ -164,12 +154,20 @@ async def update_tle(manager: SatelliteManager) -> None:
             # response = await client.get(url=url, headers=headers)
             # response.raise_for_status()
             # content = response.text.strip().splitlines()
-            # response = TLES  # avoid CelesTrak rate limits
-            response = """
-                ISS (ZARYA)             
-                1 25544U 98067A   26128.19937109  .00004920  00000+0  96926-4 0  9998
-                2 25544  51.6308 138.0417 0007476  35.9089 324.2400 15.49139257565554
-            """
+            response = TLES  # avoid CelesTrak rate limits
+            # response = """
+            #     ISS (ZARYA)             
+            #     1 25544U 98067A   26128.19937109  .00004920  00000+0  96926-4 0  9998
+            #     2 25544  51.6308 138.0417 0007476  35.9089 324.2400 15.49139257565554
+            # """
+            # response = """
+            #     STARLINK-1008           
+            #     1 44714U 19074B   26127.76079842  .00014042  00000+0  28611-3 0  9993
+            #     2 44714  53.1545 261.6131 0001364  17.5989 342.5065 15.46542200357951
+            #     STARLINK-1012           
+            #     1 44718U 19074F   26128.21551873  .00014090  00000+0  28520-3 0  9999
+            #     2 44718  53.1585 259.7671 0000934   9.6880 350.4146 15.46730300358016
+            # """
             content = response.strip().splitlines()
 
             for i in range(0, len(content) - 2, 3):

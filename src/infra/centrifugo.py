@@ -42,7 +42,6 @@ class CentrifugoManager:
         try:
             resp = await self._client.post("/batch", content=payload)
             resp.raise_for_status()
-
             for reply in orjson.loads(resp.content).get("replies", []):
                 if error := reply.get("error"):
                     print(f"batch reply error: {error}", flush=True)
@@ -51,4 +50,4 @@ class CentrifugoManager:
             print(f"batch_publish failed, frame dropped: {e}", flush=True)
         
         except Exception as e:
-            print(f"Unexpected error batch publishing to Centrifugo: {e}")
+            print(f"Unexpected error batch publishing to Centrifugo: {e}", flush=True)
