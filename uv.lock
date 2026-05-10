@@ -1471,72 +1471,84 @@ wheels = [
 ]
 
 [[package]]
-name = "smth-p"
+name = "space-killer"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "curl-cffi" },
+    { name = "httpx", extra = ["http2"] },
+    { name = "orjson" },
+    { name = "tenacity" },
+]
+
+[package.dev-dependencies]
+app = [
     { name = "alembic" },
-    { name = "apscheduler" },
     { name = "asyncpg" },
     { name = "authlib" },
-    { name = "curl-cffi" },
     { name = "fastapi", extra = ["standard"] },
     { name = "granian" },
-    { name = "httpx", extra = ["http2"] },
     { name = "itsdangerous" },
     { name = "jinja2" },
     { name = "nats-py" },
-    { name = "orjson" },
     { name = "redis" },
-    { name = "sgp4" },
-    { name = "skyfield" },
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "starsessions", extra = ["redis"] },
-    { name = "tenacity" },
     { name = "throttled-py", extra = ["redis"] },
     { name = "uuid6" },
     { name = "uvicorn", extra = ["standard"] },
     { name = "uvloop" },
     { name = "yarl" },
 ]
-
-[package.dev-dependencies]
 dev = [
     { name = "ruff" },
     { name = "ty" },
 ]
+geo = [
+    { name = "apscheduler" },
+    { name = "numpy" },
+    { name = "sgp4" },
+    { name = "skyfield" },
+    { name = "starlette" },
+]
 
 [package.metadata]
 requires-dist = [
+    { name = "curl-cffi", specifier = ">=0.14.0" },
+    { name = "httpx", extras = ["http2"], specifier = ">=0.28.1" },
+    { name = "orjson", specifier = ">=3.11.5" },
+    { name = "tenacity", specifier = ">=9.1.4" },
+]
+
+[package.metadata.requires-dev]
+app = [
     { name = "alembic", specifier = ">=1.18.0" },
-    { name = "apscheduler", specifier = ">=3.11.2" },
     { name = "asyncpg", specifier = ">=0.31.0" },
     { name = "authlib", specifier = ">=1.6.6" },
-    { name = "curl-cffi", specifier = ">=0.14.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.128.0" },
     { name = "granian" },
-    { name = "httpx", extras = ["http2"], specifier = ">=0.28.1" },
     { name = "itsdangerous", specifier = ">=2.2.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "nats-py", specifier = ">=2.14.0" },
-    { name = "orjson", specifier = ">=3.11.5" },
     { name = "redis", specifier = ">=7.1.0" },
-    { name = "sgp4", specifier = ">=2.25" },
-    { name = "skyfield", specifier = ">=1.54" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.45" },
     { name = "starsessions", extras = ["redis"], specifier = ">=2.2.1" },
-    { name = "tenacity", specifier = ">=9.1.4" },
     { name = "throttled-py", extras = ["redis"], specifier = ">=3.1.1" },
     { name = "uuid6", specifier = ">=2025.0.1" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.40.0" },
     { name = "uvloop" },
     { name = "yarl", specifier = ">=1.23.0" },
 ]
-
-[package.metadata.requires-dev]
 dev = [
     { name = "ruff", specifier = ">=0.14.13" },
     { name = "ty", specifier = ">=0.0.23" },
+]
+geo = [
+    { name = "apscheduler" },
+    { name = "numpy" },
+    { name = "sgp4" },
+    { name = "skyfield" },
+    { name = "starlette" },
 ]
 
 [[package]]

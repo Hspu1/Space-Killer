@@ -1,4 +1,6 @@
 # !!! please adjust, now it is wrong and overall thats fucked
+name: space-killer
+
 services:
   nginx:
     image: nginx:mainline-alpine
@@ -114,7 +116,6 @@ services:
     container_name: redis_geo
     volumes:
       - ./deploy/redis/redis_geo.conf:/etc/redis/redis_geo.conf:ro
-      - redis_geo_data:/data
     command:
       [
         "redis-server",
@@ -151,7 +152,7 @@ services:
     container_name: nats
     volumes:
       - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
-      - nats-data:/data
+      - nats_data:/data
     environment:
       - NATS_USER=${NATS_USER}
       - NATS_PASSWORD=${NATS_PASSWORD}
@@ -178,7 +179,7 @@ services:
     container_name: centrifugo
     volumes:
       - ./deploy/centrifugo/centrifugo.json:/etc/centrifugo/centrifugo.json:ro
-      - centrifugo-data:/data
+      - centrifugo_data:/data
     command: ["centrifugo", "-c", "/etc/centrifugo/centrifugo.json"]
     environment:
       - CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY=${CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY}
@@ -297,9 +298,7 @@ volumes:
     driver: local
   redis_app_data:
     driver: local
-  redis_geo_data:
+  nats_data:
     driver: local
-  nats-data:
-    driver: local
-  centrifugo-data:
+  centrifugo_data:
     driver: local

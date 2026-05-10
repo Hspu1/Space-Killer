@@ -124,7 +124,7 @@ class SatelliteManager:
                                 alt_km,
                                 speed,
                             )
-                        )
+                        ).round(6)
 
                         payload = combined.flatten().tolist()
                         commands = (

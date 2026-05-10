@@ -59,7 +59,7 @@ class PostgresSettings(BaseSettings):
     db_url: Annotated[PostgresDsn, AfterValidator(str)]
 
     pool_recycle: int = 1800
-    pool_size: int = 50  # !!! 2 granian workers !!!, check limits
+    pool_size: int = 50  # !!! N granian workers !!!, check limits
     max_overflow: int = 20
     pool_timeout: int = 30
 
@@ -69,18 +69,18 @@ class RedisSettings(BaseSettings):
 
     model_config = CFG
 
-    redis_host: str = "redis"
-    redis_port: int = 6379
+    redis_host: str
+    redis_port: int
     redis_sessions_db: int
     redis_rl_db: int
-    redis_password: str | None = None
+    redis_password: str
 
     @cached_property
     def rl_db_url(self) -> str:
         if self.redis_password:
             return f"redis://:{self.redis_password}@{self.redis_host}:{self.redis_port}/{self.redis_rl_db}"
 
-    # !!! 2 granian workers !!!, check limits
+    # !!! N granian workers !!!, check limits
     general_max_connections: int = 200
     limiter_max_connections: int = 300
 

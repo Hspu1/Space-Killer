@@ -10,7 +10,7 @@ ENV UV_COMPILE_BYTECODE=1 \
     UV_NO_CACHE=1
 
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-install-project --no-dev --only-group app
+RUN uv sync --frozen --no-install-project --no-dev --group app
 
 FROM ${BASE_IMAGE} AS runtime
 ARG APP_PORT
@@ -39,5 +39,6 @@ CMD ["sh", "-c", "exec granian --interface asgi src.main:app \
     --port ${APP_PORT} \
     --loop uvloop \
     --workers 1"]
+# N workers
 
 EXPOSE ${APP_PORT}
