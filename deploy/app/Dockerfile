@@ -10,7 +10,7 @@ ENV UV_COMPILE_BYTECODE=1 \
     UV_NO_CACHE=1
 
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-install-project --no-dev
+RUN uv sync --frozen --no-install-project --no-dev --only-group app
 
 FROM ${BASE_IMAGE} AS runtime
 ARG APP_PORT

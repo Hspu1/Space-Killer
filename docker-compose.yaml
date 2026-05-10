@@ -109,16 +109,16 @@ services:
           memory: 1G
     restart: unless-stopped
   
-  redis_math:
+  redis_geo:
     image: redis:7.4-alpine
-    container_name: redis_math
+    container_name: redis_geo
     volumes:
-      - ./deploy/redis/redis_math.conf:/etc/redis/redis_math.conf:ro
-      - redis_math_data:/data
+      - ./deploy/redis/redis_geo.conf:/etc/redis/redis_geo.conf:ro
+      - redis_geo_data:/data
     command:
       [
         "redis-server",
-        "/etc/redis/redis_math.conf",
+        "/etc/redis/redis_geo.conf",
         "--requirepass",
         "${REDIS_PASSWORD}",
       ]
@@ -188,11 +188,11 @@ services:
       - CENTRIFUGO_ADMIN_SECRET=${CENTRIFUGO_ADMIN_SECRET}
 
       - CENTRIFUGO_ENGINE_TYPE=redis
-      - CENTRIFUGO_ENGINE_REDIS_ADDRESS=redis_math:6380
+      - CENTRIFUGO_ENGINE_REDIS_ADDRESS=redis_geo:6380
       - CENTRIFUGO_ENGINE_REDIS_PASSWORD=${REDIS_PASSWORD}
       - CENTRIFUGO_ENGINE_REDIS_DB=${CENTRIFUGO_ENGINE_REDIS_DB}
     depends_on:
-      redis_math:
+      redis_geo:
         condition: service_healthy
     networks:
       - frontend
@@ -221,7 +221,8 @@ services:
   migrator:
     build:
       context: .
-    image: custom-app-image:latest
+      dockerfile: deploy/app/Dockerfile
+    image: custom-migrator-image:latest
     container_name: migrator
     env_file: .env
     command: ["alembic", "upgrade", "head"]
@@ -235,6 +236,7 @@ services:
   app:
     build:
       context: .
+      dockerfile: deploy/app/Dockerfile
       args:
         - APP_PORT=${APP_PORT:-8000}
     image: custom-app-image:latest
@@ -295,7 +297,7 @@ volumes:
     driver: local
   redis_app_data:
     driver: local
-  redis_math_data:
+  redis_geo_data:
     driver: local
   nats-data:
     driver: local
