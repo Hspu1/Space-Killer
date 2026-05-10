@@ -65,6 +65,8 @@ class PostgresSettings(BaseSettings):
 
 
 class RedisSettings(BaseSettings):
+    # ONLY for app, no math
+
     model_config = CFG
 
     redis_host: str = "redis"

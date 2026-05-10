@@ -15,7 +15,7 @@
         "allow_presence_for_subscriber": true,
         "presence": true,
         "history_size": 1,
-        "history_ttl": "60s"
+        "history_ttl": "10s"
       }
     ]
   },
