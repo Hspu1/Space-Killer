@@ -18,6 +18,7 @@ services:
         condition: service_healthy
     networks:
       - frontend
+      - backend
     healthcheck:
       test:
         [
@@ -88,7 +89,7 @@ services:
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     sysctls:
-      - net.core.somaxconn=2048  # tcp-backlog 2048
+      - net.core.somaxconn=2048 # tcp-backlog 2048
     networks:
       - backend
     healthcheck:
@@ -110,7 +111,7 @@ services:
           cpus: "0.7" # testing
           memory: 1G
     restart: unless-stopped
-  
+
   redis_geo:
     image: redis:7.4-alpine
     container_name: redis_geo
@@ -173,13 +174,12 @@ services:
       #     cpus: "0.1"
       #     memory: "256M"
     restart: unless-stopped
-  
+
   centrifugo:
     image: centrifugo/centrifugo:v6.7
     container_name: centrifugo
     volumes:
       - ./deploy/centrifugo/centrifugo.json:/etc/centrifugo/centrifugo.json:ro
-      - centrifugo_data:/data
     command: ["centrifugo", "-c", "/etc/centrifugo/centrifugo.json"]
     environment:
       - CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY=${CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY}
@@ -196,7 +196,7 @@ services:
       redis_geo:
         condition: service_healthy
     networks:
-      - frontend
+      - frontend # dev only
       - backend
     ports:
       - "8000:8000"
@@ -223,7 +223,6 @@ services:
     build:
       context: .
       dockerfile: deploy/app/Dockerfile
-    image: custom-migrator-image:latest
     container_name: migrator
     env_file: .env
     command: ["alembic", "upgrade", "head"]
@@ -234,28 +233,52 @@ services:
       - backend
     restart: "no"
 
+  geo:
+    build:
+      context: .
+      dockerfile: deploy/geo/Dockerfile
+    container_name: geo
+    env_file: .env
+    environment:
+      CENTRIFUGO_HTTP_API_KEY: ${CENTRIFUGO_HTTP_API_KEY}
+    depends_on:
+      redis_geo:
+        condition: service_healthy
+      centrifugo:
+        condition: service_healthy
+    networks:
+      - backend
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "2"
+    #       memory: 8G
+    #     reservations:
+    #       cpus: "2"
+    #       memory: 8G
+    restart: unless-stopped
+
   app:
     build:
       context: .
       dockerfile: deploy/app/Dockerfile
       args:
         - APP_PORT=${APP_PORT:-8000}
-    image: custom-app-image:latest
     container_name: app
     env_file: .env
     environment:
       GRANIAN_PROXY_HEADERS: "true"
       GRANIAN_FORWARDED_ALLOW_IPS: "127.0.0.1,172.19.0.0/24"
-      CENTRIFUGO_HTTP_API_KEY: ${CENTRIFUGO_HTTP_API_KEY}
     depends_on:
+      db:
+        condition: service_healthy
       migrator:
-        condition: service_completed_successfully  # hence, db is also healthy
+        condition: service_completed_successfully
       redis_app:
         condition: service_healthy
       nats:
         condition: service_healthy
     networks:
-      - frontend
       - backend
     healthcheck:
       test:
@@ -298,7 +321,6 @@ volumes:
     driver: local
   redis_app_data:
     driver: local
-  nats_data:
-    driver: local
-  centrifugo_data:
-    driver: local
+  # nats_data:
+  #   driver: local
+# no jetstream yet

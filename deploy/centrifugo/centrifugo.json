@@ -20,7 +20,7 @@
     ]
   },
   "log": {
-    "level": "debug"
+    "level": "info"
   },
   "health": {
     "enabled": true
