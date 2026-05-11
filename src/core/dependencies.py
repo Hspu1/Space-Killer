@@ -7,8 +7,9 @@ from throttled.asyncio.store.redis import RedisStore
 from throttled.rate_limiter.base import per_duration
 
 from src.infra.auth_http_client import AuthHttpClient
-from src.modules.geo.satellite_manager import SatelliteManager
+from src.infra.nats.core_manager import CoreNATSManager
 from src.infra.persistence.postgres import PostgresManager
+from src.infra.redis import RedisManager
 from src.utils import log_error_infra
 from src.utils.log_helpers import log_debug_redis
 
@@ -17,16 +18,20 @@ async def get_pg_manager(request: Request) -> PostgresManager:
     return request.app.state.pg_manager
 
 
-async def get_sat_manager(request: Request) -> SatelliteManager:
-    return request.app.state.sat_manager
-
-
-async def get_auth_http_client(request: Request) -> AuthHttpClient:
-    return request.app.state.auth_http_client
+async def get_redis_manager(request: Request) -> RedisManager:
+    return request.app.state.redis_manager()
 
 
 async def get_rate_limiter(request: Request) -> RedisStore:
     return request.app.state.redis_manager.get_rate_limiter()
+
+
+async def get_core_nats_manager(request: Request) -> CoreNATSManager:
+    return request.app.state.core_nats_manager()
+
+
+async def get_auth_http_client(request: Request) -> AuthHttpClient:
+    return request.app.state.auth_http_client
 
 
 def get_client_ip(request: Request) -> str:

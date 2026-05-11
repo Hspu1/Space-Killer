@@ -1,5 +1,6 @@
 import asyncio
-from typing import Any, Awaitable, Callable
+from collections.abc import Awaitable, Callable
+from typing import Any
 
 import nats
 import orjson
@@ -29,6 +30,18 @@ class CoreNATSManager:
             reconnected_cb=self.reconnected_cb,
         )
 
+    async def ping(self):
+        if not self._nc:
+            raise RuntimeError("NATS not reachable")
+
+        try:
+            await self._nc.flush(timeout=1.0)
+
+        except TimeoutError:
+            raise RuntimeError("NATS ping timeout")
+        except Exception as e:
+            raise RuntimeError(f"NATS ping failed: {e}")
+
     async def error_cb(self, e):
         print(f"NATS Error: {e}", flush=True)
 
@@ -44,7 +57,7 @@ class CoreNATSManager:
 
         try:
             await asyncio.wait_for(self._nc.drain(), timeout=5.0)
-        except asyncio.TimeoutError as e:
+        except TimeoutError as e:
             print(f"NATS drain timeout, err: {e}", flush=True)
             await self._nc.close()
         finally:

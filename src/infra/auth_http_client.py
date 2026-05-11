@@ -68,15 +68,15 @@ do_retry: Final = retry(
 class AuthHttpClient:
     def __init__(self, auth_stg: AuthSettings, server_stg: ServerSettings):
         self._auth_stg, self._server_stg = auth_stg, server_stg
-        self.client: AsyncClient | None = None
+        self._client: AsyncClient | None = None
 
     async def connect(self):
-        if self.client:
+        if self._client:
             return
 
         start = perf_counter()
         try:
-            self.client = AsyncClient(
+            self._client = AsyncClient(
                 headers=headers,
                 # proxy=self._server_stg.proxy,
                 limits=limits,
@@ -98,12 +98,27 @@ class AuthHttpClient:
             await self.disconnect()
             raise HttpServiceNotConnectedError from e
 
-    @do_retry
-    async def _make_request(self, method: str, url: str, **kwargs: Any) -> Response:
-        if not self.client:
+    async def ping(self):
+        if not self._client:
             raise HttpServiceNotConnectedError
 
-        resp = await self.client.request(method, url, **kwargs)
+        try:
+            resp = await self._client.request("HEAD", url="https://github.com")
+            if resp.status_code >= 500:
+                raise RuntimeError(
+                    f"AuthHttpClient server error while tryna ping: {resp.status_code}"
+                )
+
+        except Exception as e:
+            print(f"AuthHttpClient ping failed, err: {e}", flush=True)
+            raise
+
+    @do_retry
+    async def _make_request(self, method: str, url: str, **kwargs: Any) -> Response:
+        if not self._client:
+            raise HttpServiceNotConnectedError
+
+        resp = await self._client.request(method, url, **kwargs)
         resp.raise_for_status()
         return resp
 
@@ -114,13 +129,13 @@ class AuthHttpClient:
         return await self._make_request("GET", url, **kwargs)
 
     async def disconnect(self):
-        if not self.client:
+        if not self._client:
             return
 
         start = perf_counter()
         try:
-            await self.client.aclose()
+            await self._client.aclose()
             log_debug_http(op="DISCONNECTED", start_time=start)
 
         finally:
-            self.client = None
+            self._client = None

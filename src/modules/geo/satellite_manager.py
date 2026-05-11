@@ -46,7 +46,6 @@ class SatelliteManager:
         self._ticker_task = asyncio.create_task(
             self._bulk_ticker(), name="satellite-bulk-ticker"
         )
-        print("Satellite system started: TLE job scheduled, ticker task initiated.")
 
     async def stop(self) -> None:
         if self._ticker_task:
@@ -55,6 +54,8 @@ class SatelliteManager:
                 await self._ticker_task
             except asyncio.CancelledError:
                 pass
+            finally:
+                self._ticker_task = None
 
     def update_or_create(self, name: str, l1: str, l2: str) -> None:
         try:
@@ -161,7 +162,7 @@ async def update_tle(manager: SatelliteManager) -> None:
             # content = response.text.strip().splitlines()
             response = TLES  # avoid CelesTrak rate limits
             # response = """
-            #     ISS (ZARYA)             
+            #     ISS (ZARYA)
             #     1 25544U 98067A   26128.19937109  .00004920  00000+0  96926-4 0  9998
             #     2 25544  51.6308 138.0417 0007476  35.9089 324.2400 15.49139257565554
             #     STARLINK-1008

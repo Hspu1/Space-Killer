@@ -1,19 +1,25 @@
 from sys import argv
 
 from fastapi import FastAPI, HTTPException, Request, Response
+
 # from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import ORJSONResponse, RedirectResponse
 from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 from starsessions import SessionAutoloadMiddleware, SessionMiddleware
 from uvicorn import run
 
-from src.core.env_conf import auth_stg, pg_stg, redis_stg, nats_stg, centrifugo_stg, server_stg
+from src.core.env_conf import (
+    auth_stg,
+    nats_stg,
+    pg_stg,
+    redis_stg,
+    server_stg,
+)
 from src.core.lifespan import get_lifespan
 from src.infra.auth_http_client import AuthHttpClient
 from src.infra.nats.core_manager import CoreNATSManager
 from src.infra.persistence.postgres import PostgresManager
 from src.infra.redis import RedisManager
-from src.infra.centrifugo import CentrifugoManager
 from src.infra.serializer import OrjsonSerializer
 from src.infra.session_store import RedisSessionStore
 from src.modules.auth import auth_router
@@ -27,11 +33,10 @@ setup_logging()
 
 
 def create_app() -> FastAPI:
-    pg_manager, redis_manager, core_nats_manager, centrifugo_manager, auth_http_client = (
+    pg_manager, redis_manager, core_nats_manager, auth_http_client = (
         PostgresManager(config=pg_stg),
         RedisManager(config=redis_stg),
         CoreNATSManager(config=nats_stg),
-        CentrifugoManager(config=centrifugo_stg),
         AuthHttpClient(auth_stg=auth_stg, server_stg=server_stg),
     )
 
@@ -41,7 +46,6 @@ def create_app() -> FastAPI:
             pg_manager=pg_manager,
             redis_manager=redis_manager,
             core_nats_manager=core_nats_manager,
-            centrifugo_manager=centrifugo_manager,
             auth_http_client=auth_http_client,
         ),
         default_response_class=ORJSONResponse,
@@ -54,16 +58,15 @@ def create_app() -> FastAPI:
     async def set_https_scheme(request: Request, call_next):
         if request.headers.get("x-forwarded-proto") == "https":
             request.scope["scheme"] = "https"
-        
+
         host = request.headers.get("host")
         if host:
             host_parts = host.split(":")
             server_name = host_parts[0]
             server_port = int(host_parts[1]) if len(host_parts) > 1 else 443
             request.scope["server"] = (server_name, server_port)
-        
-        return await call_next(request)
 
+        return await call_next(request)
 
     static_docs_urls(app=app)
 
