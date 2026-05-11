@@ -24,14 +24,7 @@ class CentrifugoManager:
             http2=True,
         )
 
-    async def ping(self):
-        try:
-            resp = await self._client.head("/api")
-            if resp.status_code >= 500:
-                raise RuntimeError(f"Centrifugo server error: {resp.status_code}")
-
-        except Exception as e:
-            raise RuntimeError(f"Centrifugo not reachable while tryna ping: {e}")
+        print("[CENTRIFUGO] CONNECTED", flush=True)
 
     async def disconnect(self) -> None:
         if self._client is None:
@@ -41,6 +34,7 @@ class CentrifugoManager:
             await self._client.aclose()
         finally:
             self._client = None
+            print("[CENTRIFUGO] DISCONNECTED", flush=True)
 
     async def batch_publish(self, commands: tuple[dict]) -> None:
         if not commands or self._client is None:

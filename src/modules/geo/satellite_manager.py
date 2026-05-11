@@ -46,6 +46,7 @@ class SatelliteManager:
         self._ticker_task = asyncio.create_task(
             self._bulk_ticker(), name="satellite-bulk-ticker"
         )
+        print("[SatelliteManager] STARTED", flush=True)
 
     async def stop(self) -> None:
         if self._ticker_task:
@@ -56,6 +57,7 @@ class SatelliteManager:
                 pass
             finally:
                 self._ticker_task = None
+                print("[SatelliteManager] STOPPED", flush=True)
 
     def update_or_create(self, name: str, l1: str, l2: str) -> None:
         try:

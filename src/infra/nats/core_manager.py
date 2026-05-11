@@ -29,6 +29,7 @@ class CoreNATSManager:
             disconnected_cb=self.disconnected_cb,
             reconnected_cb=self.reconnected_cb,
         )
+        print("[NATS] CONNECTED", flush=True)
 
     async def ping(self):
         if not self._nc:
@@ -61,8 +62,8 @@ class CoreNATSManager:
             print(f"NATS drain timeout, err: {e}", flush=True)
             await self._nc.close()
         finally:
-            print("NATS DISCONNECTED", flush=True)
             self._nc = None
+            print("NATS DISCONNECTED", flush=True)
 
     async def publish(self, subject: str, raw: dict[str, Any]):
         if not self._nc:
