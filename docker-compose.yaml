@@ -153,7 +153,7 @@ services:
     container_name: nats
     volumes:
       - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
-      - nats_data:/data
+      # - nats_data:/data
     environment:
       - NATS_USER=${NATS_USER}
       - NATS_PASSWORD=${NATS_PASSWORD}
@@ -196,10 +196,10 @@ services:
       redis_geo:
         condition: service_healthy
     networks:
-      - frontend # dev only
+      - frontend  # dev only
       - backend
     ports:
-      - "8000:8000"
+      - "8000:8000"  # dev only
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8000/health"]
       interval: 10s

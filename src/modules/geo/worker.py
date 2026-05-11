@@ -4,14 +4,15 @@ from contextlib import asynccontextmanager
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from src.infra.centrifugo import CentrifugoManager
+from src.core.lifespan_helpers import safe_start, silent_close
+from src.core.env_conf import centrifugo_stg
 
-from .lifespan_helpers import safe_start, silent_close
 from .satellite_manager import SatelliteManager
 
 
 @asynccontextmanager
 async def geo_lifespan():
-    centrifugo_manager = CentrifugoManager()
+    centrifugo_manager = CentrifugoManager(config=centrifugo_stg)
     sat_manager = SatelliteManager(centrifugo=centrifugo_manager)
     scheduler = AsyncIOScheduler()
 

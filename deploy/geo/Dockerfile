@@ -28,4 +28,4 @@ COPY --chown=app:app ./src ./src
 
 USER app
 
-CMD ["python", "src/modules/geo/worker.py"]
+CMD ["python", "-m", "src.modules.geo.worker"]

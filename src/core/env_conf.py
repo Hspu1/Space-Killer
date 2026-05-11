@@ -65,7 +65,7 @@ class PostgresSettings(BaseSettings):
 
 
 class RedisSettings(BaseSettings):
-    # ONLY for app, no math
+    # ONLY for app, no geo
 
     model_config = CFG
 

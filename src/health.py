@@ -1,6 +1,6 @@
 from asyncio import gather, wait_for
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from starlette.status import HTTP_200_OK, HTTP_503_SERVICE_UNAVAILABLE
 
 from .core.dependencies import (
@@ -14,11 +14,12 @@ health_router = APIRouter(prefix="/health", tags=["System"])
 
 
 @health_router.get("/readiness", status_code=HTTP_200_OK)
-async def readiness():
-    pg = await get_pg_manager()
-    redis = await get_redis_manager()
-    nats_core = await get_core_nats_manager()
-    auth = await get_auth_http_client()
+async def readiness(
+    pg=Depends(get_pg_manager),
+    redis=Depends(get_redis_manager),
+    nats_core=Depends(get_core_nats_manager),
+    auth=Depends(get_auth_http_client),
+):
 
     try:
         await wait_for(

@@ -19,7 +19,7 @@ async def get_pg_manager(request: Request) -> PostgresManager:
 
 
 async def get_redis_manager(request: Request) -> RedisManager:
-    return request.app.state.redis_manager()
+    return request.app.state.redis_manager
 
 
 async def get_rate_limiter(request: Request) -> RedisStore:
@@ -27,7 +27,7 @@ async def get_rate_limiter(request: Request) -> RedisStore:
 
 
 async def get_core_nats_manager(request: Request) -> CoreNATSManager:
-    return request.app.state.core_nats_manager()
+    return request.app.state.core_nats_manager
 
 
 async def get_auth_http_client(request: Request) -> AuthHttpClient:
