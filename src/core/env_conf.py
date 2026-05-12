@@ -43,7 +43,14 @@ class AuthSettings(BaseSettings):
 class ServerSettings(BaseSettings):
     model_config = CFG
 
-    allowed_hosts: tuple[str, ...] = (".space-killer.com", "127.0.0.1", "localhost")
+    allowed_hosts: tuple[str, ...] = (
+        ".space-killer.com",
+        "127.0.0.1",
+        "localhost",
+        "app",
+        "app_server",
+    )
+
     proxy: str | None = None
     ssl_check: bool = True
     session_lifetime: int = 604_800  # 7 days
