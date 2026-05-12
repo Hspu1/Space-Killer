@@ -7,12 +7,14 @@ services:
     container_name: nginx
     ports:
       - "80:80"
-      # - "443:443"
+      - "443:443"
     volumes:
       - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./deploy/nginx/snippets:/etc/nginx/snippets:ro
       - ./deploy/nginx/error.html:/var/www/html/error.html:ro
+      - ./deploy/certbot/conf:/etc/letsencrypt:ro
+      - ./deploy/certbot/www:/var/www/certbot:ro
     depends_on:
       app:
         condition: service_healthy
@@ -36,6 +38,15 @@ services:
           memory: 128M
         reservations:
           memory: 64M
+    restart: unless-stopped
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./deploy/certbot/conf:/etc/letsencrypt
+      - ./deploy/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     restart: unless-stopped
 
   db:
