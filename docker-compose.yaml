@@ -315,17 +315,9 @@ networks:
   frontend:
     driver: bridge
     enable_ipv6: false
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.19.0.0/24
   backend:
     driver: bridge
     enable_ipv6: false
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.18.0.0/24
 
 volumes:
   pg_data:
