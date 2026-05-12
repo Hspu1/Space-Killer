@@ -7,7 +7,7 @@ services:
     container_name: nginx
     ports:
       - "80:80"
-      - "443:443"
+      # - "443:443"
     volumes:
       - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
@@ -196,10 +196,10 @@ services:
       redis_geo:
         condition: service_healthy
     networks:
-      - frontend  # dev only
+      - frontend # dev only
       - backend
     ports:
-      - "8000:8000"  # dev only
+      - "8000:8000" # dev only
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8000/health"]
       interval: 10s
