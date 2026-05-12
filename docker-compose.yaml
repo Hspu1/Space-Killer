@@ -159,32 +159,32 @@ services:
           memory: 1G
     restart: unless-stopped
 
-  # nats:
-  #   image: nats:2.10-alpine
-  #   container_name: nats
-  #   volumes:
-  #     - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
-  #     # - nats_data:/data
-  #   environment:
-  #     - NATS_USER=${NATS_USER}
-  #     - NATS_PASSWORD=${NATS_PASSWORD}
-  #   networks:
-  #     - backend
-  #   healthcheck:
-  #     test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8222/healthz"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 3
-  #     start_period: 5s
-  #   deploy:
-  #     # resources:
-  #     #   limits:
-  #     #     cpus: "0.1" # !!!
-  #     #     memory: "512M"
-  #     #   reservations:
-  #     #     cpus: "0.1"
-  #     #     memory: "256M"
-  #   restart: unless-stopped
+  nats:
+    image: nats:2.10-alpine
+    container_name: nats
+    volumes:
+      - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
+      # - nats_data:/data
+    environment:
+      - NATS_USER=${NATS_USER}
+      - NATS_PASSWORD=${NATS_PASSWORD}
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      # resources:
+      #   limits:
+      #     cpus: "0.1" # !!!
+      #     memory: "512M"
+      #   reservations:
+      #     cpus: "0.1"
+      #     memory: "256M"
+    restart: unless-stopped
 
   centrifugo:
     image: centrifugo/centrifugo:v6.7
