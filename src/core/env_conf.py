@@ -43,12 +43,8 @@ class AuthSettings(BaseSettings):
 class ServerSettings(BaseSettings):
     model_config = CFG
 
-    run_host: str = "127.0.0.1"
-    run_port: int = 8000
-
-    allowed_hosts: tuple[str, ...] = ("hspu1-the-greatest.loca.lt", "127.0.0.1")
-    forwarded_ips: str = "127.0.0.1"  # + ip balancer
-    proxy: str | None = None  # for GitHub (check .env) (optional)
+    allowed_hosts: tuple[str, ...] = (".space-killer.com", "127.0.0.1", "localhost")
+    proxy: str | None = None
     ssl_check: bool = True
     session_lifetime: int = 604_800  # 7 days
 
@@ -92,10 +88,10 @@ class RedisSettings(BaseSettings):
 
 class NATSSettings(BaseSettings):
     model_config = CFG
-    
+
     nats_user: str | None = None
     nats_password: str | None = None
-    
+
     nats_servers: list[str] = ["nats://nats:4222"]
     connect_timeout: int = 5
 
@@ -112,13 +108,13 @@ class CentrifugoSettings(BaseSettings):
 
     centrifugo_api_url: str
     centrifugo_http_api_key: str
-    
+
     centrifugo_hz: int
 
 
 class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
     model_config = CFG
-    
+
     max_connections: int = 25
     max_keepalive_connections: int = 15
     keepalive_expiry: float = 20.0
