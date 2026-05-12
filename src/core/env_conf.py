@@ -44,7 +44,8 @@ class ServerSettings(BaseSettings):
     model_config = CFG
 
     allowed_hosts: tuple[str, ...] = (
-        ".space-killer.com",
+        "space-killer.com",
+        "www.space-killer.com",
         "127.0.0.1",
         "localhost",
         "app",
