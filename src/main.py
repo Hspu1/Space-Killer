@@ -1,12 +1,8 @@
-from sys import argv
-
 from fastapi import FastAPI, HTTPException, Request, Response
-
-# from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import ORJSONResponse, RedirectResponse
 from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 from starsessions import SessionAutoloadMiddleware, SessionMiddleware
-from uvicorn import run
 
 from src.core.env_conf import (
     auth_stg,
@@ -78,11 +74,11 @@ def create_app() -> FastAPI:
         serializer=serializer,
         cookie_name="sid",
         lifetime=server_stg.session_lifetime,
-        rolling=False,  # mb True
-        cookie_same_site="none",  # mb lax
+        rolling=True,
+        cookie_same_site="lax",
         cookie_https_only=True,
     )
-    # app.add_middleware(TrustedHostMiddleware, allowed_hosts=server_stg.allowed_hosts)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=server_stg.allowed_hosts)
 
     app.include_router(auth_router)
     app.include_router(ui_router)
@@ -103,23 +99,3 @@ async def rate_limit_handler(request: Request, exc: HTTPException) -> Response:
         return Response(headers={"HX-Redirect": url})
 
     return RedirectResponse(url)
-
-
-if __name__ == "__main__":
-    # RUN: (uv run) python -m app.main <port>
-    # LT:  npx localtunnel --port <port> --subdomain <name>
-
-    custom_port = int(argv[1]) if len(argv) > 1 else server_stg.run_port
-    run(
-        app=app,
-        port=custom_port,
-        host=server_stg.run_host,
-        reload=False,
-        use_colors=True,
-        access_log=False,
-        workers=1,
-        http="httptools",
-        # loop="asyncio",
-        proxy_headers=True,
-        # forwarded_allow_ips=server_stg.forwarded_ips,
-    )
