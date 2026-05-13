@@ -81,11 +81,31 @@ services:
           memory: 8G
     restart: unless-stopped
 
+  migrator:
+    build:
+      context: .
+      dockerfile: deploy/app/Dockerfile
+    container_name: migrator
+    env_file: .env
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: on-failure:3
+
   pgbouncer:
     image: edoburu/pgbouncer
     container_name: pgbouncer
     environment:
+      - DB_HOST=${POSTGRES_HOST}
+      - DB_PORT=${POSTGRES_PORT}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_NAME=${POSTGRES_DB}
       - DB_URL=${DB_URL}
+
       - POOL_MODE=${PGBOUNCER_POOL_MODE}
       - MAX_CLIENT_CONN=${PGBOUNCER_MAX_CLIENT_CONN}
       - DEFAULT_POOL_SIZE=${PGBOUNCER_DEFAULT_POOL_SIZE}
@@ -255,20 +275,6 @@ services:
         soft: 65535
         hard: 65535
     restart: unless-stopped
-
-  migrator:
-    build:
-      context: .
-      dockerfile: deploy/app/Dockerfile
-    container_name: migrator
-    env_file: .env
-    command: ["alembic", "upgrade", "head"]
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - backend
-    restart: on-failure:3
 
   geo:
     build:
