@@ -185,6 +185,8 @@ services:
       ]
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
+    sysctls:
+      - net.core.somaxconn=2048
     networks:
       - backend
     healthcheck:
