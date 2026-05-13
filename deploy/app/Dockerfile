@@ -29,7 +29,7 @@ ENV APP_PORT=${APP_PORT}
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 COPY --chown=app:app ./src ./src
 COPY --chown=app:app ./templates ./templates
-COPY --chown=app:app ./alembic.ini ./
+COPY --chown=app:app deploy/alembic/alembic.ini deploy/alembic/alembic.ini
 
 USER app
 
@@ -37,7 +37,9 @@ CMD ["sh", "-c", "exec granian --interface asgi src.main:app \
     --host 0.0.0.0 \
     --port ${APP_PORT} \
     --loop uvloop \
-    --workers 1"]
+    --workers 1 \
+    --http 1 \
+    --opt"]
 # N workers
 
 EXPOSE ${APP_PORT}

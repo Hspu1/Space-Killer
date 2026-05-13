@@ -89,7 +89,7 @@ services:
       dockerfile: deploy/app/Dockerfile
     container_name: migrator
     env_file: .env
-    command: ["alembic", "upgrade", "head"]
+    command: ["alembic", "-c", "deploy/alembic/alembic.ini", "upgrade", "head"]
     depends_on:
       db:
         condition: service_healthy
