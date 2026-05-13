@@ -20,6 +20,8 @@ from src.core.env_conf import pg_stg
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+current_dir = dirname(abspath(__file__))
+config.set_main_option("script_location", current_dir)
 config.set_main_option("sqlalchemy.url", pg_stg.db_url)
 
 
