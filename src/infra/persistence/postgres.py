@@ -47,6 +47,10 @@ class PostgresManager:
                 json_serializer=orjson_dumps,
                 json_deserializer=orjson_loads,
                 poolclass=NullPool,
+                connect_args={
+                    "statement_cache_size": 0,
+                    "prepared_statement_cache_size": 0,
+                },
             )
             self._session_maker = async_sessionmaker(
                 bind=self._engine,
