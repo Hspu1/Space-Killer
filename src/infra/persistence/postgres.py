@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import NullPool
 
 from src.core.env_conf import PostgresSettings
 from src.core.exceptions import PostgresNotReachableError
@@ -42,14 +43,10 @@ class PostgresManager:
         try:
             start = perf_counter()
             self._engine = create_async_engine(
-                url=self._config.db_url,
+                url=self._config.pgbouncer_url,
                 json_serializer=orjson_dumps,
                 json_deserializer=orjson_loads,
-                pool_pre_ping=True,
-                pool_recycle=self._config.pool_recycle,
-                pool_size=self._config.pool_size,
-                max_overflow=self._config.max_overflow,
-                pool_timeout=self._config.pool_timeout,
+                poolclass=NullPool,
             )
             self._session_maker = async_sessionmaker(
                 bind=self._engine,
@@ -62,7 +59,7 @@ class PostgresManager:
             log_debug_db(
                 op="CONNECTED",
                 start_time=start,
-                detail=f"pool={self._config.pool_size}+{self._config.max_overflow}",
+                detail=f"pool=NullPool",
             )
 
         except (SQLAlchemyError, TimeoutError, Exception) as e:

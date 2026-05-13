@@ -60,12 +60,7 @@ class ServerSettings(BaseSettings):
 class PostgresSettings(BaseSettings):
     model_config = CFG
 
-    db_url: Annotated[PostgresDsn, AfterValidator(str)]
-
-    pool_recycle: int = 1800
-    pool_size: int = 50  # !!! N granian workers !!!, check limits
-    max_overflow: int = 20
-    pool_timeout: int = 30
+    pgbouncer_url: Annotated[PostgresDsn, AfterValidator(str)]
 
 
 class RedisSettings(BaseSettings):

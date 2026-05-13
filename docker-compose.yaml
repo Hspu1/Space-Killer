@@ -25,18 +25,19 @@ services:
       test:
         [
           "CMD-SHELL",
-          "nginx -t && wget --spider --quiet http://127.0.0.1:80/healthz || exit 1",
+          "wget --spider --quiet http://127.0.0.1:80/healthz || exit 1",
         ]
-      interval: 30s
+      interval: 10s
       timeout: 3s
       retries: 3
       start_period: 5s
     deploy:
       resources:
         limits:
-          cpus: "0.1"
+          cpus: "0.7"
           memory: 128M
         reservations:
+          cpus: "0.2"
           memory: 64M
     restart: unless-stopped
 
@@ -52,7 +53,7 @@ services:
   db:
     image: postgres:16-alpine
     container_name: db
-    shm_size: 2gb
+    shm_size: 2gb # shared memory size, 25% of memory
     env_file: .env
     volumes:
       - ./deploy/postgres/postgres.conf:/etc/postgresql/postgresql.conf:ro
@@ -66,22 +67,47 @@ services:
       - backend
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 10s
+      interval: 30s
       timeout: 5s
       retries: 5
       start_period: 20s
     deploy:
       resources:
         limits:
-          cpus: "0.1"
-          memory: 128M
-          # cpus: "0.8"
-          # memory: 4G
+          cpus: "2"
+          memory: 8G
         reservations:
-          cpus: "0.1"
+          cpus: "2"
+          memory: 8G
+    restart: unless-stopped
+
+  pgbouncer:
+    image: edoburu/pgbouncer
+    container_name: pgbouncer
+    environment:
+      - DB_URL=${DB_URL}
+      - POOL_MODE=${PGBOUNCER_POOL_MODE}
+      - MAX_CLIENT_CONN=${PGBOUNCER_MAX_CLIENT_CONN}
+      - DEFAULT_POOL_SIZE=${PGBOUNCER_DEFAULT_POOL_SIZE}
+      - MIN_POOL_SIZE=${PGBOUNCER_MIN_POOL_SIZE}
+      - RESERVE_POOL_SIZE=${PGBOUNCER_RESERVE_POOL_SIZE}
+      - SERVER_IDLE_TIMEOUT=${PGBOUNCER_SERVER_IDLE_TIMEOUT}
+      - AUTH_TYPE=${PGBOUNCER_AUTH_TYPE}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrator:
+        condition: service_completed_successfully
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.2"
           memory: 128M
-          # cpus: "0.4"
-          # memory: 2.5G
     restart: unless-stopped
 
   redis_app:
