@@ -18,6 +18,8 @@ services:
     depends_on:
       app:
         condition: service_healthy
+      geo:
+        condition: service_started
     networks:
       - frontend
       - backend
