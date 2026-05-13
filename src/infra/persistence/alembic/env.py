@@ -20,7 +20,7 @@ from src.core.env_conf import pg_stg
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", pg_stg.pgbouncer_url)
+config.set_main_option("sqlalchemy.url", pg_stg.db_url)
 
 
 # Interpret the config file for Python logging.

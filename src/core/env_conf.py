@@ -60,6 +60,7 @@ class ServerSettings(BaseSettings):
 class PostgresSettings(BaseSettings):
     model_config = CFG
 
+    db_url: Annotated[PostgresDsn, AfterValidator(str)]
     pgbouncer_url: Annotated[PostgresDsn, AfterValidator(str)]
 
 
