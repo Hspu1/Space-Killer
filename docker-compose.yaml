@@ -264,6 +264,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -319,6 +320,8 @@ services:
         condition: service_healthy
       migrator:
         condition: service_completed_successfully
+      pgbouncer:
+        condition: service_started
       redis_app:
         condition: service_healthy
       nats:
@@ -358,6 +361,3 @@ volumes:
     driver: local
   redis_app_data:
     driver: local
-  # nats_data:
-  #   driver: local
-# no jetstream yet
