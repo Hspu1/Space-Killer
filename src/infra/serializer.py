@@ -19,8 +19,10 @@ class OrjsonSerializer(Serializer):
         self._dump_opts: Final = OPT_NON_STR_KEYS | OPT_SERIALIZE_UUID
 
     def serialize(self, data: dict[str, Any]) -> bytes:
-        start = perf_counter()
+        if not data:
+            return b"{}"
 
+        start = perf_counter()
         try:
             res = dumps(data, option=self._dump_opts)
             log_debug_core(op="SERIALIZE", start_time=start, detail=f"keys={len(data)}")
@@ -31,7 +33,7 @@ class OrjsonSerializer(Serializer):
             raise
 
     def deserialize(self, data: bytes) -> Any:
-        if not data:
+        if not data or data == b"{}":
             return {}
 
         start = perf_counter()
