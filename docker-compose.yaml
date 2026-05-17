@@ -259,10 +259,9 @@ services:
       redis_geo:
         condition: service_healthy
     networks:
-      - frontend # dev only (?)
       - backend
     ports:
-      - "8000:8000" # dev only (?)
+      - "127.0.0.1:8000:8000"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8000/health"]
       interval: 10s
