@@ -1,19 +1,22 @@
 name: space-killer
 
 services:
-  nginx:
-    image: nginx:mainline-alpine
-    container_name: nginx
+  angie:
+    image: docker.angie.software/angie:1.11.5-alpine
+    container_name: angie
+    user: root
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./deploy/nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./deploy/nginx/snippets:/etc/nginx/snippets:ro
-      - ./deploy/nginx/error.html:/etc/nginx/error.html:ro
+      - ./deploy/angie/angie.conf:/etc/angie/angie.conf:ro
+      - ./deploy/angie/conf.d:/etc/angie/conf.d:ro
+      - ./deploy/angie/snippets:/etc/angie/snippets:ro
+      - ./deploy/angie/error.html:/etc/angie/error.html:ro
       - ./deploy/certbot/conf:/etc/letsencrypt:ro
       - ./deploy/certbot/www:/var/www/certbot:ro
+
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       app:
         condition: service_healthy
@@ -262,6 +265,8 @@ services:
       - backend
     ports:
       - "127.0.0.1:8000:8000"
+    labels:
+      - "angie.http.upstreams.centrifugo_server.port=8000"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8000/health"]
       interval: 10s
@@ -331,11 +336,13 @@ services:
         condition: service_healthy
     networks:
       - backend
+    labels:
+      - "angie.http.upstreams.app_server.port=${APP_PORT}"
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          'python3 -c ''import http.client; conn = http.client.HTTPConnection("127.0.0.1", ${APP_PORT:-8000}); conn.request("GET", "/health/readiness"); resp = conn.getresponse(); exit(0) if resp.status == 200 else exit(1)''',
+          'python3 -c ''import http.client; conn = http.client.HTTPConnection("127.0.0.1", ${APP_PORT}); conn.request("GET", "/health/readiness"); resp = conn.getresponse(); exit(0) if resp.status == 200 else exit(1)''',
         ]
       interval: 15s
       timeout: 5s
