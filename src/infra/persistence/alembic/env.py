@@ -13,7 +13,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from src.infra.persistence.base import Base
-from src.infra.persistence.models.users_and_identities import UsersModel, UserIdentitiesModel
+from src.infra.persistence.models.users import UsersModel
+from src.infra.persistence.models.user_identities import UserIdentitiesModel
+from src.infra.persistence.models.profiles import ProfilesModel
+from src.infra.persistence.models.subscriptions import SubscriptionsModel
 from src.core.env_conf import pg_stg
 
 

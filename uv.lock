@@ -1499,7 +1499,7 @@ app = [
     { name = "throttled-py", extra = ["redis"] },
     { name = "uuid6" },
     { name = "uvicorn", extra = ["standard"] },
-    { name = "uvloop" },
+    { name = "uvloop", marker = "sys_platform != 'win32'" },
     { name = "yarl" },
 ]
 dev = [
@@ -1540,7 +1540,7 @@ app = [
     { name = "throttled-py", extras = ["redis"], specifier = ">=3.1.1" },
     { name = "uuid6", specifier = ">=2025.0.1" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.40.0" },
-    { name = "uvloop" },
+    { name = "uvloop", marker = "sys_platform != 'win32'" },
     { name = "yarl", specifier = ">=1.23.0" },
 ]
 dev = [

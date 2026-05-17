@@ -29,7 +29,7 @@ app = [
     "throttled-py[redis]>=3.1.1",
     "uuid6>=2025.0.1",
     "uvicorn[standard]>=0.40.0",
-    "uvloop",
+    "uvloop; sys_platform != 'win32'",
     "yarl>=1.23.0",
 ]
 

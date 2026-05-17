@@ -46,8 +46,9 @@ async def pg_resolve_user_id(
                     index_elements=[UsersModel.email],
                     index_where=(UsersModel.is_active.is_(True)),
                     set_={
-                        UsersModel.updated_at: datetime.now(UTC)
-                    },  # ensure ID return on conflict
+                        UsersModel.name: user_info.name,
+                        UsersModel.updated_at: datetime.now(UTC),
+                    },
                 )
                 .returning(UsersModel.id)
             )
