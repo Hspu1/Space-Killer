@@ -15,8 +15,6 @@ services:
       - ./deploy/angie/error.html:/etc/angie/error.html:ro
       - ./deploy/certbot/conf:/etc/letsencrypt:ro
       - ./deploy/certbot/www:/var/www/certbot:ro
-
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       app:
         condition: service_healthy
@@ -265,8 +263,6 @@ services:
       - backend
     ports:
       - "127.0.0.1:8000:8000"
-    labels:
-      - "angie.http.upstreams.centrifugo_server.port=8000"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8000/health"]
       interval: 10s
@@ -336,8 +332,6 @@ services:
         condition: service_healthy
     networks:
       - backend
-    labels:
-      - "angie.http.upstreams.app_server.port=${APP_PORT}"
     healthcheck:
       test:
         [

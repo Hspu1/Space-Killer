@@ -22,7 +22,7 @@ wheels/
 MANIFEST
 
 # environment
-.env
+.env*
 .venv
 env/
 venv/
@@ -50,3 +50,6 @@ htmlcov/
 # IDE
 .idea/
 *.iml
+
+# SSL/TLS
+deploy/certbot/
