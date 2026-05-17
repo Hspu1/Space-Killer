@@ -14,7 +14,7 @@ yandex_router = APIRouter(tags=["yandex"], prefix="/auth/yandex")
 @yandex_router.get(
     path="/login",
     dependencies=[
-        Depends(rate_limiter(limit=1, period=5, burst=5, scope="yandex_login"))
+        Depends(rate_limiter(limit=5, period=60, burst=5, scope="yandex_login"))
     ],
 )
 async def yandex_login(request: Request) -> Response:
@@ -28,7 +28,7 @@ async def yandex_login(request: Request) -> Response:
 @yandex_router.get(
     path="/callback",
     dependencies=[
-        Depends(rate_limiter(limit=1, period=7, burst=3, scope="yandex_callback"))
+        Depends(rate_limiter(limit=5, period=60, burst=5, scope="yandex_callback"))
     ],
 )
 async def yandex_callback(

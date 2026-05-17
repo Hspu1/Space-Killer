@@ -14,7 +14,7 @@ stackoverflow_router = APIRouter(tags=["stackoverflow"], prefix="/auth/stackover
 @stackoverflow_router.get(
     path="/login",
     dependencies=[
-        Depends(rate_limiter(limit=1, period=5, burst=5, scope="stackoverflow_login"))
+        Depends(rate_limiter(limit=5, period=60, burst=5, scope="stackoverflow_login"))
     ],
 )
 async def stackoverflow_login(request: Request) -> Response:
@@ -27,7 +27,7 @@ async def stackoverflow_login(request: Request) -> Response:
 @stackoverflow_router.get(
     path="/callback",
     dependencies=[
-        Depends(rate_limiter(limit=1, period=7, burst=3, scope="stackoverflow_callback"))
+        Depends(rate_limiter(limit=3, period=60, burst=5, scope="stackoverflow_callback"))
     ],
 )
 async def stackoverflow_callback(

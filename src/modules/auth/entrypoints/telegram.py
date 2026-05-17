@@ -13,7 +13,7 @@ telegram_router = APIRouter(tags=["telegram"], prefix="/auth/telegram")
 @telegram_router.get(
     path="/callback",
     dependencies=[
-        Depends(rate_limiter(limit=1, period=7, burst=3, scope="telegram_callback"))
+        Depends(rate_limiter(limit=5, period=60, burst=5, scope="telegram_callback"))
     ],
 )
 async def telegram_callback(
