@@ -1,4 +1,3 @@
-from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import (
@@ -8,11 +7,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.infra.persistence.models import UsersModel
+
 from ..base import Base
 from .mixins import TimestampMixin, UUIDv7Mixin
-
-if TYPE_CHECKING:
-    from .users import UsersModel
 
 
 class ProfilesModel(Base, TimestampMixin, UUIDv7Mixin):

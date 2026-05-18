@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
@@ -9,13 +8,14 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.infra.persistence.models import (
+    ProfilesModel,
+    SubscriptionsModel,
+    UserIdentitiesModel,
+)
+
 from ..base import Base
 from .mixins import TimestampMixin, UUIDv7Mixin
-
-if TYPE_CHECKING:
-    from .profiles import ProfilesModel
-    from .subscriptions import SubscriptionsModel
-    from .user_identities import UserIdentitiesModel
 
 
 class UsersModel(Base, TimestampMixin, UUIDv7Mixin):

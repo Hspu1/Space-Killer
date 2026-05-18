@@ -4,8 +4,7 @@ from time import perf_counter
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
-from src.infra.persistence.models.user_identities import UserIdentitiesModel
-from src.infra.persistence.models.users import UsersModel
+from src.infra.persistence.models import UserIdentitiesModel, UsersModel
 from src.infra.persistence.postgres import PostgresManager
 from src.utils import log_debug_db
 
