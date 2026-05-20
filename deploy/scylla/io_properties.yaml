@@ -1,0 +1,7 @@
+# pre-configured by the scylla stress test (with --smp 1)
+disks:
+  - mountpoint: /var/lib/scylla
+    read_iops: 93022
+    read_bandwidth: 8353590784
+    write_iops: 83586
+    write_bandwidth: 2342273536

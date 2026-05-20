@@ -42,6 +42,7 @@ services:
           cpus: "0.5"
           memory: 128M
     restart: unless-stopped
+    cpuset: "1"
 
   certbot:
     image: certbot/certbot
@@ -82,12 +83,14 @@ services:
           cpus: "2"
           memory: 8G
     restart: unless-stopped
+    oom_score_adj: -500
+    cpuset: "5,6"
 
-  migrator:
+  db_migrator:
     build:
       context: .
       dockerfile: deploy/app/Dockerfile
-    container_name: migrator
+    container_name: db_migrator
     env_file: .env
     command: ["alembic", "-c", "deploy/alembic/alembic.ini", "upgrade", "head"]
     depends_on:
@@ -95,7 +98,12 @@ services:
         condition: service_healthy
     networks:
       - backend
+    deploy:
+      resources:
+        limits:
+          memory: 64M
     restart: on-failure:3
+    cpuset: "0"
 
   pgbouncer:
     image: edoburu/pgbouncer
@@ -118,7 +126,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      migrator:
+      db_migrator:
         condition: service_completed_successfully
     networks:
       - backend
@@ -131,6 +139,79 @@ services:
           cpus: "0.2"
           memory: 128M
     restart: unless-stopped
+    cpuset: "1"
+
+  scylla:
+    image: scylladb/scylla:2026.2.0-rc2
+    container_name: scylla
+    cap_add:
+      - IPC_LOCK
+      - SYS_NICE
+      - SYS_RESOURCE
+      - SYS_ADMIN
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    command: >
+      --smp 1
+      --memory 4.5G
+      --reserve-memory 512M
+      --overprovisioned 0
+      --developer-mode 1
+      --reactor-backend io_uring
+      --network-stack posix
+      --io-properties-file /etc/scylla/io_properties.yaml
+      --log-to-stdout 1
+      --log-to-syslog 0
+    volumes:
+      - ./deploy/scylla/scylla.yaml:/etc/scylla/scylla.yaml:ro
+      - ./deploy/scylla/io_properties.yaml:/etc/scylla/io_properties.yaml:ro
+      - /mnt/nvme/scylla/data:/var/lib/scylla
+    networks:
+      - backend
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:9180/storage_service/native_transport_active || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 6G
+        reservations:
+          cpus: "1"
+          memory: 6G
+    restart: unless-stopped
+    oom_score_adj: -500
+    cpuset: "7"
+
+  scylla_migrator:
+    image: migrate/migrate:v4.17.1
+    container_name: scylla_migrator
+    depends_on:
+      scylla:
+        condition: service_healthy
+    volumes:
+      - ........................................ # adjust
+    command:
+      - -path=/........................................ # adjust
+      - -database=cassandra://scylla:9042/system
+      - up
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+    restart: on-failure:3
+    cpuset: "0"
 
   redis_app:
     image: redis:7.4-alpine
@@ -171,6 +252,7 @@ services:
           cpus: "1"
           memory: 2G
     restart: unless-stopped
+    cpuset: "2"
 
   redis_geo:
     image: redis:7.4-alpine
@@ -210,33 +292,7 @@ services:
           cpus: "0.1"
           memory: 16M
     restart: unless-stopped
-
-  nats:
-    image: nats:2.10-alpine
-    container_name: nats
-    volumes:
-      - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
-    env_file: .env
-    environment:
-      - NATS_USER=${NATS_USER}
-      - NATS_PASSWORD=${NATS_PASSWORD}
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8222/healthz"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
-    deploy:
-      resources:
-        limits:
-          cpus: "1"
-          memory: "1G"
-        reservations:
-          cpus: "0.5"
-          memory: "0.5G"
-    restart: unless-stopped
+    cpuset: "3"
 
   centrifugo:
     image: centrifugo/centrifugo:v6.7
@@ -277,11 +333,8 @@ services:
         reservations:
           cpus: "0.2"
           memory: 256M
-    ulimits:
-      nofile:
-        soft: 65535
-        hard: 65535
     restart: unless-stopped
+    cpuset: "4"
 
   geo:
     build:
@@ -307,6 +360,7 @@ services:
           cpus: "1"
           memory: 0.5G
     restart: unless-stopped
+    cpuset: "3,4"
 
   app:
     build:
@@ -322,7 +376,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      migrator:
+      db_migrator:
         condition: service_completed_successfully
       pgbouncer:
         condition: service_started
@@ -351,6 +405,35 @@ services:
           cpus: "1"
           memory: 1G
     restart: unless-stopped
+    cpuset: "2"
+
+  nats:
+    image: nats:2.10-alpine
+    container_name: nats
+    volumes:
+      - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
+    env_file: .env
+    environment:
+      - NATS_USER=${NATS_USER}
+      - NATS_PASSWORD=${NATS_PASSWORD}
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: "1G"
+        reservations:
+          cpus: "0.5"
+          memory: "0.5G"
+    restart: unless-stopped
+    cpuset: "0"
 
 networks:
   frontend:

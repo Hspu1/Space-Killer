@@ -1,0 +1,20 @@
+cluster_name: "space-killer"
+rpc_address: 0.0.0.0
+endpoint_snitch: SimpleSnitch
+
+compaction_throughput_mb_per_sec: 0 # auto
+memtable_flush_writers: 3
+
+commitlog_sync: periodic
+commitlog_sync_period_in_ms: 1000
+commitlog_segment_size_in_mb: 32
+commitlog_total_space_in_mb: 1024
+
+read_request_timeout_in_ms: 2000
+write_request_timeout_in_ms: 2000
+query_page_size_in_bytes: 524288
+tombstone_warn_threshold: 1000
+tombstone_failure_threshold: 50000
+
+auto_bootstrap: false
+partitioner: org.apache.cassandra.dht.Murmur3Partitioner
