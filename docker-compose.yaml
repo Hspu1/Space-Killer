@@ -159,9 +159,9 @@ services:
       --reserve-memory 512M
       --overprovisioned 1
       --developer-mode 1
-      --reactor-backend epoll
     # using pre-configured io_properties.yaml via dev mode 1
     # HUH - no io_properties, no dev mode and bigass start period ???
+    # HUH - environment vars for command
     volumes:
       - ./deploy/scylla/scylla.yaml:/etc/scylla/scylla.yaml:ro
       - ./deploy/scylla/io_properties.yaml:/etc/scylla.d/io_properties.yaml:ro
@@ -383,6 +383,7 @@ services:
         condition: service_healthy
       nats:
         condition: service_healthy
+      # HUH - wb other container nig
     networks:
       - backend
     healthcheck:
