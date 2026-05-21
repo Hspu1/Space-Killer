@@ -34,4 +34,4 @@ CREATE TABLE IF NOT EXISTS content_service.comments (
     is_deleted boolean,
     PRIMARY KEY ((post_id, parent_id), comment_id)
 ) WITH CLUSTERING ORDER BY (comment_id DESC)
-AND compaction = { 'class': 'UnifiedCompactionStrategy' };
+AND compaction = { 'class': 'SizeTieredCompactionStrategy' };
