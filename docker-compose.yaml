@@ -159,14 +159,10 @@ services:
       --reserve-memory 512M
       --overprovisioned 1
       --developer-mode 0
-      --reactor-backend io_uring
-      --network-stack posix
-      --io-properties-file /etc/scylla/io_properties.yaml
-      --log-to-stdout 1
-      --log-to-syslog 0
+      --reactor-backend epoll
     volumes:
       - ./deploy/scylla/scylla.yaml:/etc/scylla/scylla.yaml:ro
-      - ./deploy/scylla/io_properties.yaml:/etc/scylla/io_properties.yaml:ro
+      - ./deploy/scylla/io_properties.yaml:/etc/scylla.d/io_properties.yaml:ro
       - /mnt/nvme/scylla/data:/var/lib/scylla
     networks:
       - backend
@@ -199,7 +195,7 @@ services:
       scylla:
         condition: service_healthy
     volumes:
-      - ./src/infra.scylla/migrations:/migrations
+      - ./src/infra/scylla/migrations:/migrations
     command:
       - -path=/migrations
       - -database=cassandra://scylla:9042/content_service
