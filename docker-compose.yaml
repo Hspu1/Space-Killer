@@ -157,8 +157,8 @@ services:
       --smp 1
       --memory 4.5G
       --reserve-memory 512M
-      --overprovisioned 0
-      --developer-mode 1
+      --overprovisioned 1
+      --developer-mode 0
       --reactor-backend io_uring
       --network-stack posix
       --io-properties-file /etc/scylla/io_properties.yaml
@@ -174,12 +174,12 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -f http://localhost:9180/storage_service/native_transport_active || exit 1",
+          "exec 3<>/dev/tcp/127.0.0.1/9042 && exec 3<&- && exec 3>&-",
         ]
-      interval: 15s
-      timeout: 5s
+      interval: 5s
+      timeout: 2s
       retries: 3
-      start_period: 40s
+      start_period: 60s
     deploy:
       resources:
         limits:
@@ -199,10 +199,11 @@ services:
       scylla:
         condition: service_healthy
     volumes:
-      - ........................................ # adjust
+      - ./src/infra.scylla/migrations:/migrations
     command:
-      - -path=/........................................ # adjust
-      - -database=cassandra://scylla:9042/system
+      - -path=/migrations
+      - -database=cassandra://scylla:9042/content_service
+      # for content_service keyspace
       - up
     networks:
       - backend
