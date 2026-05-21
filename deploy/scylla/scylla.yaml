@@ -5,7 +5,6 @@ partitioner: org.apache.cassandra.dht.Murmur3Partitioner
 auto_bootstrap: true
 
 compaction_throughput_mb_per_sec: 0
-# not a problem, using io_properties.yaml
 memtable_flush_writers: 1
 
 commitlog_sync: periodic

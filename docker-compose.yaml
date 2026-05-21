@@ -170,16 +170,16 @@ services:
       - /mnt/nvme/scylla/data:/var/lib/scylla
     networks:
       - backend
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "exec 3<>/dev/tcp/127.0.0.1/9042 && exec 3<&- && exec 3>&-",
-        ]
-      interval: 5s
-      timeout: 2s
-      retries: 3
-      start_period: 60s
+    # healthcheck:
+    #   test:
+    #     [
+    #       "CMD-SHELL",
+    #       "exec 3<>/dev/tcp/127.0.0.1/9042 && exec 3<&- && exec 3>&-",
+    #     ]
+    #   interval: 5s
+    #   timeout: 2s
+    #   retries: 3
+    #   start_period: 60s
     deploy:
       resources:
         limits:
@@ -197,7 +197,8 @@ services:
     container_name: scylla_migrator
     depends_on:
       scylla:
-        condition: service_healthy
+        # condition: service_healthy
+        condition: service_started
     volumes:
       - ./src/infra/scylla/migrations:/migrations
     command:
