@@ -1,4 +1,3 @@
-# pre-configured by the scylla stress test (with --smp 1)
 disks:
   - mountpoint: /var/lib/scylla
     read_iops: 93022
