@@ -1,9 +1,12 @@
 cluster_name: "space-killer"
 rpc_address: 0.0.0.0
-endpoint_snitch: SimpleSnitch
+endpoint_snitch: GossipingPropertyFileSnitch
+partitioner: org.apache.cassandra.dht.Murmur3Partitioner
+auto_bootstrap: true
 
-compaction_throughput_mb_per_sec: 0 # auto
-memtable_flush_writers: 3
+compaction_throughput_mb_per_sec: 0
+# not a problem, using io_properties.yaml
+memtable_flush_writers: 1
 
 commitlog_sync: periodic
 commitlog_sync_period_in_ms: 1000
@@ -13,8 +16,6 @@ commitlog_total_space_in_mb: 1024
 read_request_timeout_in_ms: 2000
 write_request_timeout_in_ms: 2000
 query_page_size_in_bytes: 524288
-tombstone_warn_threshold: 1000
-tombstone_failure_threshold: 50000
 
-auto_bootstrap: false
-partitioner: org.apache.cassandra.dht.Murmur3Partitioner
+tombstone_warn_threshold: 1000
+tombstone_failure_threshold: 5000
