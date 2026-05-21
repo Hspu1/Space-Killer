@@ -203,8 +203,7 @@ services:
       - ./src/infra/scylla/migrations:/migrations
     command:
       - -path=/migrations
-      - -database=cassandra://scylla:9042/content_service
-      # for content_service keyspace
+      - -database=cassandra://scylla:9042/system?x-multi-statement=true
       - up
     networks:
       - backend
