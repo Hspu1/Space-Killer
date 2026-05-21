@@ -203,7 +203,7 @@ services:
       - ./src/infra/scylla/migrations:/migrations
     command:
       - -path=/migrations
-      - -database=cassandra://scylla:9042/system?x-multi-statement=true
+      - -database=cassandra://scylla:9042/content_service?x-multi-statement=true
       - up
     networks:
       - backend
