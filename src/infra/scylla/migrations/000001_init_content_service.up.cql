@@ -1,5 +1,5 @@
 CREATE KEYSPACE IF NOT EXISTS content_service
-WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 1};
+WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': 1};
 
 CREATE TABLE IF NOT EXISTS content_service.feed (
     user_id uuid,
