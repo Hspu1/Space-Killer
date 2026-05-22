@@ -75,9 +75,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 8G
+          memory: 3.5G
         reservations:
-          memory: 8G
+          memory: 3.5G
     restart: unless-stopped
     oom_score_adj: -500
     cpuset: "5,6"
