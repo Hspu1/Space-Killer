@@ -15,7 +15,6 @@ from alembic import context
 from src.infra.persistence.base import Base
 from src.infra.persistence.models.models import (
     ProfilesModel,
-    SubscriptionsModel,
     UserIdentitiesModel,
     UsersModel,
 )
