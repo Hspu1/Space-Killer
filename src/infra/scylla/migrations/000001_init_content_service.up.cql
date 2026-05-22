@@ -35,3 +35,17 @@ CREATE TABLE IF NOT EXISTS content_service.comments (
     PRIMARY KEY ((post_id, parent_id), comment_id)
 ) WITH CLUSTERING ORDER BY (comment_id DESC)
 AND compaction = { 'class': 'SizeTieredCompactionStrategy' };
+
+CREATE TABLE content_service.following (
+    user_id uuid,
+    following_id uuid,
+    created_at timestamp,
+    PRIMARY KEY (user_id, following_id)
+) WITH compaction = { 'class': 'LeveledCompactionStrategy' };
+
+CREATE TABLE content_service.followers (
+    author_id uuid,
+    follower_id uuid,
+    created_at timestamp,
+    PRIMARY KEY (author_id, follower_id)
+) WITH compaction = { 'class': 'SizeTieredCompactionStrategy' };
