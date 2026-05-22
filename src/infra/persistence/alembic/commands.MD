@@ -1,27 +1,27 @@
 # **alembic commands**
 
 ## initialization
-> alembic init -t async some_directory
+> uv run alembic init -t async some_directory
 
 ## revision
-> alembic revision --autogenerate -m "some message"
+> uv run alembic -c deploy/alembic/alembic.ini revision --autogenerate -m "initial"
 
 ## upgrade
-> alembic upgrade head
+> uv run alembic -c deploy/alembic/alembic.ini upgrade head
 
 ## specific upgrade/downgrade
-> alembic upgrade <revision>
+> uv run alembic -c deploy/alembic/alembic.ini upgrade <revision>
 >
-> alembic downgrade <revision>
+> uv run alembic -c deploy/alembic/alembic.ini downgrade <revision>
 
 #### or (just one)
-> alembic upgrade +1
+> uv run alembic -c deploy/alembic/alembic.ini upgrade +1
 >
-> alembic downgrade -1
+> uv run alembic -c deploy/alembic/alembic.ini downgrade -1
 
 ## monitoring
-> alembic current
+> uv run alembic -c deploy/alembic/alembic.ini current
 >
-> alembic history
+> uv run alembic -c deploy/alembic/alembic.ini history
 >
-> alembic heads
+> uv run alembic -c deploy/alembic/alembic.ini heads
