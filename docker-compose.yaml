@@ -165,18 +165,6 @@ services:
       - backend
     ports:
       - "127.0.0.1:9180:9180"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "python3",
-          "-c",
-          "import socket; s = socket.socket(); s.connect(('127.0.0.1', 9042))",
-        ]
-      interval: 5s
-      timeout: 2s
-      retries: 3
-      start_period: 5s
     deploy:
       resources:
         limits:
@@ -192,7 +180,6 @@ services:
     container_name: scylla_migrator
     depends_on:
       scylla:
-        # condition: service_healthy
         condition: service_started
     volumes:
       - ./src/infra/scylla/migrations:/migrations
