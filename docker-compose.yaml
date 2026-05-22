@@ -164,7 +164,7 @@ services:
     networks:
       - backend
     ports:
-      - "127.0.0.1:10000:10000"
+      - "127.0.0.1:9180:9180"
     # healthcheck:
     #   test:
     #     [
