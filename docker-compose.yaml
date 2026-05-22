@@ -149,6 +149,8 @@ services:
       - SYS_NICE
       - SYS_RESOURCE
       - SYS_ADMIN
+    security_opt:
+      - seccomp:unconfined
     ulimits:
       memlock:
         soft: -1
@@ -159,6 +161,7 @@ services:
       --reserve-memory 512M
       --overprovisioned 0
       --developer-mode 1
+      --reactor-backend io_uring
     volumes:
       - ./deploy/scylla/scylla.yaml:/etc/scylla/scylla.yaml:ro
       - ./deploy/scylla/io_properties.yaml:/etc/scylla.d/io_properties.yaml:ro
