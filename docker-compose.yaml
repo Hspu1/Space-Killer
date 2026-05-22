@@ -171,10 +171,10 @@ services:
           "CMD-SHELL",
           "exec 3<>/dev/tcp/127.0.0.1/9180 && echo -e 'GET /storage_service/native_transport HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q 'true'",
         ]
-      interval: 5s
-      timeout: 2s
-      retries: 3
-      start_period: 60s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
     deploy:
       resources:
         limits:
