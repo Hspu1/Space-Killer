@@ -157,6 +157,7 @@ services:
       --smp 1
       --memory 4.5G
       --reserve-memory 512M
+      --overprovisioned 0
       --developer-mode 1
     volumes:
       - ./deploy/scylla/scylla.yaml:/etc/scylla/scylla.yaml:ro
