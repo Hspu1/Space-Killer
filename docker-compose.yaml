@@ -155,9 +155,10 @@ services:
       memlock:
         soft: -1
         hard: -1
-    command: --smp=1 --memory=4831838208 --reserve-memory=536870912 --developer-mode=1 --overprovisioned=0 --reactor-backend=io_uring --blocked-reactor-notify-ms=250
+    command: --smp=1 --memory=4831838208 --reserve-memory=536870912 --developer-mode=1 --overprovisioned=0 --reactor-backend=io_uring --blocked-reactor-notify-ms=250 --io-properties-file=/etc/scylla.d/io_properties.yaml
     volumes:
       - ./deploy/scylla/scylla.yaml:/etc/scylla/scylla.yaml:ro
+      - ./deploy/scylla/cassandra-rackdc.properties:/etc/scylla/cassandra-rackdc.properties:ro
       - ./deploy/scylla/io_properties.yaml:/etc/scylla.d/io_properties.yaml:ro
       - /mnt/nvme/scylla/data:/var/lib/scylla
     networks:
