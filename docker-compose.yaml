@@ -157,9 +157,8 @@ services:
       --smp 1
       --memory 4.5G
       --reserve-memory 512M
-      --overprovisioned
+      --overprovisioned 1
       --developer-mode 0
-      --reactor-backend epoll
     volumes:
       - ./deploy/scylla/scylla.yaml:/etc/scylla/scylla.yaml:ro
       - ./deploy/scylla/io_properties.yaml:/etc/scylla.d/io_properties.yaml:ro
