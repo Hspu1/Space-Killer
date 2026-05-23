@@ -40,6 +40,7 @@ services:
         reservations:
           memory: 128M
     restart: unless-stopped
+    oom_score_adj: -500
     cpuset: "1"
 
   certbot:
@@ -133,6 +134,7 @@ services:
         reservations:
           memory: 128M
     restart: unless-stopped
+    oom_score_adj: -500
     cpuset: "1"
 
   scylla:
@@ -227,6 +229,7 @@ services:
         reservations:
           memory: 1G
     restart: unless-stopped
+    oom_score_adj: -500
     cpuset: "2"
 
   redis_geo:
@@ -265,6 +268,7 @@ services:
         reservations:
           memory: 16M
     restart: unless-stopped
+    oom_score_adj: -300
     cpuset: "3"
 
   centrifugo:
@@ -305,6 +309,7 @@ services:
         reservations:
           memory: 512M
     restart: unless-stopped
+    oom_score_adj: -300
     cpuset: "4"
 
   geo:
@@ -329,6 +334,7 @@ services:
         reservations:
           memory: 0.5G
     restart: unless-stopped
+    oom_score_adj: -200
     cpuset: "3,4"
 
   app:
@@ -373,6 +379,7 @@ services:
         reservations:
           memory: 1G
     restart: unless-stopped
+    oom_score_adj: -200
     cpuset: "2"
 
   nats:
@@ -397,8 +404,65 @@ services:
         limits:
           memory: 512M
         reservations:
-          memory: 512M
+          memory: 256M
     restart: unless-stopped
+    oom_score_adj: -500
+    cpuset: "0"
+
+  seaweed:
+    image: chrislusf/seaweedfs:4.28
+    container_name: seaweed
+    ports:
+      - "127.0.0.1:8333:8333" # S3 API direct upload
+      - "127.0.0.1:8888:8888" # Filer HTTP for Angie
+    volumes:
+      - /mnt/nvme/seaweed/meta:/data/meta
+      - /mnt/nvme/seaweed/blobs:/data/blobs
+      - ./deploy/seaweed/s3.json:/etc/seaweedfs/s3.json:ro
+    env_file: .env
+    environment:
+      GOMAXPROCS: "1"
+      GOGC: "400"
+      GOMEMLIMIT: "900MiB"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+    networks:
+      - backend
+    command: >
+      server
+      -ip=seaweed
+      -ip.bind=0.0.0.0
+
+      -master.dir=/data/meta
+      -master.volumeSizeLimitMB=4096
+      -volume.dir=/data/blobs
+      -volume.max=25
+      -volume.index=leveldb
+      -volume.fileSizeLimitMB=25
+      -volume.concurrentUploadLimit=2
+
+      -filer=true
+      -filer.dir=/data/meta
+      -filer.maxMB=25
+
+      -s3=true
+      -s3.port=8333
+      -s3.allowEmptyFolder=false
+      -s3.config=/etc/seaweedfs/s3.json
+    healthcheck:
+      test: ["CMD", "weed", "shell", "-master=localhost:9333", "status"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 256M
+    restart: unless-stopped
+    oom_score_adj: -300
     cpuset: "0"
 
 networks:
