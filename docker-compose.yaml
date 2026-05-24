@@ -430,12 +430,13 @@ services:
       - backend
     command: >
       server
-      -ip=127.0.0.1
+      -ip=seaweed
       -ip.bind=0.0.0.0
 
       -dir=/data/blobs
       -master.dir=/data/meta
       -master.volumeSizeLimitMB=4096
+      -master.port=9333
 
       -volume.max=25
       -volume.index=leveldb
@@ -443,6 +444,7 @@ services:
       -volume.concurrentUploadLimitMB=110
       -volume.disk=ssd
       -volume.minFreeSpace=5GiB
+      -volume.port=8080
 
       -filer=true
       -filer.maxMB=25
