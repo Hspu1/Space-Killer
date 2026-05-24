@@ -436,7 +436,6 @@ services:
       -dir=/data/blobs
       -master.dir=/data/meta
       -master.volumeSizeLimitMB=4096
-      -master.port=9333
 
       -volume.max=25
       -volume.index=leveldb
@@ -444,7 +443,6 @@ services:
       -volume.concurrentUploadLimitMB=110
       -volume.disk=ssd
       -volume.minFreeSpace=5GiB
-      -volume.port=8080
 
       -filer=true
       -filer.maxMB=25
@@ -452,7 +450,6 @@ services:
       -filer.concurrentUploadLimitMB=110
 
       -s3=true
-      -s3.port=8333
       -s3.config=/etc/seaweedfs/s3.json
       -s3.concurrentUploadLimitMB=110
     deploy:
@@ -463,7 +460,7 @@ services:
           memory: 256M
     restart: unless-stopped
     oom_score_adj: -300
-    cpuset: "0,1"
+    cpuset: "0"
 
 networks:
   frontend:
