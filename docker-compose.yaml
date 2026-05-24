@@ -435,7 +435,7 @@ services:
       - backend
     command: >
       server
-      -ip=127.0.0.1
+      -ip=seaweed
       -ip.bind=0.0.0.0
 
       -dir=/data/blobs
