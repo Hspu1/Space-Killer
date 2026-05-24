@@ -435,7 +435,7 @@ services:
       - backend
     command: >
       server
-      -ip=88.218.123.210
+      -ip=127.0.0.1
       -ip.bind=0.0.0.0
 
       -dir=/data/blobs
@@ -457,6 +457,7 @@ services:
       -s3=true
       -s3.config=/etc/seaweedfs/s3.json
       -s3.concurrentUploadLimitMB=110
+      -s3.domainName=88.218.123.210
     deploy:
       resources:
         limits:
