@@ -37,7 +37,7 @@ def create_app() -> FastAPI:
     )
 
     app = FastAPI(
-        title="Smth-P",
+        title="Space-Killer",
         lifespan=get_lifespan(
             pg_manager=pg_manager,
             redis_manager=redis_manager,
