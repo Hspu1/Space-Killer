@@ -413,8 +413,13 @@ services:
     image: chrislusf/seaweedfs:4.28
     container_name: seaweed
     ports:
-      - "127.0.0.1:8333:8333" # S3 API direct upload
-      - "127.0.0.1:8888:8888" # Filer HTTP for Angie
+      - "8333:8333" # S3 API HTTP
+
+      - "127.0.0.1:8888:8888" # Filer HTTP
+      - "127.0.0.1:9333:9333" # Master HTTP
+      - "127.0.0.1:18333:18333" # S3 gRPC
+      - "127.0.0.1:18888:18888" # Filer gRPC
+      - "127.0.0.1:19333:19333" # Master gRPC
     volumes:
       - /mnt/nvme/seaweed/meta:/data/meta
       - /mnt/nvme/seaweed/blobs:/data/blobs
@@ -430,7 +435,7 @@ services:
       - backend
     command: >
       server
-      -ip=127.0.0.1
+      -ip=88.218.123.210
       -ip.bind=0.0.0.0
 
       -dir=/data/blobs
