@@ -463,7 +463,7 @@ services:
           memory: 256M
     restart: unless-stopped
     oom_score_adj: -300
-    cpuset: "0"
+    cpuset: "0,1"
 
 networks:
   frontend:
