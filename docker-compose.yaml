@@ -450,11 +450,11 @@ services:
       -ip=sw_volume_1
       -ip.bind=0.0.0.0
       -port=8080
+
       -dir=/data/blobs
       -max=25
       -index=leveldb
       -fileSizeLimitMB=25
-      -disk=ssd
       -minFreeSpace=5GiB
     deploy:
       resources:
