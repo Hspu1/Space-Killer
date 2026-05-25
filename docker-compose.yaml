@@ -409,63 +409,62 @@ services:
     oom_score_adj: -500
     cpuset: "0"
 
-  seaweed:
+  sw_master_1:
     image: chrislusf/seaweedfs:4.28
-    container_name: seaweed
-    ports:
-      - "8333:8333" # S3 API HTTP
-
-      - "127.0.0.1:8888:8888" # Filer HTTP
-      - "127.0.0.1:9333:9333" # Master HTTP
-      - "127.0.0.1:18333:18333" # S3 gRPC
-      - "127.0.0.1:18888:18888" # Filer gRPC
-      - "127.0.0.1:19333:19333" # Master gRPC
+    container_name: sw_master_1
     volumes:
       - /mnt/nvme/seaweed/meta:/data/meta
-      - /mnt/nvme/seaweed/blobs:/data/blobs
-      - ./deploy/seaweed/s3.json:/etc/seaweedfs/s3.json:ro
-    env_file: .env
-    environment:
-      GOMAXPROCS: "1"
-      GOGC: "400"
-      GOMEMLIMIT: "900MiB"
-      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
     networks:
       - backend
     command: >
-      server
-      -ip=127.0.0.1
+      master
+      -ip=sw_master_1
       -ip.bind=0.0.0.0
-
-      -dir=/data/blobs
-      -master.dir=/data/meta
-      -master.volumeSizeLimitMB=4096
-
-      -volume.max=25
-      -volume.index=leveldb
-      -volume.fileSizeLimitMB=25
-      -volume.concurrentUploadLimitMB=110
-      -volume.disk=ssd
-      -volume.minFreeSpace=5GiB
-
-      -filer=true
-      -filer.maxMB=25
-      -filer.disableDirListing
-      -filer.concurrentUploadLimitMB=110
-
-      -s3=true
-      -s3.config=/etc/seaweedfs/s3.json
-      -s3.concurrentUploadLimitMB=110
-      -s3.domainName=88.218.123.210
+      -port=9333
+      -mdir=/data/meta
+      -volumeSizeLimitMB=4096
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 256M
+    restart: unless-stopped
+    cpuset: "0"
+
+  sw_volume_1:
+    image: chrislusf/seaweedfs:4.28
+    container_name: sw_volume_1
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - /mnt/nvme/seaweed/blobs:/data/blobs
+    env_file: .env
+    environment:
+      - GOMAXPROCS=1
+      - GOGC=300
+      - GOMEMLIMIT=700MiB
+    networks:
+      - backend
+    command: >
+      volume
+      -mserver=sw_master_1:9333
+      -ip=sw_volume_1
+      -ip.bind=0.0.0.0
+      -port=8080
+      -dir=/data/blobs
+      -max=25
+      -index=leveldb
+      -fileSizeLimitMB=25
+      -disk=ssd
+      -minFreeSpace=5GiB
+    deploy:
+      resources:
+        limits:
+          memory: 850M
         reservations:
           memory: 256M
     restart: unless-stopped
-    oom_score_adj: -300
+    oom_score_adj: -100
+    cpu_shares: 512
     cpuset: "0"
 
 networks:
