@@ -464,7 +464,7 @@ services:
       -dir=/data/blobs
       -max=25
       -index=leveldb
-      -fileSizeLimitMB=25
+      -fileSizeLimitMB=6
       -minFreeSpace=5GiB
     deploy:
       resources:
