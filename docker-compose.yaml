@@ -447,7 +447,7 @@ services:
     env_file: .env
     environment:
       - GOMAXPROCS=1
-      - GOGC=300
+      - GOGC=400
       - GOMEMLIMIT=700MiB
     networks:
       - backend
