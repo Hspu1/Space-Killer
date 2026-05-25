@@ -426,11 +426,11 @@ services:
       -volumeSizeLimitMB=4096
       -raftHashicorp=true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9333/dir/status"]
+      test: ["CMD", "weed", "client", "-mserver=127.0.0.1:19333", "status"]
       interval: 15s
       timeout: 3s
       retries: 3
-      start_period: 3s
+      start_period: 5s
     deploy:
       resources:
         limits:
