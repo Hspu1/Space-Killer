@@ -40,6 +40,7 @@ services:
         reservations:
           memory: 128M
     restart: unless-stopped
+    oom_score_adj: -500
     cpuset: "1"
 
   certbot:
@@ -133,6 +134,7 @@ services:
         reservations:
           memory: 128M
     restart: unless-stopped
+    oom_score_adj: -500
     cpuset: "1"
 
   scylla:
@@ -227,6 +229,7 @@ services:
         reservations:
           memory: 1G
     restart: unless-stopped
+    oom_score_adj: -500
     cpuset: "2"
 
   redis_geo:
@@ -265,6 +268,7 @@ services:
         reservations:
           memory: 16M
     restart: unless-stopped
+    oom_score_adj: -300
     cpuset: "3"
 
   centrifugo:
@@ -305,6 +309,7 @@ services:
         reservations:
           memory: 512M
     restart: unless-stopped
+    oom_score_adj: -300
     cpuset: "4"
 
   geo:
@@ -329,6 +334,7 @@ services:
         reservations:
           memory: 0.5G
     restart: unless-stopped
+    oom_score_adj: -200
     cpuset: "3,4"
 
   app:
@@ -373,6 +379,7 @@ services:
         reservations:
           memory: 1G
     restart: unless-stopped
+    oom_score_adj: -200
     cpuset: "2"
 
   nats:
@@ -397,8 +404,76 @@ services:
         limits:
           memory: 512M
         reservations:
-          memory: 512M
+          memory: 256M
     restart: unless-stopped
+    oom_score_adj: -500
+    cpuset: "0"
+
+  sw_master_1:
+    image: chrislusf/seaweedfs:4.28
+    container_name: sw_master_1
+    volumes:
+      - /mnt/nvme/seaweed/meta:/data/meta
+    networks:
+      - backend
+    command: >
+      master
+      -ip=sw_master_1
+      -ip.bind=0.0.0.0
+      -port=9333
+
+      -mdir=/data/meta
+      -volumeSizeLimitMB=4096
+      -raftHashicorp=true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9333/dir/status"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 3s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    restart: unless-stopped
+    oom_score_adj: -300
+    cpuset: "0"
+
+  sw_volume_1:
+    image: chrislusf/seaweedfs:4.28
+    container_name: sw_volume_1
+    volumes:
+      - /mnt/nvme/seaweed/blobs:/data/blobs
+    env_file: .env
+    environment:
+      - GOMAXPROCS=1
+      - GOGC=400
+      - GOMEMLIMIT=700MiB
+    networks:
+      - backend
+    depends_on:
+      sw_master_1:
+        condition: service_healthy
+    command: >
+      volume
+      -mserver=sw_master_1:9333
+      -ip=sw_volume_1
+      -ip.bind=0.0.0.0
+      -port=8080
+
+      -dir=/data/blobs
+      -max=25
+      -index=leveldb
+      -fileSizeLimitMB=25
+      -minFreeSpace=5GiB
+    deploy:
+      resources:
+        limits:
+          memory: 850M
+        reservations:
+          memory: 256M
+    restart: unless-stopped
+    oom_score_adj: -100
     cpuset: "0"
 
 networks:
