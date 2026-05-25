@@ -421,20 +421,27 @@ services:
       -ip=sw_master_1
       -ip.bind=0.0.0.0
       -port=9333
+
       -mdir=/data/meta
       -volumeSizeLimitMB=4096
+      -raftHashicorp=true
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9333/dir/status"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 3s
     deploy:
       resources:
         limits:
           memory: 256M
     restart: unless-stopped
+    oom_score_adj: -300
     cpuset: "0"
 
   sw_volume_1:
     image: chrislusf/seaweedfs:4.28
     container_name: sw_volume_1
-    ports:
-      - "127.0.0.1:8080:8080"
     volumes:
       - /mnt/nvme/seaweed/blobs:/data/blobs
     env_file: .env
@@ -444,6 +451,9 @@ services:
       - GOMEMLIMIT=700MiB
     networks:
       - backend
+    depends_on:
+      sw_master_1:
+        condition: service_healthy
     command: >
       volume
       -mserver=sw_master_1:9333
@@ -464,7 +474,6 @@ services:
           memory: 256M
     restart: unless-stopped
     oom_score_adj: -100
-    cpu_shares: 512
     cpuset: "0"
 
 networks:
