@@ -1,13 +1,18 @@
 import asyncio
 from collections.abc import Awaitable, Callable
+from time import perf_counter
 from typing import Any
 
 import nats
 import orjson
 
+from src.core.env_conf import NATSSettings
+from src.utils import log_error_infra
+from src.utils.log_helpers import log_debug_nats
+
 
 class CoreNATSManager:
-    def __init__(self, config):
+    def __init__(self, config: NATSSettings):
         self._config = config
         self._nc: nats.NATS | None = None
 
@@ -15,6 +20,7 @@ class CoreNATSManager:
         if self._nc:
             return
 
+        start = perf_counter()
         self._nc = await nats.connect(
             servers=self._config.nats_servers,
             user=self._config.nats_user,
@@ -29,7 +35,11 @@ class CoreNATSManager:
             disconnected_cb=self.disconnected_cb,
             reconnected_cb=self.reconnected_cb,
         )
-        print("[NATS] CONNECTED", flush=True)
+        log_debug_nats(
+            op="CONNECTED",
+            start_time=start,
+            detail=f"{self._config.nats_servers}",
+        )
 
     async def ping(self):
         if not self._nc:
@@ -56,14 +66,22 @@ class CoreNATSManager:
         if not self._nc:
             return
 
+        start = perf_counter()
         try:
             await asyncio.wait_for(self._nc.drain(), timeout=5.0)
         except TimeoutError as e:
-            print(f"NATS drain timeout, err: {e}", flush=True)
+            log_error_infra(
+                service="NATS",
+                op="DRAIN_TIMEOUT",
+                exc=e,
+            )
             await self._nc.close()
         finally:
             self._nc = None
-            print("NATS DISCONNECTED", flush=True)
+            log_debug_nats(
+                op="DISCONNECTED",
+                start_time=start,
+            )
 
     async def publish(self, subject: str, raw: dict[str, Any]):
         if not self._nc:
@@ -74,7 +92,11 @@ class CoreNATSManager:
             await self._nc.publish(subject, payload)
 
         except Exception as e:
-            print(f"NATS publish error on {subject}: {e}", flush=True)
+            log_error_infra(
+                service="NATS",
+                op=f"PUBLISH_ERROR on {subject}",
+                exc=e,
+            )
 
     async def subscribe(
         self,
@@ -89,7 +111,11 @@ class CoreNATSManager:
             try:
                 await handler(msg.data)
             except Exception as e:
-                print(f"NATS handler error [{subject}]: {e}", flush=True)
+                log_error_infra(
+                    service="NATS",
+                    op=f"HANDLE_ERROR on {subject}",
+                    exc=e,
+                )
 
         return await self._nc.subscribe(
             subject,

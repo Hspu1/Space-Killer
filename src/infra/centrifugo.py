@@ -1,7 +1,11 @@
+from time import perf_counter
+
 import httpx
 import orjson
 
 from src.core.env_conf import CentrifugoSettings
+from src.utils import log_error_infra
+from src.utils.log_helpers import log_debug_centrifugo
 
 
 class CentrifugoManager:
@@ -14,6 +18,7 @@ class CentrifugoManager:
         if self._client is not None:
             return
 
+        start = perf_counter()
         self._client = httpx.AsyncClient(
             base_url=self._api_url,
             headers={"X-API-Key": self._api_key, "Content-Type": "application/json"},
@@ -24,17 +29,18 @@ class CentrifugoManager:
             http2=True,
         )
 
-        print("[CENTRIFUGO] CONNECTED", flush=True)
+        log_debug_centrifugo(op="CONNECTED", start_time=start)
 
     async def disconnect(self) -> None:
         if self._client is None:
             return
 
+        start = perf_counter()
         try:
             await self._client.aclose()
         finally:
             self._client = None
-            print("[CENTRIFUGO] DISCONNECTED", flush=True)
+            log_debug_centrifugo(op="DISCONNECTED", start_time=start)
 
     async def batch_publish(self, commands: tuple[dict]) -> None:
         if not commands or self._client is None:
@@ -49,10 +55,12 @@ class CentrifugoManager:
             resp.raise_for_status()
             for reply in orjson.loads(resp.content).get("replies", []):
                 if error := reply.get("error"):
-                    print(f"batch reply error: {error}", flush=True)
+                    log_error_infra(
+                        service="CENTRIFUGO", op=f"BATCH_REPLY_ERROR: {error}"
+                    )
 
         except httpx.HTTPError as e:
-            print(f"batch_publish failed, frame dropped: {e}", flush=True)
+            log_error_infra(service="CENTRIFUGO", op=f"BATCH_PUBLISH_ERROR: {e}", exc=e)
 
         except Exception as e:
-            print(f"Unexpected error batch publishing to Centrifugo: {e}", flush=True)
+            log_error_infra(service="CENTRIFUGO", op=f"UNEXPECTED_ERROR: {e}", exc=e)

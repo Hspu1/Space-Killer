@@ -130,6 +130,40 @@ def log_debug_redis(op: str, start_time: float, detail: str = "") -> None:
         )
 
 
+def log_debug_nats(op: str, start_time: float, detail: str = "") -> None:
+    if logger.isEnabledFor(logging.DEBUG):
+        dur = (perf_counter() - start_time) * 1000
+        info = f" {Colors.LIGHT_GRAY}({detail}){Colors.RESET}" if detail else ""
+
+        logger.debug(
+            "%s[NATS]%s %s %s%.2fms%s%s",
+            Colors.PINK,
+            Colors.RESET,
+            op,
+            Colors.YELLOW,
+            dur,
+            Colors.RESET,
+            info,
+        )
+
+
+def log_debug_centrifugo(op: str, start_time: float, detail: str = "") -> None:
+    if logger.isEnabledFor(logging.DEBUG):
+        dur = (perf_counter() - start_time) * 1000
+        info = f" {Colors.LIGHT_GRAY}({detail}){Colors.RESET}" if detail else ""
+
+        logger.debug(
+            "%s[CENTRIFUGO]%s %s %s%.2fms%s%s",
+            Colors.PINK,
+            Colors.RESET,
+            op,
+            Colors.YELLOW,
+            dur,
+            Colors.RESET,
+            info,
+        )
+
+
 def log_debug_http(op: str, start_time: float, detail: str = "") -> None:
     if logger.isEnabledFor(logging.DEBUG):
         dur = (perf_counter() - start_time) * 1000
