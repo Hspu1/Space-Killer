@@ -165,12 +165,12 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl -sf http://127.0.0.1:10000/storage_service/native_transport | grep -q true || exit 1",
+          "curl -s http://$$(hostname -i):10000/storage_service/native_transport | grep -q true || exit 1",
         ]
-      interval: 10s
+      interval: 30s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 3
+      start_period: 60s
     deploy:
       resources:
         limits:
