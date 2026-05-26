@@ -130,7 +130,7 @@ def log_debug_redis(op: str, start_time: float, detail: str = "") -> None:
         )
 
 
-def log_debug_nats(op: str, start_time: float, detail: str = "") -> None:
+def log_debug_nats(op: str, start_time: float = 0.0, detail: str = "") -> None:
     if logger.isEnabledFor(logging.DEBUG):
         dur = (perf_counter() - start_time) * 1000
         info = f" {Colors.LIGHT_GRAY}({detail}){Colors.RESET}" if detail else ""

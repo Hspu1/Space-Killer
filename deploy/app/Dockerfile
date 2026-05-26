@@ -38,7 +38,7 @@ CMD ["sh", "-c", "exec granian --interface asgi src.main:app \
     --port ${APP_PORT} \
     --loop uvloop \
     --workers 1 \
-    --http 1"]
-# N workers
+    --http 1 \
+    --log-level warning"]
 
 EXPOSE ${APP_PORT}

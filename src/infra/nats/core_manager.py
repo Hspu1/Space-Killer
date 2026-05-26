@@ -54,13 +54,14 @@ class CoreNATSManager:
             raise RuntimeError(f"NATS ping failed: {e}")
 
     async def error_cb(self, e):
-        print(f"NATS Error: {e}", flush=True)
+        log_error_infra(service="NATS", op=f"ERROR: {e}", exc=e)
 
     async def disconnected_cb(self):
+        log_debug_nats(op="DISCONNECTED (cb)")
         print("NATS Disconnected", flush=True)
 
     async def reconnected_cb(self):
-        print(f"NATS Reconnected to {self._nc.connected_url.netloc}", flush=True)
+        log_debug_nats(op="RECONNECTED (cb)")
 
     async def disconnect(self):
         if not self._nc:
