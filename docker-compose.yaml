@@ -151,7 +151,7 @@ services:
       memlock:
         soft: -1
         hard: -1
-    command: --smp=1 --memory=4831838208 --reserve-memory=536870912 --developer-mode=1 --overprovisioned=0 --reactor-backend=io_uring --blocked-reactor-notify-ms=250 --io-properties-file=/etc/scylla.d/io_properties.yaml
+    command: --smp=1 --memory=8589934592 --reserve-memory=1073741824 --developer-mode=1 --overprovisioned=0 --reactor-backend=io_uring --blocked-reactor-notify-ms=250 --io-properties-file=/etc/scylla.d/io_properties.yaml
     volumes:
       - ./deploy/scylla/scylla.yaml:/etc/scylla/scylla.yaml:ro
       - ./deploy/scylla/cassandra-rackdc.properties:/etc/scylla/cassandra-rackdc.properties:ro
@@ -161,12 +161,18 @@ services:
       - backend
     ports:
       - "127.0.0.1:9180:9180"
+    healthcheck:
+      test: ["CMD", "curl -sf http://127.0.0.1:10000/v2/health/ready || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 60s
     deploy:
       resources:
         limits:
-          memory: 5.5G
+          memory: 9G
         reservations:
-          memory: 5.5G
+          memory: 9G
     restart: unless-stopped
     oom_score_adj: -500
     cpuset: "7"
@@ -176,7 +182,7 @@ services:
     container_name: scylla_migrator
     depends_on:
       scylla:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ./src/infra/scylla/migrations:/migrations
     command:
@@ -305,9 +311,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 768M
         reservations:
-          memory: 512M
+          memory: 384M
     restart: unless-stopped
     oom_score_adj: -300
     cpuset: "4"
@@ -330,9 +336,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 0.5G
+          memory: 768M
         reservations:
-          memory: 0.5G
+          memory: 384M
     restart: unless-stopped
     oom_score_adj: -200
     cpuset: "3,4"
@@ -349,9 +355,9 @@ services:
       GRANIAN_PROXY_HEADERS: "true"
       GRANIAN_FORWARDED_ALLOW_IPS: "127.0.0.1,172.19.0.0/24"
     depends_on:
-      db:
-        condition: service_healthy
       db_migrator:
+        condition: service_completed_successfully
+      scylla_migrator:
         condition: service_completed_successfully
       pgbouncer:
         condition: service_started
@@ -359,7 +365,8 @@ services:
         condition: service_healthy
       nats:
         condition: service_healthy
-      # HUH - wb other container nig
+      sw_volume_1:
+        condition: service_started
     networks:
       - backend
     healthcheck:
@@ -375,14 +382,14 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 1.2G
         reservations:
-          memory: 1G
+          memory: 768M
     restart: unless-stopped
     oom_score_adj: -200
     cpuset: "2"
 
-  nats:
+  nats: # !!! IDLE IMPL !!!
     image: nats:2.10-alpine
     container_name: nats
     volumes:
@@ -404,9 +411,9 @@ services:
         limits:
           memory: 512M
         reservations:
-          memory: 256M
+          memory: 128M
     restart: unless-stopped
-    oom_score_adj: -500
+    oom_score_adj: -300
     cpuset: "0"
 
   sw_master_1:
@@ -426,7 +433,7 @@ services:
       -volumeSizeLimitMB=4096
       -raftHashicorp=true
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9333/dir/status"]
+      test: ["CMD", "curl", "-sf", "http://localhost:9333/dir/status"]
       interval: 15s
       timeout: 3s
       retries: 3
@@ -434,7 +441,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 384M
+        reservations:
+          memory: 128M
     restart: unless-stopped
     oom_score_adj: -300
     cpuset: "0"
