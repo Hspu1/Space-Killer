@@ -10,7 +10,6 @@ from src.utils.log_helpers import log_debug_centrifugo
 
 class CentrifugoManager:
     def __init__(self, config: CentrifugoSettings) -> None:
-        self._api_url = config.centrifugo_api_url
         self._api_key = config.centrifugo_http_api_key
         self._client: httpx.AsyncClient | None = None
 
