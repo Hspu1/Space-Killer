@@ -162,7 +162,13 @@ services:
     ports:
       - "127.0.0.1:9180:9180"
     healthcheck:
-      test: ["CMD", "curl -sf http://127.0.0.1:10000/v2/health/ready || exit 1"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-sf",
+          "http://127.0.0.1:10000/storage_service/native_transport_status",
+        ]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -170,9 +176,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 9G
+          memory: 10G
         reservations:
-          memory: 9G
+          memory: 10G
     restart: unless-stopped
     oom_score_adj: -500
     cpuset: "7"
