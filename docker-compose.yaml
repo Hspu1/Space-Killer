@@ -161,12 +161,6 @@ services:
       - backend
     ports:
       - "127.0.0.1:9180:9180"
-    healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9042"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 60s
     deploy:
       resources:
         limits:
@@ -182,7 +176,7 @@ services:
     container_name: scylla_migrator
     depends_on:
       scylla:
-        condition: service_healthy
+        condition: service_started
     volumes:
       - ./src/infra/scylla/migrations:/migrations
     command:
