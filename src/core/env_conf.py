@@ -110,10 +110,8 @@ class NATSSettings(BaseSettings):
 class CentrifugoSettings(BaseSettings):
     model_config = CFG
 
-    centrifugo_api_url: str
     centrifugo_http_api_key: str
-
-    centrifugo_hz: int
+    chz: int
 
 
 class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py

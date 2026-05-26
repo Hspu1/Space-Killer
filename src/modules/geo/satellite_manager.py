@@ -30,7 +30,7 @@ class SatelliteManager:
         self._id_map = np.array([], dtype=int)
         self._needs_rebuild = False
 
-        self.hz = centrifugo_stg.centrifugo_hz
+        self.hz = centrifugo_stg.chz
         self.interval = 1.0 / self.hz
 
     async def start(self, scheduler: AsyncIOScheduler) -> None:

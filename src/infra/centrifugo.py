@@ -20,7 +20,7 @@ class CentrifugoManager:
 
         start = perf_counter()
         self._client = httpx.AsyncClient(
-            base_url=self._api_url,
+            base_url="http://centrifugo:8000/api",
             headers={"X-API-Key": self._api_key, "Content-Type": "application/json"},
             limits=httpx.Limits(
                 max_connections=5, max_keepalive_connections=2, keepalive_expiry=60.0

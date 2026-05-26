@@ -17,3 +17,5 @@ query_page_size_in_bytes: 524288
 
 tombstone_warn_threshold: 1000
 tombstone_failure_threshold: 5000
+
+change_set_check: false
