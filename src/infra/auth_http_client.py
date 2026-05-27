@@ -11,6 +11,7 @@ from tenacity import (
     wait_random_exponential,
 )
 
+from src.core.base import StrictSlots
 from src.core.env_conf import AuthSettings, ServerSettings, http_stg
 from src.core.exceptions import HttpServiceNotConnectedError
 from src.utils.log_helpers import log_debug_http, log_warn_auth
@@ -65,7 +66,9 @@ do_retry: Final = retry(
 )
 
 
-class AuthHttpClient:
+class AuthHttpClient(StrictSlots):
+    __slots__ = ("_auth_stg", "_client", "_server_stg")
+
     def __init__(self, auth_stg: AuthSettings, server_stg: ServerSettings):
         self._auth_stg, self._server_stg = auth_stg, server_stg
         self._client: AsyncClient | None = None
@@ -78,11 +81,10 @@ class AuthHttpClient:
         try:
             self._client = AsyncClient(
                 headers=headers,
-                # proxy=self._server_stg.proxy,
                 limits=limits,
                 timeout=self._auth_stg.auth_timeout,
                 verify=self._server_stg.ssl_check,
-                # http2=True,
+                http2=True,
             )
 
             log_debug_http(

@@ -5,14 +5,17 @@ from redis.asyncio import ConnectionError as RedisConnError
 from redis.asyncio import Redis
 from throttled.asyncio.store.redis import RedisStore
 
+from src.core.base import StrictSlots
 from src.core.env_conf import RedisSettings
 from src.core.exceptions import RedisNotReachableError
 from src.utils.log_helpers import log_debug_redis
 
 
-class RedisManager:
+class RedisManager(StrictSlots):
+    __slots__ = ("_cfg", "_client", "_rate_limiter")
+
     def __init__(self, config: RedisSettings) -> None:
-        self._config = config
+        self._cfg = config
         self._client: Redis | None = None
         self._rate_limiter: RedisStore | None = None
 
@@ -22,16 +25,16 @@ class RedisManager:
 
         start = perf_counter()
         self._client = Redis(
-            host=self._config.redis_host,
-            port=self._config.redis_port,
-            db=self._config.redis_sessions_db,
-            password=self._config.redis_password,
-            max_connections=self._config.general_max_connections,
-            socket_connect_timeout=self._config.socket_connect_timeout,
+            host=self._cfg.redis_host,
+            port=self._cfg.redis_port,
+            db=self._cfg.redis_sessions_db,
+            password=self._cfg.redis_password,
+            max_connections=self._cfg.general_max_connections,
+            socket_connect_timeout=self._cfg.socket_connect_timeout,
             socket_keepalive=True,
-            socket_timeout=self._config.socket_timeout,
+            socket_timeout=self._cfg.socket_timeout,
             decode_responses=False,
-            health_check_interval=self._config.health_check_interval,
+            health_check_interval=self._cfg.health_check_interval,
         )
 
         try:
@@ -39,7 +42,7 @@ class RedisManager:
             log_debug_redis(
                 op="CONNECTED",
                 start_time=start,
-                detail=f"{self._config.redis_host}:{self._config.redis_port}/db={self._config.redis_sessions_db}",
+                detail=f"{self._cfg.redis_host}:{self._cfg.redis_port}/db={self._cfg.redis_sessions_db}",
             )
 
         except (RedisConnError, TimeoutError, Exception) as e:
@@ -60,21 +63,21 @@ class RedisManager:
 
     def _get_options(self) -> dict[str, Any]:
         return {
-            "max_connections": self._config.limiter_max_connections,
-            "socket_timeout": self._config.socket_timeout,
-            "socket_connect_timeout": self._config.socket_connect_timeout,
+            "max_connections": self._cfg.limiter_max_connections,
+            "socket_timeout": self._cfg.socket_timeout,
+            "socket_connect_timeout": self._cfg.socket_connect_timeout,
             "socket_keepalive": True,
             "retry_on_timeout": False,
             "decode_responses": False,
             "REUSE_CONNECTION": True,
             "PREFIX": "rl:v1:",
-            "health_check_interval": self._config.health_check_interval,
+            "health_check_interval": self._cfg.health_check_interval,
         }
 
     def get_rate_limiter(self) -> RedisStore:
         if self._rate_limiter is None:
             self._rate_limiter = RedisStore(
-                server=self._config.rl_db_url, options=self._get_options()
+                server=self._cfg.rl_db_url, options=self._get_options()
             )
         return self._rate_limiter
 

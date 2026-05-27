@@ -3,11 +3,14 @@ from time import perf_counter
 from redis.asyncio import Redis
 from starsessions import SessionStore
 
+from src.core.base import StrictSlots
 from src.infra.redis import RedisManager
 from src.utils.log_helpers import log_debug_redis, log_error_infra
 
 
-class RedisSessionStore(SessionStore):
+class RedisSessionStore(SessionStore, StrictSlots):
+    __slots__ = ("_manager", "_prefix")
+
     def __init__(self, manager: RedisManager, prefix: str = "sid:v1") -> None:
         self._manager, self._prefix = manager, prefix
 

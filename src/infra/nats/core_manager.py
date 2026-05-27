@@ -6,14 +6,17 @@ from typing import Any
 import nats
 import orjson
 
+from src.core.base import StrictSlots
 from src.core.env_conf import NATSSettings
 from src.utils import log_error_infra
 from src.utils.log_helpers import log_debug_nats
 
 
-class CoreNATSManager:
+class CoreNATSManager(StrictSlots):
+    __slots__ = ("_cfg", "_nc")
+
     def __init__(self, config: NATSSettings):
-        self._config = config
+        self._cfg = config
         self._nc: nats.NATS | None = None
 
     async def connect(self):
@@ -22,15 +25,15 @@ class CoreNATSManager:
 
         start = perf_counter()
         self._nc = await nats.connect(
-            servers=self._config.nats_servers,
-            user=self._config.nats_user,
-            password=self._config.nats_password,
-            connect_timeout=self._config.connect_timeout,
-            allow_reconnect=self._config.allow_reconnect,
-            reconnect_time_wait=self._config.reconnect_time_wait,
-            max_reconnect_attempts=self._config.max_reconnect_attempts,
-            ping_interval=self._config.ping_interval,
-            max_outstanding_pings=self._config.max_outstanding_pings,
+            servers=self._cfg.nats_servers,
+            user=self._cfg.nats_user,
+            password=self._cfg.nats_password,
+            connect_timeout=self._cfg.connect_timeout,
+            allow_reconnect=self._cfg.allow_reconnect,
+            reconnect_time_wait=self._cfg.reconnect_time_wait,
+            max_reconnect_attempts=self._cfg.max_reconnect_attempts,
+            ping_interval=self._cfg.ping_interval,
+            max_outstanding_pings=self._cfg.max_outstanding_pings,
             error_cb=self.error_cb,
             disconnected_cb=self.disconnected_cb,
             reconnected_cb=self.reconnected_cb,
@@ -38,7 +41,7 @@ class CoreNATSManager:
         log_debug_nats(
             op="CONNECTED",
             start_time=start,
-            detail=f"{self._config.nats_servers}",
+            detail=f"{self._cfg.nats_servers}",
         )
 
     async def ping(self):

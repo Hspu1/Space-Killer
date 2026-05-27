@@ -11,10 +11,13 @@ from orjson import (
 )
 from starsessions.serializers import Serializer
 
+from src.core.base import StrictSlots
 from src.utils.log_helpers import log_debug_core, log_error_infra
 
 
-class OrjsonSerializer(Serializer):
+class OrjsonSerializer(Serializer, StrictSlots):
+    __slots__ = ("_dump_opts",)
+
     def __init__(self) -> None:
         self._dump_opts: Final = OPT_NON_STR_KEYS | OPT_SERIALIZE_UUID
 

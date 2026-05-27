@@ -3,12 +3,15 @@ from time import perf_counter
 import httpx
 import orjson
 
+from src.core.base import StrictSlots
 from src.core.env_conf import CentrifugoSettings
 from src.utils import log_error_infra
 from src.utils.log_helpers import log_debug_centrifugo
 
 
-class CentrifugoManager:
+class CentrifugoManager(StrictSlots):
+    __slots__ = ("_api_key", "_client")
+
     def __init__(self, config: CentrifugoSettings) -> None:
         self._api_key = config.centrifugo_http_api_key
         self._client: httpx.AsyncClient | None = None

@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.pool import NullPool
 
+from src.core.base import StrictSlots
 from src.core.env_conf import PostgresSettings
 from src.core.exceptions import PostgresNotReachableError
 from src.utils import log_debug_db
@@ -30,9 +31,11 @@ def orjson_loads(data: str | bytes) -> Any:
     return loads(data)
 
 
-class PostgresManager:
+class PostgresManager(StrictSlots):
+    __slots__ = ("_cfg", "_engine", "_session_maker")
+
     def __init__(self, config: PostgresSettings) -> None:
-        self._config = config
+        self._cfg = config
         self._engine: AsyncEngine | None = None
         self._session_maker: async_sessionmaker[AsyncSession] | None = None
 
@@ -43,7 +46,7 @@ class PostgresManager:
         try:
             start = perf_counter()
             self._engine = create_async_engine(
-                url=self._config.pgbouncer_url,
+                url=self._cfg.pgbouncer_url,
                 json_serializer=orjson_dumps,
                 json_deserializer=orjson_loads,
                 poolclass=NullPool,
