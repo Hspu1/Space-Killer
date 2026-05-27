@@ -29,3 +29,7 @@ class ProviderIDMissingError(BaseAppError):
 
 class HttpServiceNotConnectedError(BaseAppError):
     message: str = "HttpService isn't connected"
+
+
+class ScyllaNotReachableError(BaseAppError):
+    message: str = "Scylla isn't reachable/initialized"

@@ -1,14 +1,16 @@
 from functools import cached_property
 from hashlib import sha256
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
-from pydantic import AfterValidator, PostgresDsn
+from pydantic import AfterValidator, BeforeValidator, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 ENV_FILE = BASE_DIR / ".env"
-CFG = SettingsConfigDict(env_file=ENV_FILE, env_file_encoding="utf-8", extra="ignore")
+CFG = SettingsConfigDict(
+    env_file=ENV_FILE, env_file_encoding="utf-8", extra="ignore", case_sensitive=True
+)
 
 
 class AuthSettings(BaseSettings):
@@ -112,6 +114,36 @@ class CentrifugoSettings(BaseSettings):
 
     centrifugo_http_api_key: str
     chz: int
+
+
+def _parse_hosts(v: Any) -> list[str]:
+    if isinstance(v, list):
+        return [h.strip() for h in v if str(h).strip()]
+    return [h.strip() for h in str(v).split(",") if h.strip()]
+
+
+class ScyllaSettings(BaseSettings):
+    model_config = CFG
+
+    scylla_hosts: Annotated[list[str], BeforeValidator(_parse_hosts)]
+    scylla_port: int
+    scylla_keyspace: str
+
+    core_connections_per_host: int
+    scylla_port_range_min: int
+    scylla_port_range_max: int
+    scylla_max_prepared: int
+
+    scylla_connect_timeout: float
+    scylla_request_timeout: float
+    scylla_scan_timeout: float
+    scylla_heartbeat_interval: int
+    scylla_idle_timeout: int
+    scylla_exponential_reconnect_base_delay_ms: int
+    scylla_exponential_reconnect_max_delay_ms: int
+
+    scylla_app_name: str
+    scylla_log_level: str  # none | warn | info | debug
 
 
 class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
