@@ -377,7 +377,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          'python3 -c ''import http.client; conn = http.client.HTTPConnection("127.0.0.1", ${APP_PORT}); conn.request("GET", "/health/readiness"); resp = conn.getresponse(); exit(0) if resp.status == 200 else exit(1)''',
+          'python3 -c ''import http.client; conn = http.client.HTTPConnection("127.0.0.1", ${APP_PORT}); conn.request("GET", "/healthz/readiness"); resp = conn.getresponse(); exit(0) if resp.status == 200 else exit(1)''',
         ]
       interval: 15s
       timeout: 5s
