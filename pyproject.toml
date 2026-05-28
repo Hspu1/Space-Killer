@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "httpx[http2]>=0.28.1",
-    "orjson>=3.11.5",
+    "orjson>=3.11.9",
     "tenacity>=9.1.4",
     "curl-cffi>=0.14.0",
     "pydantic>=2.12.5",
