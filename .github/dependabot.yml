@@ -6,11 +6,6 @@ updates:
       interval: "daily"
 
   - package-ecosystem: "docker"
-    directory: "/"
-    schedule:
-      interval: "daily"
-
-  - package-ecosystem: "docker"
     directory: "/deploy/app"
     schedule:
       interval: "daily"
