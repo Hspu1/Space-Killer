@@ -127,14 +127,13 @@ class ScyllaSettings(BaseSettings):
     scylla_port: int
     scylla_keyspace: str
 
-    core_connections_per_host: int
+    scylla_core_connections_per_host: int
     scylla_port_range_min: int
     scylla_port_range_max: int
     scylla_max_prepared: int
 
     scylla_connect_timeout: float
     scylla_request_timeout: float
-    scylla_scan_timeout: float
     scylla_heartbeat_interval: int
     scylla_idle_timeout: int
     scylla_exponential_reconnect_base_delay_ms: int
