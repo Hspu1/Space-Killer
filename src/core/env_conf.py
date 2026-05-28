@@ -123,7 +123,7 @@ def _parse_hosts(v: Any) -> list[str]:
 class ScyllaSettings(BaseSettings):
     model_config = CFG
 
-    scylla_hosts: Annotated[list[str], PlainValidator(_parse_hosts)]
+    scylla_hosts: Annotated[list[str] | str, PlainValidator(_parse_hosts)]
     scylla_port: int
     scylla_keyspace: str
 
