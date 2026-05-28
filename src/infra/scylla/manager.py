@@ -86,6 +86,17 @@ class ScyllaManager:
             await self._teardown()
             raise ScyllaNotReachableError from e
 
+    async def ping(self) -> bool:
+        if self._session is None:
+            return False
+        try:
+            await self._session.execute(
+                acsylla.create_statement("SELECT cluster_name FROM system.local")
+            )
+            return True
+        except Exception:
+            return False
+
     async def disconnect(self) -> None:
         if not self._ready:
             return
@@ -110,17 +121,6 @@ class ScyllaManager:
 
             self._prepared.clear()
             self._session, self._cluster, self._ready = None, None, False
-
-    async def ping(self) -> bool:
-        if self._session is None:
-            return False
-        try:
-            await self._session.execute(
-                acsylla.create_statement("SELECT cluster_name FROM system.local")
-            )
-            return True
-        except Exception:
-            return False
 
     async def _get_prepared(self, query: str) -> acsylla.PreparedStatement:
         if query in self._prepared:

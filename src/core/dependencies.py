@@ -10,6 +10,7 @@ from src.infra.auth_http_client import AuthHttpClient
 from src.infra.nats.core_manager import CoreNATSManager
 from src.infra.persistence.postgres import PostgresManager
 from src.infra.redis import RedisManager
+from src.infra.scylla.manager import ScyllaManager
 from src.utils import log_error_infra
 from src.utils.log_helpers import log_debug_redis
 
@@ -28,6 +29,10 @@ async def get_rate_limiter(request: Request) -> RedisStore:
 
 async def get_core_nats_manager(request: Request) -> CoreNATSManager:
     return request.app.state.core_nats_manager
+
+
+async def get_scylla_manager(request: Request) -> ScyllaManager:
+    return request.app.state.scylla_manager
 
 
 async def get_auth_http_client(request: Request) -> AuthHttpClient:

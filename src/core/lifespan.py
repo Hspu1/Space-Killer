@@ -8,6 +8,7 @@ from src.infra.auth_http_client import AuthHttpClient
 from src.infra.nats.core_manager import CoreNATSManager
 from src.infra.persistence.postgres import PostgresManager
 from src.infra.redis import RedisManager
+from src.infra.scylla.manager import ScyllaManager
 from src.utils.log_helpers import log_error_infra
 
 from .lifespan_helpers import safe_start, silent_close
@@ -17,6 +18,7 @@ def get_lifespan(
     pg_manager: PostgresManager,
     redis_manager: RedisManager,
     core_nats_manager: CoreNATSManager,
+    scylla_manager: ScyllaManager,
     auth_http_client: AuthHttpClient,
 ):
     @asynccontextmanager
@@ -26,15 +28,18 @@ def get_lifespan(
                 service_name="Postgres", coroutine=pg_manager.connect(), atimeout=10.0
             ),
             safe_start(
-                service_name="Redis", coroutine=redis_manager.connect(), atimeout=10.0
+                service_name="Redis", coroutine=redis_manager.connect(), atimeout=3.0
+            ),
+            safe_start(
+                service_name="Scylla", coroutine=scylla_manager.connect(), atimeout=10.0
             ),
             safe_start(
                 service_name="NATS (Core)",
                 coroutine=core_nats_manager.connect(),
-                atimeout=10.0,
+                atimeout=3.0,
             ),
             safe_start(
-                service_name="HTTP", coroutine=auth_http_client.connect(), atimeout=10.0
+                service_name="HTTP", coroutine=auth_http_client.connect(), atimeout=5.0
             ),
             return_exceptions=True,
         )
@@ -48,6 +53,9 @@ def get_lifespan(
                 service_name="NATS (Core)", coroutine=core_nats_manager.disconnect()
             )
             await silent_close(service_name="Redis", coroutine=redis_manager.disconnect())
+            await silent_close(
+                service_name="Scylla", coroutine=scylla_manager.disconnect()
+            )
             await silent_close(service_name="Postgres", coroutine=pg_manager.disconnect())
             raise SafeStartError(error_count=len(errors)) from errors[
                 0
@@ -57,11 +65,13 @@ def get_lifespan(
             app.state.pg_manager,
             app.state.redis_manager,
             app.state.core_nats_manager,
+            app.state.scylla_manager,
             app.state.auth_http_client,
         ) = (
             pg_manager,
             redis_manager,
             core_nats_manager,
+            scylla_manager,
             auth_http_client,
         )
 
@@ -75,6 +85,9 @@ def get_lifespan(
                 service_name="NATS (Core)", coroutine=core_nats_manager.disconnect()
             )
             await silent_close(service_name="Redis", coroutine=redis_manager.disconnect())
+            await silent_close(
+                service_name="Scylla", coroutine=scylla_manager.disconnect()
+            )
             await silent_close(service_name="Postgres", coroutine=pg_manager.disconnect())
 
     return lifespan

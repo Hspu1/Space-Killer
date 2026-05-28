@@ -9,6 +9,7 @@ from src.core.env_conf import (
     nats_stg,
     pg_stg,
     redis_stg,
+    scylla_stg,
     server_stg,
 )
 from src.core.lifespan import get_lifespan
@@ -16,6 +17,7 @@ from src.infra.auth_http_client import AuthHttpClient
 from src.infra.nats.core_manager import CoreNATSManager
 from src.infra.persistence.postgres import PostgresManager
 from src.infra.redis import RedisManager
+from src.infra.scylla.manager import ScyllaManager
 from src.infra.serializer import OrjsonSerializer
 from src.infra.session_store import RedisSessionStore
 from src.modules.auth import auth_router
@@ -29,10 +31,11 @@ setup_logging()
 
 
 def create_app() -> FastAPI:
-    pg_manager, redis_manager, core_nats_manager, auth_http_client = (
+    pg_manager, redis_manager, core_nats_manager, scylla_manager, auth_http_client = (
         PostgresManager(config=pg_stg),
         RedisManager(config=redis_stg),
         CoreNATSManager(config=nats_stg),
+        ScyllaManager(config=scylla_stg),
         AuthHttpClient(auth_stg=auth_stg, server_stg=server_stg),
     )
 
@@ -42,6 +45,7 @@ def create_app() -> FastAPI:
             pg_manager=pg_manager,
             redis_manager=redis_manager,
             core_nats_manager=core_nats_manager,
+            scylla_manager=scylla_manager,
             auth_http_client=auth_http_client,
         ),
         default_response_class=ORJSONResponse,

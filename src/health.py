@@ -8,9 +8,10 @@ from .core.dependencies import (
     get_core_nats_manager,
     get_pg_manager,
     get_redis_manager,
+    get_scylla_manager,
 )
 
-health_router = APIRouter(prefix="/health", tags=["System"])
+health_router = APIRouter(prefix="/healthz", tags=["System"])
 
 
 @health_router.get("/readiness", status_code=HTTP_200_OK)
@@ -18,6 +19,7 @@ async def readiness(
     pg=Depends(get_pg_manager),
     redis=Depends(get_redis_manager),
     nats_core=Depends(get_core_nats_manager),
+    scylla=Depends(get_scylla_manager),
     auth=Depends(get_auth_http_client),
 ):
 
@@ -27,6 +29,7 @@ async def readiness(
                 pg.ping(),
                 redis.ping(),
                 nats_core.ping(),
+                scylla.ping(),
                 auth.ping(),
             ),
             timeout=5.0,

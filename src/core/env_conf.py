@@ -67,7 +67,7 @@ class PostgresSettings(BaseSettings):
 
 
 class RedisSettings(BaseSettings):
-    # ONLY for app, no geo
+    # ONLY for redis_app, NOT for redis_geo
 
     model_config = CFG
 
@@ -158,12 +158,22 @@ class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
     )
 
 
-auth_stg, server_stg, pg_stg, redis_stg, nats_stg, centrifugo_stg, http_stg = (
+(
+    auth_stg,
+    server_stg,
+    pg_stg,
+    redis_stg,
+    nats_stg,
+    centrifugo_stg,
+    scylla_stg,
+    http_stg,
+) = (
     AuthSettings(),
     ServerSettings(),
     PostgresSettings(),
     RedisSettings(),
     NATSSettings(),
     CentrifugoSettings(),
+    ScyllaSettings(),
     HTTPSettings(),
 )
