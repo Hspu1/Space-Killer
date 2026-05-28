@@ -41,7 +41,7 @@ class ScyllaManager:
             self._cluster = acsylla.create_cluster(
                 self._cfg.scylla_hosts,
                 port=self._cfg.scylla_port,
-                core_connections_per_host=self._cfg.core_connections_per_host,
+                core_connections_per_host=self._cfg.scylla_core_connections_per_host,
                 local_port_range_min=self._cfg.scylla_port_range_min,
                 local_port_range_max=self._cfg.scylla_port_range_max,
                 token_aware_routing=True,
