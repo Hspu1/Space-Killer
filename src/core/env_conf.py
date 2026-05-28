@@ -3,7 +3,7 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Annotated, Any
 
-from pydantic import AfterValidator, BeforeValidator, PostgresDsn
+from pydantic import AfterValidator, PlainValidator, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -123,7 +123,7 @@ def _parse_hosts(v: Any) -> list[str]:
 class ScyllaSettings(BaseSettings):
     model_config = CFG
 
-    scylla_hosts: Annotated[list[str], BeforeValidator(_parse_hosts)]
+    scylla_hosts: Annotated[list[str], PlainValidator(_parse_hosts)]
     scylla_port: int
     scylla_keyspace: str
 
