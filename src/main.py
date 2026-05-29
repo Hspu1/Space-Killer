@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import ORJSONResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 from starsessions import SessionAutoloadMiddleware, SessionMiddleware
 
@@ -59,7 +59,6 @@ def create_app() -> FastAPI:
             seaweed_manager=seaweed_manager,
             auth_http_client=auth_http_client,
         ),
-        default_response_class=ORJSONResponse,
         docs_url=None,
         redoc_url=None,
         swagger_ui_oauth2_redirect_url="/oauth2-redirect",
