@@ -76,10 +76,8 @@ class ScyllaManager:
                 keyspace=self._cfg.scylla_keyspace
             )
 
-            if not await self.ping():
-                raise ConnectionError("ping failed after session creation")
-
             self._ready = True
+
             log_debug_scylla(
                 op="CONNECTED",
                 start_time=start,
