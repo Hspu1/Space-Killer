@@ -31,7 +31,7 @@ app = [
     "uuid6>=2025.0.1",
     "uvicorn[standard]>=0.40.0",
     "uvloop; sys_platform != 'win32'",
-    "yarl>=1.23.0",
+    "yarl>=1.24.2",
 ]
 
 geo = [
