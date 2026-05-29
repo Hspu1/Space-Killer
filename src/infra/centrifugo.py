@@ -14,7 +14,7 @@ class CentrifugoManager(StrictSlots):
 
     def __init__(self, config: CentrifugoSettings) -> None:
         self._api_key = config.centrifugo_http_api_key
-        self._api_url = config.centrifugo_http_api_url
+        self._api_url = config.c_http_api_url
         self._client: httpx.AsyncClient | None = None
 
     async def connect(self) -> None:
