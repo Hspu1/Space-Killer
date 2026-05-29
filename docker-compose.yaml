@@ -434,7 +434,8 @@ services:
       -port=9333
 
       -mdir=/data/meta
-      -volumeSizeLimitMB=4096
+      -volumeSizeLimitMB=1024
+      -volumePreallocate=true
       -raftHashicorp=true
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:9333/dir/status"]
@@ -460,7 +461,7 @@ services:
     env_file: .env
     environment:
       - GOMAXPROCS=1
-      - GOGC=400
+      - GOGC=100
       - GOMEMLIMIT=700MiB
     networks:
       - backend
@@ -475,10 +476,10 @@ services:
       -port=8080
 
       -dir=/data/blobs
-      -max=25
+      -max=100
       -index=leveldb
       -fileSizeLimitMB=6
-      -minFreeSpace=5GiB
+      -minFreeSpace=2GiB
     deploy:
       resources:
         limits:
