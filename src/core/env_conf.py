@@ -111,6 +111,7 @@ class CentrifugoSettings(BaseSettings):
     model_config = CFG
 
     centrifugo_http_api_key: str
+    centrifugo_http_api_url: str
     chz: int
 
 

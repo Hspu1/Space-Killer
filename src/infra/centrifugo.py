@@ -10,10 +10,11 @@ from src.utils.log_helpers import log_debug_centrifugo
 
 
 class CentrifugoManager(StrictSlots):
-    __slots__ = ("_api_key", "_client")
+    __slots__ = ("_api_key", "_api_url", "_client")
 
     def __init__(self, config: CentrifugoSettings) -> None:
         self._api_key = config.centrifugo_http_api_key
+        self._api_url = config.centrifugo_http_api_url
         self._client: httpx.AsyncClient | None = None
 
     async def connect(self) -> None:
@@ -22,12 +23,12 @@ class CentrifugoManager(StrictSlots):
 
         start = perf_counter()
         self._client = httpx.AsyncClient(
-            base_url="http://centrifugo:8000/api",
+            base_url=self._api_url,
             headers={"X-API-Key": self._api_key, "Content-Type": "application/json"},
             limits=httpx.Limits(
-                max_connections=5, max_keepalive_connections=2, keepalive_expiry=60.0
+                max_connections=2, max_keepalive_connections=2, keepalive_expiry=60.0
             ),
-            timeout=httpx.Timeout(1.0, connect=2.0),  # magic ahh nums
+            timeout=httpx.Timeout(connect=2.0, write=5.0, read=5.0, pool=2.0),
             http2=True,
         )
 
