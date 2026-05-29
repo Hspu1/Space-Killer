@@ -27,7 +27,7 @@ from src.ui import ui_router
 from src.utils import setup_logging
 
 from .docs import static_docs_urls
-from .health import health_router
+from .healthz import healthz_router
 
 setup_logging()
 
@@ -97,7 +97,7 @@ def create_app() -> FastAPI:
 
     app.include_router(auth_router)
     app.include_router(ui_router)
-    app.include_router(health_router)
+    app.include_router(healthz_router)
 
     return app
 

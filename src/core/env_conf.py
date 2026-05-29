@@ -147,6 +147,9 @@ class ScyllaSettings(BaseSettings):
 class SeaweedSettings(BaseSettings):
     model_config = CFG
 
+    seaweed_master_url: str
+    seaweed_public_url: str
+
 
 class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
     model_config = CFG
