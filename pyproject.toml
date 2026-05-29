@@ -19,7 +19,7 @@ app = [
     "alembic>=1.18.0",
     "asyncpg>=0.31.0",
     "authlib>=1.7.2",
-    "fastapi[standard]>=0.128.0",
+    "fastapi[standard]>=0.136.3",
     "granian",
     "itsdangerous>=2.2.0",
     "jinja2>=3.1.6",
