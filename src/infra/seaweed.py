@@ -45,6 +45,13 @@ class SeaweedManager(StrictSlots):
         )
         log_debug_seaweed(op="CONNECTED", start_time=start)
 
+    async def ping(self) -> bool:
+        if self._master_client is None:
+            return False
+
+        resp = await self._master_client.get("/dir/status")
+        resp.raise_for_status()
+
     async def disconnect(self) -> None:
         if self._master_client is None:
             return

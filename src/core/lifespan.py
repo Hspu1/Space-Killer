@@ -3,7 +3,6 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from src.core.exceptions import SafeStartError
 from src.infra.auth_http_client import AuthHttpClient
 from src.infra.nats.core_manager import CoreNATSManager
 from src.infra.persistence.postgres import PostgresManager
@@ -71,9 +70,10 @@ def get_lifespan(  # noqa: PLR0913
             await silent_close(
                 service_name="PostgreSQL", coroutine=pg_manager.disconnect()
             )
-            raise SafeStartError(error_count=len(errors)) from errors[
-                0
-            ]  # from any real err
+            raise ExceptionGroup(
+                f"Lifespan startup failed with {len(errors)} errors",  # noqa: EM102
+                errors,
+            )
 
         (
             app.state.pg_manager,

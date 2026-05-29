@@ -95,13 +95,10 @@ class ScyllaManager:
     async def ping(self) -> bool:
         if self._session is None:
             return False
-        try:
-            await self._session.execute(
-                acsylla.create_statement("SELECT cluster_name FROM system.local")
-            )
-            return True
-        except Exception:
-            return False
+
+        await self._session.execute(
+            acsylla.create_statement("SELECT cluster_name FROM system.local")
+        )
 
     async def disconnect(self) -> None:
         if not self._ready:
