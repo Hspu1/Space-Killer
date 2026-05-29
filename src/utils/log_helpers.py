@@ -246,3 +246,26 @@ def log_debug_login(start_time: float, provider: str = "") -> None:
             Colors.RESET,
             provider.upper(),
         )
+
+
+def log_healthz(success: bool, e: Exception | None = None) -> None:
+    if success and logger.isEnabledFor(logging.DEBUG):
+        logger.debug(
+            "%s[HEALTHZ]%s STATUS: SUCCESS",
+            Colors.DARK_GREEN,
+            Colors.RESET,
+        )
+
+    if e and logger.isEnabledFor(logging.ERROR):
+        if isinstance(e, ExceptionGroup):
+            errors_list = [f"{type(err).__name__}: {err}" for err in e.exceptions]
+            err_msg = " | ".join(errors_list)
+        else:
+            err_msg = f"{type(e).__name__}: {e}"
+
+        logger.error(
+            "%s[HEALTHZ]%s STATUS: FUCKED | %s",
+            Colors.RED,
+            Colors.RESET,
+            err_msg,
+        )
