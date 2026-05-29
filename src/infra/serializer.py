@@ -12,7 +12,7 @@ from orjson import (
 from starsessions.serializers import Serializer
 
 from src.core.base import StrictSlots
-from src.utils.log_helpers import log_debug_core, log_error_infra
+from src.utils.log_helpers import log_debug_orjson, log_error_infra
 
 
 class OrjsonSerializer(Serializer, StrictSlots):
@@ -28,11 +28,11 @@ class OrjsonSerializer(Serializer, StrictSlots):
         start = perf_counter()
         try:
             res = dumps(data, option=self._dump_opts)
-            log_debug_core(op="SERIALIZE", start_time=start, detail=f"keys={len(data)}")
+            log_debug_orjson(op="SERIALIZE", start_time=start, detail=f"keys={len(data)}")
             return res
 
         except (JSONEncodeError, TypeError) as e:
-            log_error_infra(service="CORE", op="ORJSON SERIALIZE", exc=e)
+            log_error_infra(service="ORJSON", op="ORJSON SERIALIZE", exc=e)
             raise
 
     def deserialize(self, data: bytes) -> Any:
@@ -42,9 +42,11 @@ class OrjsonSerializer(Serializer, StrictSlots):
         start = perf_counter()
         try:
             res = loads(data)
-            log_debug_core(op="DESERIALIZE", start_time=start, detail=f"size={len(data)}")
+            log_debug_orjson(
+                op="DESERIALIZE", start_time=start, detail=f"size={len(data)}"
+            )
             return res
 
         except (JSONDecodeError, TypeError) as e:
-            log_error_infra(service="CORE", op="ORJSON DESERIALIZE", exc=e)
+            log_error_infra(service="ORJSON", op="ORJSON DESERIALIZE", exc=e)
             return {}

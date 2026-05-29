@@ -96,13 +96,13 @@ def log_error_infra(
         )
 
 
-def log_debug_core(op: str, start_time: float, detail: str = "") -> None:
+def log_debug_orjson(op: str, start_time: float, detail: str = "") -> None:
     if logger.isEnabledFor(logging.DEBUG):
         dur_us = (perf_counter() - start_time) * 1_000_000
         info = f" {Colors.LIGHT_GRAY}({detail}){Colors.RESET}" if detail else ""
 
         logger.debug(
-            "%s[CORE]%s %s %s%.2fµs%s%s",
+            "%s[ORJSON]%s %s %s%.2fµs%s%s",
             Colors.DARK_GREEN,
             Colors.RESET,
             op,
