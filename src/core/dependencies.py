@@ -11,6 +11,7 @@ from src.infra.nats.core_manager import CoreNATSManager
 from src.infra.persistence.postgres import PostgresManager
 from src.infra.redis import RedisManager
 from src.infra.scylla.manager import ScyllaManager
+from src.infra.seaweed import SeaweedManager
 from src.utils import log_error_infra
 from src.utils.log_helpers import log_debug_redis
 
@@ -35,14 +36,16 @@ async def get_scylla_manager(request: Request) -> ScyllaManager:
     return request.app.state.scylla_manager
 
 
+async def get_seaweed_manager(request: Request) -> SeaweedManager:
+    return request.app.state.seaweed_manager
+
+
 async def get_auth_http_client(request: Request) -> AuthHttpClient:
     return request.app.state.auth_http_client
 
 
 def get_client_ip(request: Request) -> str:
-    if real_ip := request.headers.get(
-        "X-Real-IP"
-    ):  # !!! DO NOT FORGET TO CUSTOMIZE NGINX !!!
+    if real_ip := request.headers.get("X-Real-IP"):
         return real_ip
 
     return request.client.host if request.client else "127.0.0.1"

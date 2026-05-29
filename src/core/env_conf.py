@@ -144,6 +144,10 @@ class ScyllaSettings(BaseSettings):
     scylla_log_level: str  # none | warn | info | debug
 
 
+class SeaweedSettings(BaseSettings):
+    model_config = CFG
+
+
 class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
     model_config = CFG
 
@@ -164,6 +168,7 @@ class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
     nats_stg,
     centrifugo_stg,
     scylla_stg,
+    seaweed_stg,
     http_stg,
 ) = (
     AuthSettings(),
@@ -173,5 +178,6 @@ class HTTPSettings(BaseSettings):  # for src/infra/auth_http_client.py
     NATSSettings(),
     CentrifugoSettings(),
     ScyllaSettings(),
+    SeaweedSettings(),
     HTTPSettings(),
 )
