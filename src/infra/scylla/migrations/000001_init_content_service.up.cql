@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS content_service.posts (
     author_id uuid,
     title text,
     text text,
-    media_path text,
+    media_path set<text>,
     is_edited boolean,
     PRIMARY KEY (post_id)
 ) WITH compaction = { 'class': 'LeveledCompactionStrategy' };

@@ -7,11 +7,16 @@ import acsylla
 
 from src.core.env_conf import ScyllaSettings
 from src.core.exceptions import ScyllaNotReachableError
+from src.utils import log_error_infra
+from src.utils.log_helpers import log_debug_scylla
 
 
 def _scylla_log(msg: acsylla.LogMessage) -> None:
-    if str(msg.log_level).lower() in ("error", "crit"):
-        print(f"[SCYLLA] {msg.message}", flush=True)
+    match msg.log_level.upper():
+        case "ERROR" | "CRITICAL":
+            log_error_infra(service="SCYLLA", op=f"LOG_ERROR, msg: {msg.message}")
+        case _:
+            log_debug_scylla(op="CONNECTED", detail=f"LOG: {msg.message}")
 
 
 class ScyllaManager:
@@ -36,7 +41,7 @@ class ScyllaManager:
         if self._ready:
             return
 
-        t0 = perf_counter()
+        start = perf_counter()
         try:
             self._cluster = acsylla.create_cluster(
                 self._cfg.scylla_hosts,
@@ -75,15 +80,16 @@ class ScyllaManager:
                 raise ConnectionError("ping failed after session creation")
 
             self._ready = True
-            print(
-                f"[SCYLLA] connected host={self._cfg.scylla_hosts} "
-                f"keyspace={self._cfg.scylla_keyspace} "
-                f"elapsed={1000 * (perf_counter() - t0):.1f}ms",
-                flush=True,
+            log_debug_scylla(
+                op="CONNECTED",
+                start_time=start,
+                detail=f"host={self._cfg.scylla_hosts}, keyspace={
+                    self._cfg.scylla_keyspace
+                }",
             )
 
         except Exception as e:
-            await self._teardown()
+            await self.disconnect()
             raise ScyllaNotReachableError from e
 
     async def ping(self) -> bool:
@@ -101,15 +107,12 @@ class ScyllaManager:
         if not self._ready:
             return
 
-        t0 = perf_counter()
+        start = perf_counter()
         try:
             await self._teardown()
-            print(
-                f"[SCYLLA] disconnected elapsed={1000 * (perf_counter() - t0):.1f}ms",
-                flush=True,
-            )
+            log_debug_scylla(op="DISCONNECTED", start_time=start)
         except Exception as e:
-            print(f"[SCYLLA] disconnect error: {e}", flush=True)
+            log_error_infra(service="SCYLLA", op="DISCONNECT_ERROR", exc=e)
 
     async def _teardown(self) -> None:
         try:
@@ -142,17 +145,6 @@ class ScyllaManager:
             self._prepared[query] = stmt
             return stmt
 
-    @staticmethod
-    def _bind(
-        stmt: acsylla.Statement, params: dict[str, Any] | list[Any] | None = None
-    ) -> None:
-        if params is None:
-            return
-        if isinstance(params, dict):
-            stmt.bind_dict(params)
-        else:
-            stmt.bind_list(params)
-
     def _assert_ready(self) -> acsylla.Session:
         if not self._ready or self._session is None:
             raise ScyllaNotReachableError
@@ -168,7 +160,7 @@ class ScyllaManager:
         session = self._assert_ready()
         prep = await self._get_prepared(query)
         stmt = prep.bind(execution_profile=profile)
-        self._bind(stmt, params)
+        _bind(stmt, params)
         await session.execute(stmt)
 
     async def fetch_one(
@@ -182,7 +174,7 @@ class ScyllaManager:
 
         prep = await self._get_prepared(query)
         stmt = prep.bind(execution_profile=profile)
-        self._bind(stmt, params)
+        _bind(stmt, params)
         result = await session.execute(stmt)
         return next(iter(result), None)
 
@@ -198,7 +190,7 @@ class ScyllaManager:
         session = self._assert_ready()
         prep = await self._get_prepared(query)
         stmt = prep.bind(page_size=page_size, execution_profile=profile)
-        self._bind(stmt, params)
+        _bind(stmt, params)
 
         if page_state is not None:
             stmt.set_page_state(page_state)
@@ -210,3 +202,15 @@ class ScyllaManager:
 
     def is_ready(self) -> bool:
         return self._ready
+
+
+def _bind(
+    stmt: acsylla.Statement, params: dict[str, Any] | list[Any] | None = None
+) -> None:
+    if params is None:
+        return
+
+    if isinstance(params, dict):
+        stmt.bind_dict(params)
+    else:
+        stmt.bind_list(params)
