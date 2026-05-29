@@ -55,4 +55,4 @@ htmlcov/
 deploy/certbot/
 
 # auto checking
-./deploy/scylla/housekeeping.cfg
+deploy/scylla/housekeeping.cfg
