@@ -12,6 +12,8 @@ from src.utils.log_helpers import log_debug_seaweed
 
 
 class SeaweedManager(StrictSlots):
+    __slots__ = ("_master_client", "_master_url", "_volume_client")
+
     def __init__(self, config: SeaweedSettings) -> None:
         self._master_url = config.seaweed_master_url.rstrip("/")
         self._master_client: httpx.AsyncClient | None = None
