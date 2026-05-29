@@ -156,7 +156,7 @@ services:
       - ./deploy/scylla/scylla.yaml:/etc/scylla/scylla.yaml:ro
       - ./deploy/scylla/cassandra-rackdc.properties:/etc/scylla/cassandra-rackdc.properties:ro
       - ./deploy/scylla/io_properties.yaml:/etc/scylla.d/io_properties.yaml:ro
-      - ./deploy/scylla/housekeeping.cfg:/etc/scylla.d/housekeeping.cfg:ro
+      - ./deploy/scylla/housekeeping.cfg:/etc/scylla.d/housekeeping.cfg
       - /mnt/nvme/scylla/data:/var/lib/scylla
     networks:
       - backend
