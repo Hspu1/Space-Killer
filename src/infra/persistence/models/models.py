@@ -9,6 +9,7 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
     Uuid,
+    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -79,11 +80,13 @@ class ProfilesModel(Base, TimestampMixin, UUIDv7Mixin):
     user_id: Mapped[UUID] = mapped_column(
         Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True
     )
-    display_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    username: Mapped[str] = mapped_column(String(50), nullable=False)
+    nickname: Mapped[str] = mapped_column(String(50), nullable=False)
+    username: Mapped[str] = mapped_column(String(20), nullable=False)
     bio: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    avatar_path: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    fid: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     user: Mapped["UsersModel"] = relationship("UsersModel", back_populates="profile")
 
-    __table_args__ = (Index("uq_profiles_username", "username", unique=True),)
+    __table_args__ = (
+        Index("uq_profiles_username_lowercase", func.lower(username), unique=True),
+    )
