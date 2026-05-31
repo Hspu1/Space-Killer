@@ -7,7 +7,7 @@ from src.infra.persistence.postgres import PostgresManager
 
 from ..third_party_apps.telegram import telegram_callback_handler
 
-telegram_router = APIRouter(tags=["telegram"], prefix="/auth/telegram")
+telegram_router = APIRouter(tags=["telegram"], prefix="/telegram")
 
 
 @telegram_router.get(

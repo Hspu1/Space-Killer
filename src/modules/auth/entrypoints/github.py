@@ -9,7 +9,7 @@ from src.infra.persistence.postgres import PostgresManager
 from ..common import AuthProvider, login
 from ..third_party_apps.github import github_callback_handler
 
-github_router = APIRouter(tags=["github"], prefix="/auth/github")
+github_router = APIRouter(tags=["github"], prefix="/github")
 
 
 @github_router.get(

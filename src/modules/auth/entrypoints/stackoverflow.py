@@ -8,7 +8,7 @@ from src.infra.persistence.postgres import PostgresManager
 from ..common import AuthProvider, login
 from ..third_party_apps.stackoverflow import stackoverflow_callback_handler
 
-stackoverflow_router = APIRouter(tags=["stackoverflow"], prefix="/auth/stackoverflow")
+stackoverflow_router = APIRouter(tags=["stackoverflow"], prefix="/stackoverflow")
 
 
 @stackoverflow_router.get(

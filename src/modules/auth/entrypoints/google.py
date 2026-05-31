@@ -8,7 +8,7 @@ from src.infra.persistence.postgres import PostgresManager
 from ..common import AuthProvider, login
 from ..third_party_apps.google import google_callback_handler, google_oauth
 
-google_router = APIRouter(tags=["google"], prefix="/auth/google")
+google_router = APIRouter(tags=["google"], prefix="/google")
 
 
 @google_router.get(

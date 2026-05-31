@@ -8,7 +8,7 @@ from src.infra.persistence.postgres import PostgresManager
 from ..common import AuthProvider, login
 from ..third_party_apps.yandex import yandex_callback_handler, yandex_oauth
 
-yandex_router = APIRouter(tags=["yandex"], prefix="/auth/yandex")
+yandex_router = APIRouter(tags=["yandex"], prefix="/yandex")
 
 
 @yandex_router.get(
