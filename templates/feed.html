@@ -1,116 +1,146 @@
-{% extends 'base.html' %}
-{% block title %}Space-Killer — Global{% endblock %}
-{% block body %}
-<style>
-    main {
-        padding: 0 !important;
-        display: block !important;
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space-Killer — Global Feed</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --neon-green: #32d69f;
+            --neon-glow: rgba(50, 214, 159, 0.85);
+            --neon-glow-blur: rgba(50, 214, 159, 0.4);
+            --neon-orange: #ff5722;
+            --neon-orange-glow: rgba(255, 87, 34, 0.5);
+            --white-alpha: rgba(255, 255, 255, 0.2);
+        }
 
-    .center-container {
-        display: block !important;
-        max-width: none !important;
-        gap: 0 !important;
-        width: 100% !important;
-        height: 100% !important;
-    }
+        *, *::before, *::after { box-sizing: border-box; }
 
-    :root {
-        --neon-glow-sharp: rgba(50, 214, 159, 0.6);
-        --neon-orange: #ff5722;
-        --neon-orange-glow: rgba(255, 87, 34, 0.4);
-    }
+        body {
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
 
-    .feed-layout {
-        display: grid;
-        grid-template-columns: 240px 1fr 280px;
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-    }
+        .feed-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr 280px;
+            width: 100%;
+            height: 100%;
+        }
 
-    .sidebar {
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        background-color: var(--bg-dark);
-    }
+        .sidebar {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            height: 100%;
+        }
 
-    .neon-divider-left {
-        border-right: 4px solid var(--neon-green);
-        box-shadow: 6px 0 20px var(--neon-glow-sharp), 2px 0 5px #fff;
-    }
+        .neon-divider-left::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 6px;
+            height: 100%;
+            background-color: #ffffff;
+            border-radius: 3px;
+            box-shadow:
+                0 0 4px #ffffff,
+                4px 0 12px var(--neon-glow),
+                8px 0 25px var(--neon-glow),
+                12px 0 50px var(--neon-glow-blur);
+        }
 
-    .neon-divider-right {
-        border-left: 4px solid var(--neon-green);
-        box-shadow: -6px 0 20px var(--neon-glow-sharp), -2px 0 5px #fff;
-    }
+        .neon-divider-right::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background-color: #ffffff;
+            border-radius: 3px;
+            box-shadow:
+                0 0 4px #ffffff,
+                -4px 0 12px var(--neon-glow),
+                -8px 0 25px var(--neon-glow),
+                -12px 0 50px var(--neon-glow-blur);
+        }
 
-    .feed-main {
-        background-color: transparent;
-    }
+        .feed-main {
+            background-color: transparent;
+            height: 100%;
+        }
 
-    .control-box {
-        margin-top: auto;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 16px;
-        width: 100%;
-    }
+        .control-box {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 16px;
+            width: 100%;
+        }
 
-    .sidebar-btn {
-        all: unset;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background-color: transparent;
-        color: #777777;
-        border: 1px solid var(--white-alpha);
-        padding: 10px 20px;
-        border-radius: 4px;
-        font-size: 14px;
-        font-weight: 600;
-        transition: all 0.2s ease;
-        cursor: pointer;
-        width: fit-content;
-    }
+        .sidebar-btn {
+            all: unset;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            color: #777777;
+            border: 1px solid var(--white-alpha);
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            width: fit-content;
+        }
 
-    .btn-logout:hover {
-        border-color: var(--neon-orange);
-        color: var(--neon-orange);
-        box-shadow: 0 0 15px var(--neon-orange-glow);
-        text-shadow: 0 0 5px var(--neon-orange-glow);
-    }
+        .btn-logout:hover {
+            border-color: var(--neon-orange);
+            color: var(--neon-orange);
+            box-shadow: 0 0 20px var(--neon-orange-glow);
+            text-shadow: 0 0 5px var(--neon-orange-glow);
+        }
 
-    .brand-text {
-        color: #555555;
-        font-size: 14px;
-        font-weight: 500;
-        letter-spacing: 0.05em;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
+        .brand-text {
+            color: #555555;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-    .btn-oss {
-        color: var(--neon-green);
-        text-decoration: none;
-        text-shadow: 0 0 8px var(--neon-alpha);
-        font-weight: 600;
-        transition: all 0.2s ease;
-    }
+        .btn-oss {
+            color: var(--neon-green);
+            text-decoration: none;
+            text-shadow: 0 0 8px rgba(50, 214, 159, 0.5);
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
 
-    .btn-oss:hover {
-        filter: brightness(1.2);
-        text-shadow: 0 0 15px var(--neon-alpha);
-    }
-</style>
+        .btn-oss:hover {
+            filter: brightness(1.2);
+            text-shadow: 0 0 15px var(--neon-glow);
+        }
+    </style>
+</head>
+<body>
 
 <div class="feed-layout">
     <aside class="sidebar neon-divider-left">
@@ -133,4 +163,5 @@
         </div>
     </aside>
 </div>
-{% endblock %}
+</body>
+</html>
