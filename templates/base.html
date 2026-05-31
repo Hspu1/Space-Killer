@@ -1,151 +1,140 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Space-Killer{% endblock %}</title>
-    <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
-    <style>
-        :root {
-            --bg-dark: #121212; --neon-green: #32d69f;
-            --neon-alpha: rgba(50, 214, 159, 0.5);
-            --neon-glow: rgba(50, 214, 159, 0.3);
-            --white-alpha: rgba(255, 255, 255, 0.2);
-            --error-red: #ff4c4c;
-        }
+{% extends 'base.html' %}
+{% block title %}Space-Killer — Global{% endblock %}
+{% block body %}
+<style>
+    main {
+        padding: 0 !important;
+        display: block !important;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
 
-        *, *::before, *::after {box-sizing: border-box;}
+    .center-container {
+        display: block !important;
+        max-width: none !important;
+        gap: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+    }
 
-        body {
-            background-color: var(--bg-dark); color: #ffffff;
-            margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            -webkit-font-smoothing: antialiased; display: flex;
-            flex-direction: column; min-height: 100vh;
-        }
+    body > footer {
+        display: none !important;
+    }
 
-        main {
-            flex: 1; display: flex; justify-content: center;
-            align-items: center; padding: 20px;
-        }
+    :root {
+        --neon-glow-sharp: rgba(50, 214, 159, 0.6);
+        --neon-orange: #ff5722;
+        --neon-orange-glow: rgba(255, 87, 34, 0.4);
+    }
 
-        .center-container {
-            text-align: center; display: flex; flex-direction: column;
-            align-items: center; gap: 32px; width: 100%; max-width: 600px;
-        }
+    .feed-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr 280px;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
 
-        .glow-text {
-            font-size: clamp(32px, 8vw, 64px); font-weight: 800;
-            color: var(--neon-green); margin: 0; letter-spacing: -0.02em;
-            text-shadow: 0 0 10px var(--neon-alpha), 0 0 20px var(--neon-glow);
-        }
+    .sidebar {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background-color: var(--bg-dark);
+    }
 
-        .auth-nav {
-            display: flex; flex-direction: row;
-            justify-content: center; align-items: center;
-            gap: 12px; width: 100%; flex-wrap: wrap;
-            max-width: 520px;
-        }
+    .neon-divider-left {
+        border-right: 4px solid var(--neon-green);
+        box-shadow: 6px 0 20px var(--neon-glow-sharp), 2px 0 5px #fff;
+    }
 
-        .login-btn {
-            all: unset; display: inline-flex; align-items: center;
-            justify-content: center; background-color: var(--bg-dark);
-            color: #ffffff; border: 1px solid var(--white-alpha);
-            padding: 16px 32px; border-radius: 4px; font-size: 18px;
-            font-weight: 600; transition: all 0.25s ease;
-            cursor: pointer; position: relative;
-        }
+    .neon-divider-right {
+        border-left: 4px solid var(--neon-green);
+        box-shadow: -6px 0 20px var(--neon-glow-sharp), -2px 0 5px #fff;
+    }
 
-        .login-btn:focus-visible {
-            outline: 2px solid var(--neon-green);
-            outline-offset: 4px;
-        }
+    .feed-main {
+        background-color: transparent;
+    }
 
-        .login-btn:hover:not(:disabled):not(.dev-mode) {
-            border-color: var(--neon-green); color: var(--neon-green);
-            box-shadow: 0 0 15px rgba(50, 214, 159, 0.15);
-        }
+    .control-box {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 16px;
+        width: 100%;
+    }
 
-        .htmx-request.login-btn {
-            color: transparent !important;
-            pointer-events: none;
-            position: relative;
-        }
+    .sidebar-btn {
+        all: unset;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background-color: transparent;
+        color: #777777;
+        border: 1px solid var(--white-alpha);
+        padding: 10px 20px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        width: fit-content;
+    }
 
-        .htmx-request.login-btn::after {
-            content: "";
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 18px;
-            color: var(--neon-green);
-            animation: dots-blink 2s infinite;
-        }
+    .btn-logout:hover {
+        border-color: var(--neon-orange);
+        color: var(--neon-orange);
+        box-shadow: 0 0 15px var(--neon-orange-glow);
+        text-shadow: 0 0 5px var(--neon-orange-glow);
+    }
 
-        @keyframes dots-blink {
-            0%, 25%, 50%, 75%, 100% { opacity: 0.3; }
-            12.5%, 37.5%, 62.5%, 87.5% { opacity: 1; }
+    .brand-text {
+        color: #555555;
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
 
-            0%, 50%, 100% { content: ""; }
-            4.5%, 54.5%   { content: "L"; }
-            9%, 59%       { content: "Lo"; }
-            13.5%, 63.5%  { content: "Loa"; }
-            18%, 68%      { content: "Load"; }
-            22.5%, 72.5%  { content: "Loadi"; }
-            27%, 77%      { content: "Loadin"; }
-            31.5%, 81.5%  { content: "Loading"; }
-            36%, 86%      { content: "Loading."; }
-            40.5%, 90.5%  { content: "Loading.."; }
-            45%, 95%      { content: "Loading..."; }
-        }
+    .btn-oss {
+        color: var(--neon-green);
+        text-decoration: none;
+        text-shadow: 0 0 8px var(--neon-alpha);
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
 
-        .login-btn:disabled, .login-btn.dev-mode {
-            opacity: 0.67; cursor: default !important;
-            pointer-events: none; box-shadow: none !important;
-            border-color: var(--white-alpha) !important;
-            color: #ffffff !important;
-        }
+    .btn-oss:hover {
+        filter: brightness(1.2);
+        text-shadow: 0 0 15px var(--neon-alpha);
+    }
+</style>
 
-        .error-msg {
-            color: var(--error-red); font-weight: 500;
-            cursor: pointer; padding: 8px; animation: fadeIn 0.3s ease-out;
-        }
+<div class="feed-layout">
+    <aside class="sidebar neon-divider-left">
+        <div></div>
+    </aside>
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    <main class="feed-main"></main>
 
-        footer {
-            padding: 24px; text-align: center; font-size: 14px;
-            color: #777; border-top: 1px solid var(--white-alpha);
-            display: flex; justify-content: center;
-            align-items: center; gap: 16px;
-        }
-        footer a { color: inherit; text-decoration: none; transition: color 0.2s; }
-        footer a:hover { color: var(--neon-green); }
+    <aside class="sidebar neon-divider-right">
+        <div></div>
 
-        .tg-wrapper {display: inline-flex; align-items: center; min-height: 54px;}
-        .tg-wrapper iframe {box-shadow: 0 0 10px var(--neon-glow); border-radius: 4px !important;}
-    </style>
-</head>
-<body>
-    <main>
-        <section class="center-container">
-            {% block body %}{% endblock %}
-        </section>
-    </main>
-    <footer>
-        <span>© 2026 Space-Killer</span>
-        <a href="https://github.com/Hspu1/Space-Killer" target="_blank">Repo</a>
-    </footer>
-    <script type="text/javascript">
-        window.addEventListener('pageshow', (event) => {
-            if (event.persisted) {
-                document.querySelectorAll('.htmx-request').forEach(el => {
-                    el.classList.remove('htmx-request');
-                });
-            }
-        });
-    </script>
-</body>
-</html>
+        <div class="control-box">
+            <button hx-post="/auth/logout" class="sidebar-btn btn-logout">
+                Log out
+            </button>
+            <div class="brand-text">
+                <span>© 2026 Space-killer /</span>
+                <a href="https://github.com/Hspu1/Space-Killer" target="_blank" class="btn-oss">OSS</a>
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}

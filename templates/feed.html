@@ -99,8 +99,10 @@
 
     <section class="feed-main">
         <h1 class="glow-text" style="font-size: 36px; text-align: left; margin-bottom: 32px;">Global Feed</h1>
-        <div id="posts-stream" hx-get="/api/feed/global" hx-trigger="load" hx-swap="innerHTML">
-            <div style="color: #555; font-size: 14px;">Connecting to Scylla stream...</div>
+        <div id="posts-stream">
+            <div style="color: #444; font-size: 14px; border: 1px dashed rgba(255,255,255,0.1); padding: 40px; border-radius: 4px; text-align: center;">
+                [ Transmission standby. Feed content is muted for maintenance ]
+            </div>
         </div>
     </section>
 
