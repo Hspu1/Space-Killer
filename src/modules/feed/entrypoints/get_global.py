@@ -1,10 +1,10 @@
 from fastapi import (
     APIRouter,
     Depends,
-    RedirectResponse,
     Request,
     Response,
 )
+from fastapi.responses import RedirectResponse
 
 from src.core.dependencies import rate_limiter
 
