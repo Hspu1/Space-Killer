@@ -56,4 +56,4 @@ async def login(
     if request.headers.get("HX-Request"):
         return Response(headers={"HX-Redirect": url})
 
-    return RedirectResponse(url)
+    return RedirectResponse(url=url, status_code=302)

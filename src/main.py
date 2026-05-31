@@ -22,6 +22,7 @@ from src.infra.scylla.manager import ScyllaManager
 from src.infra.seaweed import SeaweedManager
 from src.infra.serializer import OrjsonSerializer
 from src.infra.session_store import RedisSessionStore
+from src.modules import api_router
 from src.modules.auth import auth_router
 from src.ui import ui_router
 from src.utils import setup_logging
@@ -95,6 +96,7 @@ def create_app() -> FastAPI:
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=server_stg.allowed_hosts)
 
     app.include_router(auth_router)
+    app.include_router(api_router)
     app.include_router(ui_router)
     app.include_router(healthz_router)
 
