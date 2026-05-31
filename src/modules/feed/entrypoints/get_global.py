@@ -19,7 +19,6 @@ global_feed_router = APIRouter()
 )
 async def get_global(request: Request) -> Response:
     if request.headers.get("HX-Request"):
-        headers = {"HX-Location": '{"path": "/feed/global", "target": "body"}'}
-        return Response(headers=headers)
+        return Response(headers={"HX-Redirect": "/feed/global"})
 
     return RedirectResponse(url="/feed/global", status_code=303)

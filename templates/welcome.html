@@ -5,12 +5,7 @@
 {% block body %}
     {% if user %}
         <h1 class="glow-text">Welcome, {{ user.name }}</h1>
-        <a hx-get="/feed/global"
-            hx-target="body"
-            hx-push-url="true"
-            role="button"
-            class="login-btn"
-            style="cursor: pointer; text-decoration: none;">
+        <a href="/feed/global" role="button" class="login-btn">
             Dive in!
         </a>
     {% endif %}
