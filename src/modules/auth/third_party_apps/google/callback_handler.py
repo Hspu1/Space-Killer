@@ -27,7 +27,6 @@ async def google_callback_handler(
         )
 
         user_info = token.get("userinfo")
-        print(f"GOOGLE USERINFO: {user_info}", flush=True)
         safe_user_info = get_safe_user_info(
             user_info=user_info, provider=AuthProvider.GOOGLE
         )

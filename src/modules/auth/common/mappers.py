@@ -45,18 +45,18 @@ def get_safe_name(user_info: dict[str, Any]) -> str:
 
 
 def get_safe_user_info(user_info: dict[str, Any], provider: AuthProvider) -> SafeUserInfo:
-    email = (
-        None
-        if provider == AuthProvider.GITHUB
-        else (user_info.get("email") or user_info.get("default_email") or "")
-        .lower()
-        .strip()
-    )
-
     provider_safe_id = get_safe_id(user_info=user_info)
+
+    if provider == AuthProvider.GOOGLE:
+        email = (user_info.get("email") or "").lower().strip()
+        email_verified = user_info.get("email_verified", False)
+    else:
+        email = f"{provider_safe_id}@{provider.value.lower()}.user"
+        email_verified = False
+
     return SafeUserInfo(
         id=provider_safe_id,
         name=get_safe_name(user_info=user_info),
-        email=email if email else f"{provider_safe_id}@{provider.value.lower()}.user",
-        email_verified=user_info.get("email_verified", False),
+        email=email,
+        email_verified=email_verified,
     )
