@@ -6,6 +6,19 @@ from src.infra.seaweed import SeaweedManager
 from src.modules.profile.infra.get.user_profile_repo import pg_resolve_profile
 from src.ui.templates_conf import templates
 
+AVATAR_PUBLIC_URL = "https://space-killer.com/media"
+# AVATAR_RESIZE = {"width": 140, "height": 140, "mode": "fill"}
+
+
+def _build_avatar_url(fid: str | None) -> str | None:
+    if not fid:
+        return None
+    return SeaweedManager.build_read_url(
+        public_url=AVATAR_PUBLIC_URL,
+        fid=fid,
+        # resize=AVATAR_RESIZE,
+    )
+
 
 async def get_user_profile_handler(
     request: Request,
@@ -23,11 +36,7 @@ async def get_user_profile_handler(
     is_own = profile["user_id"] == current_user_id
     avatar_url = None
     if profile["fid"]:
-        avatar_url = SeaweedManager.build_read_url(
-            public_url="https://space-killer.com",
-            fid=profile["fid"],
-            resize={"width": 140, "height": 140, "mode": "fill"},
-        )
+        avatar_url = _build_avatar_url(profile["fid"])
 
     return templates.TemplateResponse(
         request=request,
@@ -60,6 +69,7 @@ async def get_profile_fragment_handler(
         if mode == "edit_form"
         else "fragments/profile_view.html"
     )
+    avatar_url = _build_avatar_url(profile["fid"])
 
     return templates.TemplateResponse(
         request=request,
@@ -68,5 +78,6 @@ async def get_profile_fragment_handler(
             "username": profile["username"],
             "nickname": profile["nickname"],
             "bio": profile["bio"],
+            "avatar_url": avatar_url,
         },
     )
