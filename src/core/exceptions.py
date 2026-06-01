@@ -33,3 +33,7 @@ class HttpServiceNotConnectedError(BaseAppError):
 
 class ScyllaNotReachableError(BaseAppError):
     message: str = "Scylla isn't reachable/initialized"
+
+
+class UserBannedError(BaseAppError):
+    message: str = "User is banned"

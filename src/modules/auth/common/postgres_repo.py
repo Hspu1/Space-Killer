@@ -1,18 +1,60 @@
 from datetime import UTC, datetime
 from time import perf_counter
 
-from sqlalchemy import select
+from sqlalchemy import case, select, update
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.sql.expression import Insert, Select
 
+from src.core.exceptions import UserBannedError
 from src.infra.persistence.models.models import (
     ProfilesModel,
     UserIdentitiesModel,
     UsersModel,
+    UserStatus,
 )
 from src.infra.persistence.postgres import PostgresManager
 from src.utils import log_debug_db
 
 from .mappers import AuthProvider, SafeUserInfo
+
+
+def _build_fast_way(provider_name: str, provider_user_id: str) -> Select:
+    return (
+        select(UsersModel.id, UsersModel.status)
+        .join(UserIdentitiesModel, UserIdentitiesModel.user_id == UsersModel.id)
+        .where(
+            UserIdentitiesModel.provider == provider_name,
+            UserIdentitiesModel.provider_user_id == provider_user_id,
+        )
+    )
+
+
+def _build_upsert_stmt(user_info: SafeUserInfo, current_time: datetime) -> Insert:
+    verify_at = current_time if user_info.email_verified else None
+
+    safe_status = case(
+        (UsersModel.status == UserStatus.BANNED, UserStatus.BANNED),
+        else_=UserStatus.ACTIVE,
+    )
+
+    return (
+        insert(UsersModel)
+        .values(
+            email=user_info.email,
+            name=user_info.name,
+            email_verification_at=verify_at,
+            status=UserStatus.ACTIVE,
+        )
+        .on_conflict_do_update(
+            index_elements=[UsersModel.email],
+            set_={
+                UsersModel.name: user_info.name,
+                UsersModel.status: safe_status,
+                UsersModel.updated_at: current_time,
+            },
+        )
+        .returning(UsersModel.id, UsersModel.status)
+    )
 
 
 async def pg_resolve_user_id(
@@ -21,40 +63,31 @@ async def pg_resolve_user_id(
     start_time = perf_counter()
     provider_name, session_maker = provider.value.lower(), pg_manager.get_session_maker()
     async with session_maker.begin() as session:
-        stmt = (
-            select(UserIdentitiesModel.user_id)
-            .join(UsersModel, UserIdentitiesModel.user_id == UsersModel.id)
-            .where(
-                UserIdentitiesModel.provider == provider_name,
-                UserIdentitiesModel.provider_user_id == user_info.id,
-                UsersModel.is_active.is_(True),
-            )
+        search_stmt = _build_fast_way(
+            provider_name=provider_name, provider_user_id=user_info.id
         )
-        if user_id := (await session.execute(stmt)).scalar_one_or_none():
+        if res := (await session.execute(search_stmt)).first():
+            user_id, status = res.id, res.status
+
+            if status == UserStatus.BANNED:
+                raise UserBannedError
+
+            if status == UserStatus.DELETED:
+                await session.execute(
+                    update(UsersModel)
+                    .where(UsersModel.id == user_id)
+                    .values(status=UserStatus.ACTIVE, updated_at=datetime.now(UTC))
+                )
             log_debug_db(op="READ", start_time=start_time, detail=f"id={user_id.hex[:8]}")
             return str(user_id)
 
         current_time = datetime.now(UTC)
-        verify_at = current_time if user_info.email_verified else None
-        user_id = (
-            await session.execute(
-                insert(UsersModel)
-                .values(
-                    email=user_info.email,
-                    name=user_info.name,
-                    email_verification_at=verify_at,
-                )
-                .on_conflict_do_update(
-                    index_elements=[UsersModel.email],
-                    index_where=(UsersModel.is_active.is_(True)),
-                    set_={
-                        UsersModel.name: user_info.name,
-                        UsersModel.updated_at: current_time,
-                    },
-                )
-                .returning(UsersModel.id)
-            )
-        ).scalar_one()
+        upsert_stmt = _build_upsert_stmt(user_info=user_info, current_time=current_time)
+        upsert_res = (await session.execute(upsert_stmt)).first()
+
+        user_id, final_status = upsert_res.id, upsert_res.status
+        if final_status == UserStatus.BANNED:
+            raise UserBannedError
 
         default_username = f"user-{user_id.hex[-12:]}"
         await session.execute(

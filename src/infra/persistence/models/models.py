@@ -1,9 +1,10 @@
+import enum
 from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import (
-    Boolean,
     DateTime,
+    Enum,
     ForeignKey,
     Index,
     String,
@@ -17,15 +18,23 @@ from ..base import Base
 from .mixins import TimestampMixin, UUIDv7Mixin
 
 
+class UserStatus(enum.Enum):
+    ACTIVE = "active"
+    DELETED = "deleted"
+    BANNED = "banned"
+
+
 class UsersModel(Base, TimestampMixin, UUIDv7Mixin):
     __tablename__ = "users"
 
-    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    status: Mapped[UserStatus] = mapped_column(
+        Enum(UserStatus), server_default=UserStatus.ACTIVE.value, nullable=False
+    )
     email_verification_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, server_default="true")
 
     identities: Mapped[list["UserIdentitiesModel"]] = relationship(
         "UserIdentitiesModel",
@@ -37,15 +46,6 @@ class UsersModel(Base, TimestampMixin, UUIDv7Mixin):
         back_populates="user",
         uselist=False,
         cascade="all, delete-orphan",
-    )
-
-    __table_args__ = (
-        Index(
-            "uq_active_users_email",
-            "email",
-            unique=True,
-            postgresql_where=is_active.is_(True),
-        ),
     )
 
 
