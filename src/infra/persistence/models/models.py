@@ -29,7 +29,7 @@ class UsersModel(Base, TimestampMixin, UUIDv7Mixin):
 
     email: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     status: Mapped[UserStatus] = mapped_column(
-        Enum(UserStatus), server_default=UserStatus.ACTIVE.value, nullable=False
+        Enum(UserStatus), default=UserStatus.ACTIVE, nullable=False
     )
     email_verification_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
