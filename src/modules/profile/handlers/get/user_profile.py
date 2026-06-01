@@ -35,8 +35,7 @@ async def get_user_profile_handler(
 
     is_own = profile["user_id"] == current_user_id
     avatar_url = None
-    if profile["fid"]:
-        avatar_url = _build_avatar_url(profile["fid"])
+    avatar_url = _build_avatar_url(profile["fid"])
 
     return templates.TemplateResponse(
         request=request,
@@ -69,7 +68,6 @@ async def get_profile_fragment_handler(
         if mode == "edit_form"
         else "fragments/profile_view.html"
     )
-    avatar_url = _build_avatar_url(profile["fid"])
 
     return templates.TemplateResponse(
         request=request,
@@ -78,6 +76,5 @@ async def get_profile_fragment_handler(
             "username": profile["username"],
             "nickname": profile["nickname"],
             "bio": profile["bio"],
-            "avatar_url": avatar_url,
         },
     )
