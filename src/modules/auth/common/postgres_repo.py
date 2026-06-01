@@ -1,7 +1,6 @@
-from datetime import UTC, datetime
 from time import perf_counter
 
-from sqlalchemy import case, literal, select, update
+from sqlalchemy import case, func, literal, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql.expression import Insert, Select
 
@@ -29,8 +28,8 @@ def _build_fast_way(provider_name: str, provider_user_id: str) -> Select:
     )
 
 
-def _build_upsert_stmt(user_info: SafeUserInfo, current_time: datetime) -> Insert:
-    verify_at = current_time if user_info.email_verified else None
+def _build_upsert_stmt(user_info: SafeUserInfo) -> Insert:
+    verify_at = func.now() if user_info.email_verified else None
 
     safe_status = case(
         (UsersModel.status == UserStatus.BANNED, UsersModel.status),
@@ -50,7 +49,7 @@ def _build_upsert_stmt(user_info: SafeUserInfo, current_time: datetime) -> Inser
             set_={
                 UsersModel.name: user_info.name,
                 UsersModel.status: safe_status,
-                UsersModel.updated_at: current_time,
+                UsersModel.updated_at: func.now(),
             },
         )
         .returning(UsersModel.id, UsersModel.status)
@@ -76,13 +75,12 @@ async def pg_resolve_user_id(
                 await session.execute(
                     update(UsersModel)
                     .where(UsersModel.id == user_id)
-                    .values(status=UserStatus.ACTIVE, updated_at=datetime.now(UTC))
+                    .values(status=UserStatus.ACTIVE, updated_at=func.now())
                 )
             log_debug_db(op="READ", start_time=start_time, detail=f"id={user_id.hex[:8]}")
             return str(user_id)
 
-        current_time = datetime.now(UTC)
-        upsert_stmt = _build_upsert_stmt(user_info=user_info, current_time=current_time)
+        upsert_stmt = _build_upsert_stmt(user_info=user_info)
         upsert_res = (await session.execute(upsert_stmt)).first()
 
         user_id, final_status = upsert_res.id, upsert_res.status
