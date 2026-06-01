@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <title>Space-Killer — Global Feed</title>
     <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"></script>
     <style>
@@ -14,6 +15,8 @@
             --neon-orange: #ff5722;
             --neon-orange-glow: rgba(255, 87, 34, 0.5);
             --white-alpha: rgba(255, 255, 255, 0.2);
+            --neon-pink: #ff007f;
+            --neon-pink-glow: rgba(203, 0, 122, 0.2);
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -62,6 +65,39 @@
         .feed-main {
             background-color: transparent;
             height: 100%;
+        }
+
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .avatar-box {
+            width: 140px;
+            height: 140px;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--white-alpha);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .avatar-box:hover {
+            border-color: var(--neon-pink);
+
+            box-shadow: 0 0 8px var(--neon-pink-glow);
+        }
+
+        .username-text {
+            color: #777777;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            text-align: center;
         }
 
         .control-box {
@@ -131,7 +167,12 @@
     <div class="feed-main"></div>
 
     <aside class="sidebar neon-divider-right">
-        <div></div>
+        <div class="profile-container">
+            <a href="/profile/get/{{ username }}" style="display: block; text-decoration: none;">
+                <div class="avatar-box"></div>
+            </a>
+            <div class="username-text">{{ username }}</div>
+        </div>
 
         <div class="control-box">
             <button hx-post="/auth/logout" class="sidebar-btn btn-logout">
