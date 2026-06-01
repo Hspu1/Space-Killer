@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from time import perf_counter
 
-from sqlalchemy import case, select, update
+from sqlalchemy import case, literal, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql.expression import Insert, Select
 
@@ -33,8 +33,8 @@ def _build_upsert_stmt(user_info: SafeUserInfo, current_time: datetime) -> Inser
     verify_at = current_time if user_info.email_verified else None
 
     safe_status = case(
-        (UsersModel.status == UserStatus.BANNED, UserStatus.BANNED),
-        else_=UserStatus.ACTIVE,
+        (UsersModel.status == UserStatus.BANNED, UsersModel.status),
+        else_=literal(UserStatus.ACTIVE, type_=UsersModel.status.type),
     )
 
     return (
