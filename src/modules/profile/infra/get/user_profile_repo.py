@@ -16,15 +16,14 @@ async def pg_resolve_profile(
         else:
             return None
 
-        result = await session.execute(stmt)
-        row = result.first()
-        if not row:
+        profile = await session.scalar(stmt)
+        if not profile:
             return None
 
         return {
-            "user_id": str(row.user_id),
-            "username": row.username,
-            "nickname": row.nickname,
-            "bio": row.bio,
-            "fid": row.fid,
+            "user_id": str(profile.user_id),
+            "username": profile.username,
+            "nickname": profile.nickname,
+            "bio": profile.bio,
+            "fid": profile.fid,
         }
