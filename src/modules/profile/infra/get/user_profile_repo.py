@@ -36,7 +36,7 @@ async def pg_update_profile(
     bio: str | None,
 ) -> None:
     session_maker = pg_manager.get_session_maker()
-    async with session_maker().begin() as session:
+    async with session_maker.begin() as session:
         await session.execute(
             update(ProfilesModel)
             .where(ProfilesModel.user_id == user_id)
@@ -50,7 +50,7 @@ async def pg_update_avatar(
     fid: str | None,
 ) -> None:
     session_maker = pg_manager.get_session_maker()
-    async with session_maker().begin() as session:
+    async with session_maker.begin() as session:
         await session.execute(
             update(ProfilesModel).where(ProfilesModel.user_id == user_id).values(fid=fid)
         )
