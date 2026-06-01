@@ -2,12 +2,14 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, Request, Response, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
-from src.modules.profile.handlers.get.user_profile import (
-    get_profile_fragment_handler,
-    get_user_profile_handler,
+
 from src.core.dependencies import get_pg_manager
 from src.infra.persistence.postgres import PostgresManager
 from src.infra.seaweed import SeaweedManager, get_seaweed_manager
+from src.modules.profile.handlers.get.user_profile import (
+    get_profile_fragment_handler,
+    get_user_profile_handler,
+)
 from src.modules.profile.infra.get.user_profile_repo import (
     pg_resolve_profile,
     pg_update_avatar,
@@ -194,14 +196,15 @@ async def upload_avatar(
 
     avatar_url = _build_avatar_url(fid)
     return HTMLResponse(
-        content=f'''
+        content=f"""
         <div id="avatar-box" class="avatar-box" style="background-image: url({avatar_url}); background-size: cover; background-position: center;"></div>
 
         <div id="avatar-remove-wrapper" hx-swap-oob="true">
             <button hx-delete="/profile/avatar" hx-target="#avatar-box" hx-swap="outerHTML" hx-confirm="Remove avatar?" class="btn-cancel" style="font-size: 12px; padding: 4px 12px;">Remove</button>
         </div>
-        '''
+        """
     )
+
 
 @ui_router.delete("/profile/avatar", response_class=HTMLResponse)
 async def delete_avatar(
@@ -221,9 +224,9 @@ async def delete_avatar(
     await pg_update_avatar(pg_manager, user_id=user_id, fid=None)
 
     return HTMLResponse(
-        content='''
+        content="""
         <div id="avatar-box" class="avatar-box"></div>
 
         <div id="avatar-remove-wrapper" hx-swap-oob="true"></div>
-        '''
+        """
     )
