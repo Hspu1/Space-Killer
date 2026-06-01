@@ -4,7 +4,11 @@ from time import perf_counter
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 
-from src.infra.persistence.models.models import UserIdentitiesModel, UsersModel
+from src.infra.persistence.models.models import (
+    ProfilesModel,
+    UserIdentitiesModel,
+    UsersModel,
+)
 from src.infra.persistence.postgres import PostgresManager
 from src.utils import log_debug_db
 
@@ -30,7 +34,8 @@ async def pg_resolve_user_id(
             log_debug_db(op="READ", start_time=start_time, detail=f"id={user_id.hex[:8]}")
             return str(user_id)
 
-        verify_at = datetime.now(UTC) if user_info.email_verified else None
+        current_time = datetime.now(UTC)
+        verify_at = current_time if user_info.email_verified else None
         user_id = (
             await session.execute(
                 insert(UsersModel)
@@ -44,12 +49,23 @@ async def pg_resolve_user_id(
                     index_where=(UsersModel.is_active.is_(True)),
                     set_={
                         UsersModel.name: user_info.name,
-                        UsersModel.updated_at: datetime.now(UTC),
+                        UsersModel.updated_at: current_time,
                     },
                 )
                 .returning(UsersModel.id)
             )
         ).scalar_one()
+
+        default_username = f"user-{user_id.hex[-12:]}"
+        await session.execute(
+            insert(ProfilesModel)
+            .values(
+                user_id=user_id,
+                nickname=user_info.name,
+                username=default_username,
+            )
+            .on_conflict_do_nothing(index_elements=[ProfilesModel.user_id])
+        )
 
         await session.execute(
             insert(UserIdentitiesModel)
@@ -58,7 +74,12 @@ async def pg_resolve_user_id(
                 provider=provider_name,
                 provider_user_id=user_info.id,
             )
-            .on_conflict_do_nothing(index_elements=["provider", "provider_user_id"])
+            .on_conflict_do_nothing(
+                index_elements=[
+                    UserIdentitiesModel.provider,
+                    UserIdentitiesModel.provider_user_id,
+                ]
+            )
         )
 
         log_debug_db(
