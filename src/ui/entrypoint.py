@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Form, Request, Response, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from src.core.dependencies import get_pg_manager
+from src.core.dependencies import get_pg_manager, get_seaweed_manager
 from src.infra.persistence.postgres import PostgresManager
-from src.infra.seaweed import SeaweedManager, get_seaweed_manager
+from src.infra.seaweed import SeaweedManager
 from src.modules.profile.handlers.get.user_profile import (
     get_profile_fragment_handler,
     get_user_profile_handler,
