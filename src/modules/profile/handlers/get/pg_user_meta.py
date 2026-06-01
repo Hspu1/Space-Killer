@@ -10,18 +10,18 @@ from src.utils import log_debug_db
 
 class UserMeta(TypedDict):
     username: str
-    avatar_fid: str | None
+    fid: str | None
 
 
 async def pg_resolve_user_meta(user_id: str, pg_manager: PostgresManager) -> UserMeta:
     start_time = perf_counter()
     session_maker = pg_manager.get_session_maker()
     async with session_maker() as session:
-        stmt = select(ProfilesModel.username, ProfilesModel.avatar_fid).where(
+        stmt = select(ProfilesModel.username, ProfilesModel.fid).where(
             ProfilesModel.user_id == user_id
         )
         result = await session.execute(stmt)
         row = result.one()
 
         log_debug_db(op="READ", start_time=start_time, detail=f"user_id={user_id[:8]}...")
-        return {"username": row[0], "avatar_fid": row[1]}
+        return {"username": row[0], "fid": row[1]}

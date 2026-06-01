@@ -54,10 +54,10 @@ async def global_feed_page(request: Request) -> Response:
     )
 
     avatar_url: str | None = None
-    if user_meta["avatar_fid"]:
+    if user_meta["fid"]:
         avatar_url = SeaweedManager.build_read_url(
             public_url="https://space-killer.com/media",
-            fid=user_meta["avatar_fid"],
+            fid=user_meta["fid"],
             resize={"width": 140, "height": 140, "mode": "fill"},
         )
 
