@@ -65,8 +65,8 @@ async def pg_resolve_user_id(
         search_stmt = _build_fast_way(
             provider_name=provider_name, provider_user_id=user_info.id
         )
-        if res := (await session.execute(search_stmt)).first():
-            user_id, status = res.id, res.status
+        if res := (await session.execute(search_stmt)).tuple().one_or_none():
+            user_id, status = res
 
             if status == UserStatus.BANNED:
                 raise UserBannedError
@@ -77,13 +77,15 @@ async def pg_resolve_user_id(
                     .where(UsersModel.id == user_id)
                     .values(status=UserStatus.ACTIVE, updated_at=func.now())
                 )
-            log_debug_db(op="READ", start_time=start_time, detail=f"id={user_id.hex[:8]}")
+            log_debug_db(
+                op="READ", start_time=start_time, detail=f"id={user_id.hex[:8]}..."
+            )
             return str(user_id)
 
         upsert_stmt = _build_upsert_stmt(user_info=user_info)
-        upsert_res = (await session.execute(upsert_stmt)).first()
+        upsert_res = (await session.execute(upsert_stmt)).tuple().one()
 
-        user_id, final_status = upsert_res.id, upsert_res.status
+        user_id, final_status = upsert_res
         if final_status == UserStatus.BANNED:
             raise UserBannedError
 

@@ -46,5 +46,5 @@ async def global_feed_page(request: Request) -> Response:
         return RedirectResponse(url="/?msg=session_expired", status_code=303)
 
     return templates.TemplateResponse(
-        "feed.html", {"request": request, "user": {"name": name}}
+        "feed.html", {"request": request, "user": username, "avatar_url": avatar_url}
     )

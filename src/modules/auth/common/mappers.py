@@ -1,7 +1,7 @@
 from enum import StrEnum
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 from src.core.exceptions import ProviderIDMissingError
 
@@ -17,7 +17,7 @@ class AuthProvider(StrEnum):
 class SafeUserInfo(BaseModel):
     id: str
     name: str
-    email: str
+    email: EmailStr
     email_verified: bool
 
 
