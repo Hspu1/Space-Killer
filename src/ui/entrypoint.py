@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+from src.infra.seaweed import SeaweedManager
+from src.modules.profile.handlers.get.pg_user_meta import pg_resolve_user_meta
+
 from ..core.env_conf import auth_stg
 from .templates_conf import templates
 
@@ -45,6 +48,24 @@ async def global_feed_page(request: Request) -> Response:
     if not name or not user_id:
         return RedirectResponse(url="/?msg=session_expired", status_code=303)
 
+    user_meta = await pg_resolve_user_meta(
+        user_id=user_id,
+        pg_manager=request.app.state.pg_manager,
+    )
+
+    avatar_url: str | None = None
+    if user_meta["avatar_fid"]:
+        avatar_url = SeaweedManager.build_read_url(
+            public_url="https://space-killer.com/media",
+            fid=user_meta["avatar_fid"],
+            resize={"width": 140, "height": 140, "mode": "fill"},
+        )
+
     return templates.TemplateResponse(
-        "feed.html", {"request": request, "user": username, "avatar_url": avatar_url}
+        "feed.html",
+        {
+            "request": request,
+            "username": user_meta["username"],
+            "avatar_url": avatar_url,
+        },
     )

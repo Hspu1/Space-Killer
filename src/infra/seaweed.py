@@ -126,12 +126,13 @@ class SeaweedManager(StrictSlots):
 
         base = _normalize_scheme(public_url)
         url = f"{base}/{fid}"
+
+        if resize:
+            return f"{url}?{urlencode(resize)}"
+
         if filename and "." in filename:
             ext = filename.rsplit(".", 1)[-1].lower()
             url = f"{url}.{ext}"
-
-        if resize:
-            url = f"{url}?{urlencode(resize)}"
 
         return url
 

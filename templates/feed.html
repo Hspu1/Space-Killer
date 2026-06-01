@@ -169,7 +169,11 @@
     <aside class="sidebar neon-divider-right">
         <div class="profile-container">
             <a href="/profile/get/{{ username }}" style="display: block; text-decoration: none;">
-                <div class="avatar-box"></div>
+                <div class="avatar-box"
+                     {% if avatar_url %}
+                         style="background-image: url('{{ avatar_url }}'); background-size: cover; background-position: center; background-repeat: no-repeat;"
+                     {% endif %}>
+                </div>
             </a>
             <div class="username-text">{{ username }}</div>
         </div>
