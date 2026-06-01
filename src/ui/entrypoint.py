@@ -13,9 +13,9 @@ ui_router = APIRouter(tags=["UI"])
 @ui_router.get("/", response_class=HTMLResponse)
 async def homepage(request: Request) -> Response:
     return templates.TemplateResponse(
-        "home.html",
-        {
-            "request": request,
+        request=request,
+        name="home.html",
+        context={
             "bot_id": auth_stg.telegram_bot_id,
             "msg": request.query_params.get("msg"),
         },
@@ -31,13 +31,13 @@ async def welcome(request: Request) -> Response:
         return RedirectResponse(url="/?msg=session_expired", status_code=303)
 
     return templates.TemplateResponse(
-        "welcome.html", {"request": request, "user": {"name": name}}
+        request=request, name="welcome.html", context={"user": {"name": name}}
     )
 
 
 @ui_router.get("/map", response_class=HTMLResponse)
 async def interactive_map(request: Request) -> Response:
-    return templates.TemplateResponse("map.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="map.html")
 
 
 @ui_router.get("/feed/global", response_class=HTMLResponse)
@@ -56,15 +56,15 @@ async def global_feed_page(request: Request) -> Response:
     avatar_url: str | None = None
     if user_meta["fid"]:
         avatar_url = SeaweedManager.build_read_url(
-            public_url="https://space-killer.com/media",
+            public_url="https://space-killer.com",
             fid=user_meta["fid"],
             resize={"width": 140, "height": 140, "mode": "fill"},
         )
 
     return templates.TemplateResponse(
-        "feed.html",
-        {
-            "request": request,
+        request=request,
+        name="feed.html",
+        context={
             "username": user_meta["username"],
             "avatar_url": avatar_url,
         },
