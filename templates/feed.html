@@ -82,14 +82,10 @@
             background-color: var(--bg-dark);
             border: 1px solid var(--white-alpha);
             border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .avatar-box:hover {
-            border-color: var(--neon-pink);
-
-            box-shadow: 0 0 8px var(--neon-pink-glow);
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            transform: translateZ(0);
+            backface-visibility: hidden;
         }
 
         .username-text {
