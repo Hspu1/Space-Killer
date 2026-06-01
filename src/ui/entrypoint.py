@@ -132,20 +132,29 @@ async def save_profile_fragment(
         return HTMLResponse(status_code=401, content="<div>Unauthorized</div>")
 
     nickname = nickname.strip()
+    bio = bio.strip() if bio else None
+
+    errors = []
     if not nickname:
+        errors.append("Nickname cannot be empty")
+    elif len(nickname) > 50:
+        errors.append("Nickname is too long (max 50 characters)")
+
+    if bio and len(bio) > 500:
+        errors.append("Bio is too long (max 500 characters)")
+
+    if errors:
         return templates.TemplateResponse(
             request=request,
             name="fragments/profile_edit_form.html",
             context={
                 "nickname": nickname,
                 "bio": bio,
-                "errors": ["Nickname cannot be empty"],
+                "errors": errors,
             },
         )
 
-    await pg_update_profile(
-        pg_manager, user_id=user_id, nickname=nickname, bio=bio or None
-    )
+    await pg_update_profile(pg_manager, user_id=user_id, nickname=nickname, bio=bio)
 
     return templates.TemplateResponse(
         request=request,

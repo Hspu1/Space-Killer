@@ -4,12 +4,14 @@
 
     <input type="text"
            name="nickname"
-           class="edit-input edit-input--nickname {% if errors %}error{% endif %}"
+           class="edit-input edit-input--nickname {% if errors and 'Nickname' in errors[0] %}error{% endif %}"
            value="{{ nickname }}"
+           maxlength="50"
            required>
 
     <textarea name="bio"
-              class="edit-input edit-input--bio"
+              class="edit-input edit-input--bio {% if errors and 'Bio' in errors[0] %}error{% endif %}"
+              maxlength="500"
               placeholder="Tell us about yourself...">{{ bio if bio else '' }}</textarea>
 
     {% if errors %}
