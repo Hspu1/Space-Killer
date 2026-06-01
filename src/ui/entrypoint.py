@@ -22,6 +22,19 @@ from ..core.env_conf import auth_stg
 
 ui_router = APIRouter(tags=["UI"])
 
+AVATAR_PUBLIC_URL = "https://space-killer.com/media"
+# AVATAR_RESIZE = {"width": 140, "height": 140, "mode": "fill"}
+
+
+def _build_avatar_url(fid: str | None) -> str | None:
+    if not fid:
+        return None
+    return SeaweedManager.build_read_url(
+        public_url=AVATAR_PUBLIC_URL,
+        fid=fid,
+        # resize=AVATAR_RESIZE,
+    )
+
 
 @ui_router.get("/", response_class=HTMLResponse)
 async def homepage(request: Request) -> Response:
@@ -68,11 +81,7 @@ async def global_feed_page(request: Request) -> Response:
 
     avatar_url: str | None = None
     if user_meta["fid"]:
-        avatar_url = SeaweedManager.build_read_url(
-            public_url="https://space-killer.com",
-            fid=user_meta["fid"],
-            resize={"width": 140, "height": 140, "mode": "fill"},
-        )
+        avatar_url = _build_avatar_url(user_meta["fid"])
 
     return templates.TemplateResponse(
         request=request,
@@ -81,20 +90,6 @@ async def global_feed_page(request: Request) -> Response:
             "username": user_meta["username"],
             "avatar_url": avatar_url,
         },
-    )
-
-
-AVATAR_PUBLIC_URL = "https://space-killer.com/media"
-AVATAR_RESIZE = {"width": 140, "height": 140, "mode": "fill"}
-
-
-def _build_avatar_url(fid: str | None) -> str | None:
-    if not fid:
-        return None
-    return SeaweedManager.build_read_url(
-        public_url=AVATAR_PUBLIC_URL,
-        fid=fid,
-        resize=AVATAR_RESIZE,
     )
 
 
