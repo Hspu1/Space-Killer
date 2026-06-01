@@ -15,6 +15,7 @@ services:
       - ./deploy/angie/error.html:/etc/angie/error.html:ro
       - ./deploy/certbot/conf:/etc/letsencrypt:ro
       - ./deploy/certbot/www:/var/www/certbot:ro
+      - ./static/favicon.ico:/var/www/static/favicon.ico:ro
     depends_on:
       app:
         condition: service_healthy
