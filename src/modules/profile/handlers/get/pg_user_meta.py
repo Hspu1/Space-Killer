@@ -1,5 +1,5 @@
 from time import perf_counter
-from typing import ReadOnly, TypedDict
+from typing import TypedDict
 
 from sqlalchemy import select
 
@@ -9,8 +9,8 @@ from src.utils import log_debug_db
 
 
 class UserMeta(TypedDict):
-    username: ReadOnly[str]
-    avatar_fid: ReadOnly[str | None]
+    username: str
+    avatar_fid: str | None
 
 
 async def pg_resolve_user_meta(user_id: str, pg_manager: PostgresManager) -> UserMeta:
