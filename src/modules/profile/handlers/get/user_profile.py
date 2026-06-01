@@ -1,4 +1,4 @@
-from fastapi import Request
+from fastapi import HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from src.infra.persistence.postgres import PostgresManager
@@ -11,39 +11,35 @@ async def get_user_profile_handler(
     request: Request,
     username: str,
     pg_manager: PostgresManager,
-    editing: bool = False,
 ) -> HTMLResponse | RedirectResponse:
     current_user_id = request.session.get("user_id")
     if not current_user_id:
         return RedirectResponse(url="/?msg=session_expired", status_code=303)
 
-    try:
-        profile = await pg_resolve_profile(pg_manager, username=username)
-        is_own = profile["user_id"] == current_user_id
-        avatar_url: str | None = None
-        if profile["fid"]:
-            avatar_url = SeaweedManager.build_read_url(
-                public_url="https://space-killer.com/media",
-                fid=profile["fid"],
-                resize={"width": 140, "height": 140, "mode": "fill"},
-            )
+    profile = await pg_resolve_profile(pg_manager, username=username)
+    if not profile:
+        raise HTTPException(status_code=404, detail="User not found")
 
-        template_name = "profile.html" if not editing else "fragments/profile_view.html"
-        return templates.TemplateResponse(
-            request=request,
-            name=template_name,
-            context={
-                "username": profile["username"],
-                "nickname": profile["nickname"],
-                "bio": profile["bio"],
-                "is_own_profile": is_own,
-                "avatar_url": avatar_url,
-                "editing": editing,
-            },
+    is_own = profile["user_id"] == current_user_id
+    avatar_url = None
+    if profile["fid"]:
+        avatar_url = SeaweedManager.build_read_url(
+            public_url="https://space-killer.com",
+            fid=profile["fid"],
+            resize={"width": 140, "height": 140, "mode": "fill"},
         )
 
-    except Exception as e:
-        raise e
+    return templates.TemplateResponse(
+        request=request,
+        name="profile.html",
+        context={
+            "username": profile["username"],
+            "nickname": profile["nickname"],
+            "bio": profile["bio"],
+            "is_own_profile": is_own,
+            "avatar_url": avatar_url,
+        },
+    )
 
 
 async def get_profile_fragment_handler(
@@ -51,20 +47,13 @@ async def get_profile_fragment_handler(
     pg_manager: PostgresManager,
     mode: str,
 ) -> HTMLResponse:
-
     user_id = request.session.get("user_id")
     if not user_id:
         return HTMLResponse(status_code=401, content="<div>Unauthorized</div>")
 
     profile = await pg_resolve_profile(pg_manager, user_id=user_id)
-
-    avatar_url: str | None = None
-    if profile["fid"]:
-        avatar_url = SeaweedManager.build_read_url(
-            public_url="https://space-killer.com/media",
-            fid=profile["fid"],
-            resize={"width": 140, "height": 140, "mode": "fill"},
-        )
+    if not profile:
+        return HTMLResponse(status_code=404, content="<div>Profile not found</div>")
 
     template = (
         "fragments/profile_edit_form.html"
@@ -79,6 +68,5 @@ async def get_profile_fragment_handler(
             "username": profile["username"],
             "nickname": profile["nickname"],
             "bio": profile["bio"],
-            "avatar_url": avatar_url,
         },
     )

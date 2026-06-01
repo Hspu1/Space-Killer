@@ -270,12 +270,42 @@
     </a>
 
     <div class="avatar-container">
-        <div class="avatar-box"
+        {% if is_own_profile %}
+        <label for="avatar-input" style="cursor: pointer;">
+        {% endif %}
+
+        <div id="avatar-box"
+             class="avatar-box"
              {% if avatar_url %}
-                 style="background-image: url('{{ avatar_url }}'); background-size: cover; background-position: center; background-repeat: no-repeat;"
+             style="background-image: url('{{ avatar_url }}'); background-size: cover; background-position: center;"
              {% endif %}>
         </div>
+
+        {% if is_own_profile %}
+        </label>
+
+        <input id="avatar-input" type="file" accept="image/*" style="display: none;"
+               hx-post="/profile/avatar/upload"
+               hx-target="#avatar-box"
+               hx-swap="outerHTML"
+               hx-encoding="multipart/form-data"
+               name="file">
+
+        <div id="avatar-remove-wrapper" style="margin-top: 6px;">
+            {% if avatar_url %}
+            <button hx-delete="/profile/avatar"
+                    hx-target="#avatar-box"
+                    hx-swap="outerHTML"
+                    hx-confirm="Remove avatar?"
+                    class="btn-cancel"
+                    style="font-size: 12px; padding: 4px 12px;">
+                Remove
+            </button>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
+
 
     <div class="username-row">
         <span class="username">@{{ username }}</span>
@@ -283,7 +313,7 @@
             <button class="edit-icon"
                     hx-get="/profile/edit/inline"
                     hx-target="#profile-editable"
-                    hx-swap="outerHTML"
+                    hx-swap="innerHTML"
                     hx-indicator=".loading-indicator"
                     aria-label="Edit profile">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">

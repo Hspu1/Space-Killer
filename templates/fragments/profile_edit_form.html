@@ -1,24 +1,29 @@
-<div id="profile-editable"
-     hx-patch="/profile/edit/save"
-     hx-target="#profile-editable"
-     hx-swap="outerHTML"
-     hx-indicator=".loading-indicator">
+<form hx-patch="/profile/edit/save"
+      hx-target="#profile-editable"
+      hx-swap="innerHTML">
 
-    <input type="text" name="nickname" value="{{ nickname }}"
-           class="edit-input edit-input--nickname" maxlength="50" autofocus>
+    <input type="text"
+           name="nickname"
+           class="edit-input edit-input--nickname {% if errors %}error{% endif %}"
+           value="{{ nickname }}"
+           required>
 
-    <textarea name="bio" class="edit-input edit-input--bio"
-              maxlength="500" rows="3">{{ bio or '' }}</textarea>
-
-    <div class="edit-actions">
-        <button type="button" class="btn-cancel"
-                hx-get="/profile/view/inline"
-                hx-target="#profile-editable"
-                hx-swap="outerHTML">Cancel</button>
-        <button type="submit" class="btn-save">Save</button>
-    </div>
+    <textarea name="bio"
+              class="edit-input edit-input--bio"
+              placeholder="Tell us about yourself...">{{ bio if bio else '' }}</textarea>
 
     {% if errors %}
-        <div class="error-message">{{ errors | join(', ') }}</div>
+        {% for error in errors %}
+            <div class="error-message">{{ error }}</div>
+        {% endfor %}
     {% endif %}
-</div>
+
+    <div class="edit-actions">
+        <button type="submit" class="btn-save">Save</button>
+        <button type="button"
+                class="btn-cancel"
+                hx-get="/profile/view/inline"
+                hx-target="#profile-editable"
+                hx-swap="innerHTML">Cancel</button>
+    </div>
+</form>

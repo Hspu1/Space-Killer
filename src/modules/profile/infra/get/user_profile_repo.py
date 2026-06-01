@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from src.infra.persistence.models.models import ProfilesModel
 from src.infra.persistence.postgres import PostgresManager
@@ -27,3 +27,30 @@ async def pg_resolve_profile(
             "bio": profile.bio,
             "fid": profile.fid,
         }
+
+
+async def pg_update_profile(
+    pg_manager: PostgresManager,
+    user_id: str,
+    nickname: str,
+    bio: str | None,
+) -> None:
+    session_maker = pg_manager.get_session_maker()
+    async with session_maker().begin() as session:
+        await session.execute(
+            update(ProfilesModel)
+            .where(ProfilesModel.user_id == user_id)
+            .values(nickname=nickname, bio=bio)
+        )
+
+
+async def pg_update_avatar(
+    pg_manager: PostgresManager,
+    user_id: str,
+    fid: str | None,
+) -> None:
+    session_maker = pg_manager.get_session_maker()
+    async with session_maker().begin() as session:
+        await session.execute(
+            update(ProfilesModel).where(ProfilesModel.user_id == user_id).values(fid=fid)
+        )

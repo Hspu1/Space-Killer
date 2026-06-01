@@ -136,24 +136,37 @@ class SeaweedManager(StrictSlots):
 
         return url
 
-    async def delete_blob(self, volume_url: str, fid: str) -> bool:
-        if not (volume_url and fid) or self._volume_client is None:
+    async def delete_blob(self, fid: str) -> bool:
+        if not fid or self._master_client is None or self._volume_client is None:
             return False
 
         start = perf_counter()
-        url = f"{_normalize_scheme(volume_url)}/{fid}"
+        volume_id = fid.split(",")[0] if "," in fid else fid
 
         try:
+            lookup_resp = await self._master_client.get(
+                "/dir/lookup", params={"volumeId": volume_id}
+            )
+            if lookup_resp.status_code == 404:
+                return True
+
+            lookup_resp.raise_for_status()
+            lookup_data = orjson.loads(lookup_resp.content)
+
+            locations = lookup_data.get("locations", [])
+            if not locations:
+                return False
+
+            volume_url = locations[0].get("url")
+
+            url = f"{_normalize_scheme(volume_url)}/{fid}"
             resp = await self._volume_client.delete(url)
+
             if resp.status_code == 404:
                 return True
 
             resp.raise_for_status()
-            log_debug_seaweed(
-                op="DELETE_BLOB",
-                start_time=start,
-                detail=f"fid={fid}",
-            )
+            log_debug_seaweed(op="DELETE_BLOB", start_time=start, detail=f"fid={fid}")
             return True
 
         except Exception as e:
