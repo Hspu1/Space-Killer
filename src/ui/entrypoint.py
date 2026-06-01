@@ -10,6 +10,7 @@ from src.modules.profile.handlers.get.user_profile import (
     get_profile_fragment_handler,
     get_user_profile_handler,
 )
+from src.modules.profile.infra.get.user_meta_repo import pg_resolve_user_meta
 from src.modules.profile.infra.get.user_profile_repo import (
     pg_resolve_profile,
     pg_update_avatar,
