@@ -21,7 +21,7 @@ async def pg_resolve_user_meta(user_id: str, pg_manager: PostgresManager) -> Use
             ProfilesModel.user_id == user_id
         )
         result = await session.execute(stmt)
-        row = result.tuple().one()
+        row = result.one()
 
         log_debug_db(op="READ", start_time=start_time, detail=f"user_id={user_id[:8]}...")
         return {"username": row[0], "avatar_fid": row[1]}
