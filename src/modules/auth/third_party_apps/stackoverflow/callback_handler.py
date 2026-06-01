@@ -5,6 +5,7 @@ from curl_cffi.requests.exceptions import RequestException
 from fastapi import HTTPException, Request
 from fastapi.responses import RedirectResponse
 
+from src.core.exceptions import UserBannedError
 from src.infra.persistence.postgres import PostgresManager
 from src.utils import log_debug_auth, log_error_auth
 
@@ -67,7 +68,7 @@ async def stackoverflow_callback_handler(
         )
         return RedirectResponse(url="/welcome")
 
-    except HTTPException:
+    except (HTTPException, UserBannedError):
         raise
 
     except (ValueError, RequestException, OAuthError, Exception) as e:

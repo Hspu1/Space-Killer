@@ -4,6 +4,7 @@ from authlib.integrations.starlette_client import OAuthError
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 
+from src.core.exceptions import UserBannedError
 from src.infra.persistence.postgres import PostgresManager
 from src.utils import log_debug_auth, log_error_auth
 
@@ -46,6 +47,9 @@ async def yandex_callback_handler(
 
         log_debug_auth(label="total", start_time=start, provider=AuthProvider.YANDEX)
         return RedirectResponse(url="/welcome")
+
+    except UserBannedError:
+        raise
 
     except (OAuthError, Exception) as e:
         log_error_auth(provider=AuthProvider.YANDEX, message=str(e), exc=e)

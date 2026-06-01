@@ -6,6 +6,7 @@ from fastapi import Request
 from fastapi.responses import RedirectResponse
 
 from src.core.env_conf import auth_stg
+from src.core.exceptions import UserBannedError
 from src.infra.persistence.postgres import PostgresManager
 from src.utils import log_debug_auth, log_error_auth
 
@@ -57,6 +58,9 @@ async def telegram_callback_handler(
             label="total", start_time=start_total, provider=AuthProvider.TELEGRAM
         )
         return RedirectResponse(url="/welcome")
+
+    except UserBannedError:
+        raise
 
     except Exception as e:
         log_error_auth(provider=AuthProvider.TELEGRAM, message=str(e), exc=e)

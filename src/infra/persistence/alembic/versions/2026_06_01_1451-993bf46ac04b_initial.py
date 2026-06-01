@@ -1,8 +1,8 @@
 """initial
 
-Revision ID: bf6a10273742
+Revision ID: 993bf46ac04b
 Revises:
-Create Date: 2026-05-30 22:32:38.688117
+Create Date: 2026-06-01 14:51:03.086157
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'bf6a10273742'
+revision: str = '993bf46ac04b'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,14 +24,14 @@ def upgrade() -> None:
     op.create_table('users',
             sa.Column('id', sa.Uuid(), nullable=False),
             sa.Column('email', sa.String(length=255), nullable=False),
+            sa.Column('status', sa.Enum('ACTIVE', 'DELETED', 'BANNED', name='userstatus'), server_default='active', nullable=False),
             sa.Column('email_verification_at', sa.DateTime(timezone=True), nullable=True),
             sa.Column('name', sa.String(length=255), nullable=False),
-            sa.Column('is_active', sa.Boolean(), server_default='true', nullable=False),
             sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
             sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-            sa.PrimaryKeyConstraint('id')
+            sa.PrimaryKeyConstraint('id'),
+            sa.UniqueConstraint('email')
     )
-    op.create_index('uq_active_users_email', 'users', ['email'], unique=True, postgresql_where=sa.text('is_active IS true'))
     op.create_table('profiles',
             sa.Column('id', sa.Uuid(), nullable=False),
             sa.Column('user_id', sa.Uuid(), nullable=False),
@@ -69,6 +69,5 @@ def downgrade() -> None:
     op.drop_table('user_identities')
     op.drop_index('uq_profiles_username_lowercase', table_name='profiles')
     op.drop_table('profiles')
-    op.drop_index('uq_active_users_email', table_name='users', postgresql_where=sa.text('is_active IS true'))
     op.drop_table('users')
     # ### end Alembic commands ###
