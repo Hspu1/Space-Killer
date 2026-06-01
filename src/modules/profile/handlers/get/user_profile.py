@@ -73,9 +73,9 @@ async def get_profile_fragment_handler(
     )
 
     return templates.TemplateResponse(
-        template,
-        {
-            "request": request,
+        request=request,
+        name=template,
+        context={
             "username": profile["username"],
             "nickname": profile["nickname"],
             "bio": profile["bio"],
