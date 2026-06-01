@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from src.infra.seaweed import SeaweedManager
-from src.modules.profile.handlers.get.pg_user_meta import pg_resolve_user_meta
+from src.modules.profile.infra.get.user_meta_repo import pg_resolve_user_meta
 
 from ..core.env_conf import auth_stg
 from .templates_conf import templates

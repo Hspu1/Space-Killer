@@ -1,0 +1,24 @@
+<div id="profile-editable"
+     hx-patch="/profile/edit/save"
+     hx-target="#profile-editable"
+     hx-swap="outerHTML"
+     hx-indicator=".loading-indicator">
+
+    <input type="text" name="nickname" value="{{ nickname }}"
+           class="edit-input edit-input--nickname" maxlength="50" autofocus>
+
+    <textarea name="bio" class="edit-input edit-input--bio"
+              maxlength="500" rows="3">{{ bio or '' }}</textarea>
+
+    <div class="edit-actions">
+        <button type="button" class="btn-cancel"
+                hx-get="/profile/view/inline"
+                hx-target="#profile-editable"
+                hx-swap="outerHTML">Cancel</button>
+        <button type="submit" class="btn-save">Save</button>
+    </div>
+
+    {% if errors %}
+        <div class="error-message">{{ errors | join(', ') }}</div>
+    {% endif %}
+</div>

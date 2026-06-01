@@ -1,0 +1,7 @@
+<div id="profile-editable">
+    <div class="nickname">{{ nickname }}</div>
+    <div class="bio">
+        {% if bio %}{{ bio }}
+        {% else %}<span class="bio-placeholder">No bio yet</span>{% endif %}
+    </div>
+</div>
