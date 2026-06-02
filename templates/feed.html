@@ -33,6 +33,13 @@
             height: 100vh;
         }
 
+        svg {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
         .feed-layout {
             display: grid;
             grid-template-columns: 240px 1fr 240px;
