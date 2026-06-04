@@ -29,7 +29,7 @@ app = [
     "starsessions[redis]>=2.2.1",
     "throttled-py[redis]>=3.3.1",
     "uuid6>=2025.0.1",
-    "uvicorn[standard]>=0.48.0",
+    "uvicorn[standard]>=0.49.0",
     "uvloop; sys_platform != 'win32'",
     "yarl>=1.24.2",
 ]
