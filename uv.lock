@@ -983,7 +983,7 @@ app = [
 ]
 dev = [
     { name = "ruff", specifier = ">=0.15.15" },
-    { name = "ty", specifier = ">=0.0.40" },
+    { name = "ty", specifier = ">=0.0.43" },
 ]
 geo = [
     { name = "apscheduler" },
@@ -1079,13 +1079,13 @@ redis = [
 
 [[package]]
 name = "ty"
-version = "0.0.40"
+version = "0.0.43"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5a/f8/a754c96967b71de8723f88be17df8738216bd382ffed229cd500b7a24d13/ty-0.0.40.tar.gz", hash = "sha256:883b53dd98f6e5b33ab1c8e1a3cd94b0f29c762ef22cdf1e86aaffb4fd711c67", size = 5726484, upload-time = "2026-05-27T17:55:43.615Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0d/37/4ec04de0659b93be37d956dfceca13b1ecab9c959f28d8a1d5e514603f36/ty-0.0.43.tar.gz", hash = "sha256:ea4cff50548f2a1877e848d3abe9e293cde8ab94757a7eb93fc0d4013f98be8e", size = 5798429, upload-time = "2026-06-04T00:52:10.013Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/03/8d/6d7ec22771bb23d534797cdb446eb644bccfe7a62b729bb99e7235a02fc3/ty-0.0.40-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1274ce0212ecbfed01bda7c3659c46e8bd0068e32d00c46c790466a95274c3df", size = 11743896, upload-time = "2026-05-27T17:56:00.017Z" },
-    { url = "https://files.pythonhosted.org/packages/87/69/b3f5a8ef26c31204e0391147b3adcdb0674eda3e7d99868478ef168a41c6/ty-0.0.40-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:b1fcc082a749e6dc11b68fe9aab0420238bbf2a2374c2c7aa3c22e8c1618b136", size = 11843216, upload-time = "2026-05-27T17:55:35.367Z" },
-    { url = "https://files.pythonhosted.org/packages/a3/f9/8b2aa4da61db81322d4a2f9db227afeb48110ca15ae31d380f64c64ceb63/ty-0.0.40-py3-none-win_amd64.whl", hash = "sha256:b0f905edaad788bd61f779a85801b60a267a25ed57fca05aaddd168d9d8896be", size = 11766211, upload-time = "2026-05-27T17:55:51.898Z" },
+    { url = "https://files.pythonhosted.org/packages/9b/3f/c758a3a8df5b90d331f2b60c8f16021ee64d75e78f99d67cc4efc9bf5f4b/ty-0.0.43-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:2663a0003a8b60fb98db7f6f6e673df80b21d0fe3a9868a26fb06b4e049b6fc4", size = 11943208, upload-time = "2026-06-04T00:52:31.14Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/f1/cd6afc6f6a687e238bf5e12189f7920e81a0bdef6c3dba4c784ef140f7d9/ty-0.0.43-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:2af105de7437143aa4676b28016b5bee661aaaa4eff52be5867fb25119641ceb", size = 12041266, upload-time = "2026-06-04T00:52:43.541Z" },
+    { url = "https://files.pythonhosted.org/packages/9f/29/5d80453e5f7c520145fa058851da87230dbd7ca761a7675447a9fe504e0b/ty-0.0.43-py3-none-win_amd64.whl", hash = "sha256:48d3545094a4ae6395492c7e6ac90550fce969e0ed2815fbf8c5da9756676b7d", size = 11976157, upload-time = "2026-06-04T00:52:41.438Z" },
 ]
 
 [[package]]
