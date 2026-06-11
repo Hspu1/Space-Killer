@@ -44,7 +44,7 @@ geo = [
 
 dev = [
     "ruff>=0.15.15",
-    "ty>=0.0.40",  # uvx ty check
+    "ty>=0.0.48",  # uvx ty check
 ]
 
 [tool.uv]  # ball idk, ensure correct environment
