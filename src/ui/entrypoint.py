@@ -22,7 +22,7 @@ from ..core.env_conf import auth_stg
 
 ui_router = APIRouter(tags=["UI"])
 
-AVATAR_PUBLIC_URL = "https://space-killer.com/media"
+AVATAR_PUBLIC_URL = "https://laughing-goggles-pjqp4454pr7275q9-80.app.github.dev/media"
 # AVATAR_RESIZE = {"width": 140, "height": 140, "mode": "fill"}
 
 

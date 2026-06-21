@@ -46,7 +46,11 @@ class ServerSettings(BaseSettings):
     allowed_hosts: tuple[str, ...] = (
         "space-killer.com",
         "www.space-killer.com",
-        "laughing-goggles-pjqp4454pr7275q9.github.dev",
+        "laughing-goggles-pjqp4454pr7275q9.github.dev",  # currently on GitHub CodeSpaces
+        "127.0.0.1",  # for Docker healthz
+        "localhost",  # for Docker healthz
+        "app", # for Angie
+        "app_server" # for Angie
     )
 
     proxy: str | None = None
