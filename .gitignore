@@ -56,3 +56,6 @@ deploy/certbot/
 
 # auto checking
 deploy/scylla/housekeeping.cfg
+
+# S3 in GitHub CodeSpaces
+seaweed_data/
