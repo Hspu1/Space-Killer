@@ -6,7 +6,7 @@ from src.infra.seaweed import SeaweedManager
 from src.modules.profile.infra.get.user_profile_repo import pg_resolve_profile
 from src.ui.templates_conf import templates
 
-AVATAR_PUBLIC_URL = "https://space-killer.com/media"
+AVATAR_PUBLIC_URL = "https://laughing-goggles-pjqp4454pr7275q9-80.app.github.dev/media"
 # AVATAR_RESIZE = {"width": 140, "height": 140, "mode": "fill"}
 
 
