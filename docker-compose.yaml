@@ -19,8 +19,8 @@ services:
     depends_on:
       app:
         condition: service_healthy
-      geo:
-        condition: service_started
+      # geo:
+      #   condition: service_started
     networks:
       - frontend
       - backend
@@ -42,7 +42,7 @@ services:
           memory: 128M
     restart: unless-stopped
     oom_score_adj: -500
-    cpuset: "1"
+    # cpuset: "1"
 
   certbot:
     image: certbot/certbot
@@ -81,8 +81,8 @@ services:
         reservations:
           memory: 3.5G
     restart: unless-stopped
-    oom_score_adj: -500
-    cpuset: "5,6"
+    oom_score_adj: -400
+    # cpuset: "5,6"
 
   db_migrator:
     build:
@@ -101,7 +101,7 @@ services:
         limits:
           memory: 64M
     restart: on-failure:3
-    cpuset: "0"
+    # cpuset: "0"
 
   pgbouncer:
     image: edoburu/pgbouncer
@@ -135,74 +135,74 @@ services:
         reservations:
           memory: 128M
     restart: unless-stopped
-    oom_score_adj: -500
-    cpuset: "1"
+    oom_score_adj: -400
+    # cpuset: "1"
 
-  scylla:
-    image: scylladb/scylla:2026.2.0-rc2
-    container_name: scylla
-    cap_add:
-      - IPC_LOCK
-      - SYS_NICE
-      - SYS_RESOURCE
-      - SYS_ADMIN
-    security_opt:
-      - seccomp:unconfined
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    command: --smp=1 --memory=8589934592 --reserve-memory=1073741824 --developer-mode=1 --overprovisioned=0 --reactor-backend=io_uring --blocked-reactor-notify-ms=250 --io-properties-file=/etc/scylla.d/io_properties.yaml
-    volumes:
-      - ./deploy/scylla/scylla.yaml:/etc/scylla/scylla.yaml:ro
-      - ./deploy/scylla/cassandra-rackdc.properties:/etc/scylla/cassandra-rackdc.properties:ro
-      - ./deploy/scylla/io_properties.yaml:/etc/scylla.d/io_properties.yaml:ro
-      - ./deploy/scylla/housekeeping.cfg:/etc/scylla.d/housekeeping.cfg # untracked
-      - /mnt/nvme/scylla/data:/var/lib/scylla
-    networks:
-      - backend
-    ports:
-      - "127.0.0.1:9180:9180"
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -s http://$$(hostname -i):10000/storage_service/native_transport | grep -q true || exit 1",
-        ]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 10G
-        reservations:
-          memory: 10G
-    restart: unless-stopped
-    oom_score_adj: -500
-    cpuset: "7"
+  # scylla:
+  #   image: scylladb/scylla:2026.2.0-rc2
+  #   container_name: scylla
+  #   cap_add:
+  #     - IPC_LOCK
+  #     - SYS_NICE
+  #     - SYS_RESOURCE
+  #     - SYS_ADMIN
+  #   security_opt:
+  #     - seccomp:unconfined
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   command: --smp=1 --memory=8589934592 --reserve-memory=1073741824 --developer-mode=1 --overprovisioned=0 --reactor-backend=io_uring --blocked-reactor-notify-ms=250 --io-properties-file=/etc/scylla.d/io_properties.yaml
+  #   volumes:
+  #     - ./deploy/scylla/scylla.yaml:/etc/scylla/scylla.yaml:ro
+  #     - ./deploy/scylla/cassandra-rackdc.properties:/etc/scylla/cassandra-rackdc.properties:ro
+  #     - ./deploy/scylla/io_properties.yaml:/etc/scylla.d/io_properties.yaml:ro
+  #     - ./deploy/scylla/housekeeping.cfg:/etc/scylla.d/housekeeping.cfg # untracked
+  #     - /mnt/nvme/scylla/data:/var/lib/scylla
+  #   networks:
+  #     - backend
+  #   ports:
+  #     - "127.0.0.1:9180:9180"
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD-SHELL",
+  #         "curl -s http://$$(hostname -i):10000/storage_service/native_transport | grep -q true || exit 1",
+  #       ]
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 60s
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 10G
+  #       reservations:
+  #         memory: 10G
+  #   restart: unless-stopped
+  #   oom_score_adj: -400
+    # cpuset: "7"
 
-  scylla_migrator:
-    image: migrate/migrate:v4.17.1
-    container_name: scylla_migrator
-    depends_on:
-      scylla:
-        condition: service_healthy
-    volumes:
-      - ./src/infra/scylla/migrations:/migrations
-    command:
-      - -path=/migrations
-      - -database=cassandra://scylla:9042/content_service?x-multi-statement=true
-      - up
-    networks:
-      - backend
-    deploy:
-      resources:
-        limits:
-          memory: 128M
-    restart: on-failure:3
-    cpuset: "0"
+  # scylla_migrator:
+  #   image: migrate/migrate:v4.17.1
+  #   container_name: scylla_migrator
+  #   depends_on:
+  #     scylla:
+  #       condition: service_healthy
+  #   volumes:
+  #     - ./src/infra/scylla/migrations:/migrations
+  #   command:
+  #     - -path=/migrations
+  #     - -database=cassandra://scylla:9042/content_service?x-multi-statement=true
+  #     - up
+  #   networks:
+  #     - backend
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 128M
+  #   restart: on-failure:3
+    # cpuset: "0"
 
   redis_app:
     image: redis:7.4-alpine
@@ -241,113 +241,113 @@ services:
         reservations:
           memory: 1G
     restart: unless-stopped
-    oom_score_adj: -500
-    cpuset: "2"
+    oom_score_adj: -400
+    # cpuset: "2"
 
-  redis_geo:
-    image: redis:7.4-alpine
-    container_name: redis_geo
-    volumes:
-      - ./deploy/redis/redis_geo.conf:/etc/redis/redis_geo.conf:ro
-    command:
-      [
-        "redis-server",
-        "/etc/redis/redis_geo.conf",
-        "--requirepass",
-        "${REDIS_PASSWORD}",
-      ]
-    env_file: .env
-    environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    sysctls:
-      - net.core.somaxconn=2048
-    networks:
-      - backend
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "redis-cli -p 6380 -a $$REDIS_PASSWORD ping | grep PONG || exit 1",
-        ]
-      interval: 15s
-      timeout: 3s
-      retries: 3
-      start_period: 7s
-    deploy:
-      resources:
-        limits:
-          memory: 32M
-        reservations:
-          memory: 16M
-    restart: unless-stopped
-    oom_score_adj: -300
-    cpuset: "3"
+  # redis_geo:
+  #   image: redis:7.4-alpine
+  #   container_name: redis_geo
+  #   volumes:
+  #     - ./deploy/redis/redis_geo.conf:/etc/redis/redis_geo.conf:ro
+  #   command:
+  #     [
+  #       "redis-server",
+  #       "/etc/redis/redis_geo.conf",
+  #       "--requirepass",
+  #       "${REDIS_PASSWORD}",
+  #     ]
+  #   env_file: .env
+  #   environment:
+  #     - REDIS_PASSWORD=${REDIS_PASSWORD}
+  #   sysctls:
+  #     - net.core.somaxconn=2048
+  #   networks:
+  #     - backend
+  #   healthcheck:
+  #     test:
+  #       [
+  #         "CMD-SHELL",
+  #         "redis-cli -p 6380 -a $$REDIS_PASSWORD ping | grep PONG || exit 1",
+  #       ]
+  #     interval: 15s
+  #     timeout: 3s
+  #     retries: 3
+  #     start_period: 7s
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 32M
+  #       reservations:
+  #         memory: 16M
+  #   restart: unless-stopped
+  #   oom_score_adj: -300
+    # cpuset: "3"
 
-  centrifugo:
-    image: centrifugo/centrifugo:v6.7
-    container_name: centrifugo
-    volumes:
-      - ./deploy/centrifugo/centrifugo.json:/etc/centrifugo/centrifugo.json:ro
-    command: ["centrifugo", "-c", "/etc/centrifugo/centrifugo.json"]
-    env_file: .env
-    environment:
-      - CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY=${CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY}
-      - CENTRIFUGO_HTTP_API_KEY=${CENTRIFUGO_HTTP_API_KEY}
-      - CENTRIFUGO_ADMIN_ENABLED=true
-      - CENTRIFUGO_ADMIN_PASSWORD=${CENTRIFUGO_ADMIN_PASSWORD}
-      - CENTRIFUGO_ADMIN_SECRET=${CENTRIFUGO_ADMIN_SECRET}
+  # centrifugo:
+  #   image: centrifugo/centrifugo:v6.7
+  #   container_name: centrifugo
+  #   volumes:
+  #     - ./deploy/centrifugo/centrifugo.json:/etc/centrifugo/centrifugo.json:ro
+  #   command: ["centrifugo", "-c", "/etc/centrifugo/centrifugo.json"]
+  #   env_file: .env
+  #   environment:
+  #     - CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY=${CENTRIFUGO_CLIENT_TOKEN_HMAC_SECRET_KEY}
+  #     - CENTRIFUGO_HTTP_API_KEY=${CENTRIFUGO_HTTP_API_KEY}
+  #     - CENTRIFUGO_ADMIN_ENABLED=true
+  #     - CENTRIFUGO_ADMIN_PASSWORD=${CENTRIFUGO_ADMIN_PASSWORD}
+  #     - CENTRIFUGO_ADMIN_SECRET=${CENTRIFUGO_ADMIN_SECRET}
 
-      - CENTRIFUGO_ENGINE_TYPE=redis
-      - CENTRIFUGO_ENGINE_REDIS_ADDRESS=redis_geo:6380
-      - CENTRIFUGO_ENGINE_REDIS_PASSWORD=${REDIS_PASSWORD}
-      - CENTRIFUGO_ENGINE_REDIS_DB=${CENTRIFUGO_ENGINE_REDIS_DB}
-    depends_on:
-      redis_geo:
-        condition: service_healthy
-    networks:
-      - backend
-    ports:
-      - "127.0.0.1:8000:8000"
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    deploy:
-      resources:
-        limits:
-          memory: 768M
-        reservations:
-          memory: 384M
-    restart: unless-stopped
-    oom_score_adj: -300
-    cpuset: "4"
+  #     - CENTRIFUGO_ENGINE_TYPE=redis
+  #     - CENTRIFUGO_ENGINE_REDIS_ADDRESS=redis_geo:6380
+  #     - CENTRIFUGO_ENGINE_REDIS_PASSWORD=${REDIS_PASSWORD}
+  #     - CENTRIFUGO_ENGINE_REDIS_DB=${CENTRIFUGO_ENGINE_REDIS_DB}
+  #   depends_on:
+  #     redis_geo:
+  #       condition: service_healthy
+  #   networks:
+  #     - backend
+  #   ports:
+  #     - "127.0.0.1:8000:8000"
+  #   healthcheck:
+  #     test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8000/health"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 10s
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 768M
+  #       reservations:
+  #         memory: 384M
+  #   restart: unless-stopped
+  #   oom_score_adj: -400
+    # cpuset: "4"
 
-  geo:
-    build:
-      context: .
-      dockerfile: deploy/geo/Dockerfile
-    container_name: geo
-    env_file: .env
-    environment:
-      CENTRIFUGO_HTTP_API_KEY: ${CENTRIFUGO_HTTP_API_KEY}
-    depends_on:
-      redis_geo:
-        condition: service_healthy
-      centrifugo:
-        condition: service_healthy
-    networks:
-      - backend
-    deploy:
-      resources:
-        limits:
-          memory: 768M
-        reservations:
-          memory: 384M
-    restart: unless-stopped
-    oom_score_adj: -200
-    cpuset: "3,4"
+  # geo:
+  #   build:
+  #     context: .
+  #     dockerfile: deploy/geo/Dockerfile
+  #   container_name: geo
+  #   env_file: .env
+  #   environment:
+  #     CENTRIFUGO_HTTP_API_KEY: ${CENTRIFUGO_HTTP_API_KEY}
+  #   depends_on:
+  #     redis_geo:
+  #       condition: service_healthy
+  #     centrifugo:
+  #       condition: service_healthy
+  #   networks:
+  #     - backend
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 768M
+  #       reservations:
+  #         memory: 384M
+  #   restart: unless-stopped
+  #   oom_score_adj: -300
+    # cpuset: "3,4"
 
   app:
     build:
@@ -363,16 +363,16 @@ services:
     depends_on:
       db_migrator:
         condition: service_completed_successfully
-      scylla_migrator:
-        condition: service_completed_successfully
+      # scylla_migrator:
+      #   condition: service_completed_successfully
       pgbouncer:
         condition: service_started
       redis_app:
         condition: service_healthy
-      nats:
-        condition: service_healthy
-      sw_volume_1:
-        condition: service_started
+      # nats:
+      #   condition: service_healthy
+      # sw_volume_1:
+      #   condition: service_started
     networks:
       - backend
     healthcheck:
@@ -392,41 +392,42 @@ services:
         reservations:
           memory: 768M
     restart: unless-stopped
-    oom_score_adj: -200
-    cpuset: "2"
+    oom_score_adj: -400
+    # cpuset: "2"
 
-  nats: # !!! IDLE IMPL !!!
-    image: nats:2.10-alpine
-    container_name: nats
-    volumes:
-      - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
-    env_file: .env
-    environment:
-      - NATS_USER=${NATS_USER}
-      - NATS_PASSWORD=${NATS_PASSWORD}
-    networks:
-      - backend
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8222/healthz"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-        reservations:
-          memory: 128M
-    restart: unless-stopped
-    oom_score_adj: -300
-    cpuset: "0"
+  # nats: # !!! IDLE IMPL !!!
+  #   image: nats:2.10-alpine
+  #   container_name: nats
+  #   volumes:
+  #     - ./deploy/nats/nats.conf:/etc/nats/nats.conf:ro
+  #   env_file: .env
+  #   environment:
+  #     - NATS_USER=${NATS_USER}
+  #     - NATS_PASSWORD=${NATS_PASSWORD}
+  #   networks:
+  #     - backend
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8222/healthz"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
+  #     start_period: 5s
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 512M
+  #       reservations:
+  #         memory: 128M
+  #   restart: unless-stopped
+  #   oom_score_adj: -300
+    # cpuset: "0"
 
   sw_master_1:
     image: chrislusf/seaweedfs:4.28
     container_name: sw_master_1
     volumes:
-      - /mnt/nvme/seaweed/meta:/data/meta
+      # - /mnt/nvme/seaweed/meta:/data/meta
+      - ./seaweed_data/meta:/data/meta
     networks:
       - backend
     command: >
@@ -453,13 +454,14 @@ services:
           memory: 128M
     restart: unless-stopped
     oom_score_adj: -300
-    cpuset: "0"
+    # cpuset: "0"
 
   sw_volume_1:
     image: chrislusf/seaweedfs:4.28
     container_name: sw_volume_1
     volumes:
-      - /mnt/nvme/seaweed/blobs:/data/blobs
+      # - /mnt/nvme/seaweed/blobs:/data/blobs
+      - ./seaweed_data/blobs:/data/blobs
     env_file: .env
     environment:
       - GOMAXPROCS=1
@@ -490,7 +492,7 @@ services:
           memory: 256M
     restart: unless-stopped
     oom_score_adj: -100
-    cpuset: "0"
+    # cpuset: "0"
 
 networks:
   frontend:

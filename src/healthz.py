@@ -39,8 +39,8 @@ async def readiness(  # noqa: PLR0913
             gather(
                 pg.ping(),
                 redis.ping(),
-                nats_core.ping(),
-                scylla.ping(),
+                # nats_core.ping(),
+                # scylla.ping(),
                 seaweed.ping(),
                 auth.ping(),
                 return_exceptions=True,

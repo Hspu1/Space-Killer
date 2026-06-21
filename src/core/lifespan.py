@@ -31,14 +31,14 @@ def get_lifespan(  # noqa: PLR0913
             safe_start(
                 service_name="Redis", coroutine=redis_manager.connect(), atimeout=3.0
             ),
-            safe_start(
-                service_name="ScyllaDB", coroutine=scylla_manager.connect(), atimeout=10.0
-            ),
-            safe_start(
-                service_name="NATS (Core)",
-                coroutine=core_nats_manager.connect(),
-                atimeout=3.0,
-            ),
+            # safe_start(
+            #     service_name="ScyllaDB", coroutine=scylla_manager.connect(), atimeout=10.0
+            # ),
+            # safe_start(
+            #     service_name="NATS (Core)",
+            #     coroutine=core_nats_manager.connect(),
+            #     atimeout=3.0,
+            # ),
             safe_start(
                 service_name="SeaweedFS",
                 coroutine=seaweed_manager.connect(),
@@ -60,13 +60,13 @@ def get_lifespan(  # noqa: PLR0913
             await silent_close(
                 service_name="SeaweedFS", coroutine=seaweed_manager.disconnect()
             )
-            await silent_close(
-                service_name="NATS (Core)", coroutine=core_nats_manager.disconnect()
-            )
-            await silent_close(service_name="Redis", coroutine=redis_manager.disconnect())
-            await silent_close(
-                service_name="ScyllaDB", coroutine=scylla_manager.disconnect()
-            )
+            # await silent_close(
+            #     service_name="NATS (Core)", coroutine=core_nats_manager.disconnect()
+            # )
+            # await silent_close(service_name="Redis", coroutine=redis_manager.disconnect())
+            # await silent_close(
+            #     service_name="ScyllaDB", coroutine=scylla_manager.disconnect()
+            # )
             await silent_close(
                 service_name="PostgreSQL", coroutine=pg_manager.disconnect()
             )
@@ -100,13 +100,13 @@ def get_lifespan(  # noqa: PLR0913
             await silent_close(
                 service_name="SeaweedFS", coroutine=seaweed_manager.disconnect()
             )
-            await silent_close(
-                service_name="NATS (Core)", coroutine=core_nats_manager.disconnect()
-            )
-            await silent_close(service_name="Redis", coroutine=redis_manager.disconnect())
-            await silent_close(
-                service_name="ScyllaDB", coroutine=scylla_manager.disconnect()
-            )
+            # await silent_close(
+            #     service_name="NATS (Core)", coroutine=core_nats_manager.disconnect()
+            # )
+            # await silent_close(service_name="Redis", coroutine=redis_manager.disconnect())
+            # await silent_close(
+            #     service_name="ScyllaDB", coroutine=scylla_manager.disconnect()
+            # )
             await silent_close(
                 service_name="PostgreSQL", coroutine=pg_manager.disconnect()
             )
