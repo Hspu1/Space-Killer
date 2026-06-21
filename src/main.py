@@ -90,7 +90,7 @@ def create_app() -> FastAPI:
         cookie_name="sid",
         lifetime=server_stg.session_lifetime,
         rolling=True,
-        cookie_same_site="lax",
+        cookie_same_site="none",
         cookie_https_only=True,
     )
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=server_stg.allowed_hosts)

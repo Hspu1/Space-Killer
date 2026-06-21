@@ -46,10 +46,7 @@ class ServerSettings(BaseSettings):
     allowed_hosts: tuple[str, ...] = (
         "space-killer.com",
         "www.space-killer.com",
-        "127.0.0.1",
-        "localhost",
-        "app",
-        "app_server",
+        "laughing-goggles-pjqp4454pr7275q9.github.dev",
     )
 
     proxy: str | None = None
