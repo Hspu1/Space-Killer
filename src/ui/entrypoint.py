@@ -202,12 +202,14 @@ async def upload_avatar(
     avatar_url = _build_avatar_url(fid)
     return HTMLResponse(
         content=f"""
-        <div id="avatar-box" class="avatar-box" style="background-image: url({avatar_url}); background-size: cover; background-position: center;"></div>
+            <div id="avatar-box" class="avatar-box">
+                <img src="{avatar_url}" alt="Avatar">
+            </div>
 
-        <div id="avatar-remove-wrapper" hx-swap-oob="true">
-            <button hx-delete="/profile/avatar" hx-target="#avatar-box" hx-swap="outerHTML" hx-confirm="Remove avatar?" class="btn-cancel" style="font-size: 12px; padding: 4px 12px;">Remove</button>
-        </div>
-        """
+            <div id="avatar-remove-wrapper" hx-swap-oob="true">
+                <button hx-delete="/profile/avatar" hx-target="#avatar-box" hx-swap="outerHTML" hx-confirm="Remove avatar?" class="btn-cancel" style="font-size: 12px; padding: 4px 12px;">Remove</button>
+            </div>
+            """
     )
 
 
@@ -230,8 +232,7 @@ async def delete_avatar(
 
     return HTMLResponse(
         content="""
-        <div id="avatar-box" class="avatar-box"></div>
-
-        <div id="avatar-remove-wrapper" hx-swap-oob="true"></div>
-        """
+            <div id="avatar-box" class="avatar-box"></div>
+            <div id="avatar-remove-wrapper" hx-swap-oob="true"></div>
+            """
     )
