@@ -1,30 +1,6 @@
 CREATE KEYSPACE IF NOT EXISTS content_service
 WITH replication = {'class': 'NetworkTopologyStrategy', 'dc1': 1};
 
-CREATE TABLE IF NOT EXISTS content_service.global_feed (
-    post_id uuid,
-    PRIMARY KEY (post_id)
-) WITH compaction = {
-    'class': 'TimeWindowCompactionStrategy',
-    'compaction_window_unit': 'DAYS',
-    'compaction_window_size': '1'
-}
-AND default_time_to_live = 2592000
-AND gc_grace_seconds = 0;
-
-CREATE TABLE IF NOT EXISTS content_service.user_feed (
-    user_id uuid,
-    post_id uuid,
-    PRIMARY KEY (user_id, post_id)
-) WITH CLUSTERING ORDER BY (post_id DESC)
-AND default_time_to_live = 2592000
-AND compaction = {
-    'class': 'TimeWindowCompactionStrategy',
-    'compaction_window_unit': 'DAYS',
-    'compaction_window_size': '1'
-}
-AND gc_grace_seconds = 0;
-
 CREATE TABLE IF NOT EXISTS content_service.posts (
     post_id uuid,
     author_id uuid,
