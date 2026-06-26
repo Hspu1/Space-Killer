@@ -56,7 +56,7 @@ services:
   db:
     image: postgres:16-alpine
     container_name: db
-    shm_size: 2560mb # shared memory size + reserve
+    shm_size: 2GB # shared memory (1.5GB) + reserve
     volumes:
       - ./deploy/postgres/postgres.conf:/etc/postgresql/postgresql.conf:ro
       - pg_data:/var/lib/postgresql/data
@@ -181,7 +181,7 @@ services:
   #         memory: 10G
   #   restart: unless-stopped
   #   oom_score_adj: -400
-    # cpuset: "7"
+  # cpuset: "7"
 
   # scylla_migrator:
   #   image: migrate/migrate:v4.17.1
@@ -202,7 +202,7 @@ services:
   #       limits:
   #         memory: 128M
   #   restart: on-failure:3
-    # cpuset: "0"
+  # cpuset: "0"
 
   redis_app:
     image: redis:7.4-alpine
@@ -281,7 +281,7 @@ services:
   #         memory: 16M
   #   restart: unless-stopped
   #   oom_score_adj: -300
-    # cpuset: "3"
+  # cpuset: "3"
 
   # centrifugo:
   #   image: centrifugo/centrifugo:v6.7
@@ -322,7 +322,7 @@ services:
   #         memory: 384M
   #   restart: unless-stopped
   #   oom_score_adj: -400
-    # cpuset: "4"
+  # cpuset: "4"
 
   # geo:
   #   build:
@@ -347,7 +347,7 @@ services:
   #         memory: 384M
   #   restart: unless-stopped
   #   oom_score_adj: -300
-    # cpuset: "3,4"
+  # cpuset: "3,4"
 
   app:
     build:
@@ -420,7 +420,7 @@ services:
   #         memory: 128M
   #   restart: unless-stopped
   #   oom_score_adj: -300
-    # cpuset: "0"
+  # cpuset: "0"
 
   sw_master_1:
     image: chrislusf/seaweedfs:4.28
@@ -480,7 +480,7 @@ services:
       -port=8080
 
       -dir=/data/blobs
-      -max=100
+      -max=70
       -index=leveldb
       -fileSizeLimitMB=6
       -minFreeSpace=2GiB
