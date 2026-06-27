@@ -54,7 +54,7 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:16-alpine
+    image: postgres:17.10-alpine
     container_name: db
     shm_size: 2GB # shared memory (1.5GB) + reserve
     volumes:
