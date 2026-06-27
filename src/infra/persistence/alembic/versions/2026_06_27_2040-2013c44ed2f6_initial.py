@@ -1,8 +1,8 @@
 """initial
 
-Revision ID: cca9a6397e26
+Revision ID: 2013c44ed2f6
 Revises:
-Create Date: 2026-06-01 15:02:40.135785
+Create Date: 2026-06-27 20:40:22.365753
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'cca9a6397e26'
+revision: str = '2013c44ed2f6'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -33,7 +33,6 @@ def upgrade() -> None:
             sa.UniqueConstraint('email')
     )
     op.create_table('profiles',
-            sa.Column('id', sa.Uuid(), nullable=False),
             sa.Column('user_id', sa.Uuid(), nullable=False),
             sa.Column('nickname', sa.String(length=50), nullable=False),
             sa.Column('username', sa.String(length=20), nullable=False),
@@ -41,9 +40,8 @@ def upgrade() -> None:
             sa.Column('fid', sa.String(length=255), nullable=True),
             sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
             sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-            sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-            sa.PrimaryKeyConstraint('id'),
-            sa.UniqueConstraint('user_id')
+            sa.ForeignKeyConstraint(['user_id'], ['users.id'], onupdate='CASCADE', ondelete='CASCADE'),
+            sa.PrimaryKeyConstraint('user_id')
     )
     op.create_index('uq_profiles_username_lowercase', 'profiles', [sa.literal_column('lower(username)')], unique=True)
     op.create_table('user_identities',
@@ -51,14 +49,14 @@ def upgrade() -> None:
             sa.Column('user_id', sa.Uuid(), nullable=False),
             sa.Column('provider', sa.String(length=255), nullable=False),
             sa.Column('provider_user_id', sa.String(length=255), nullable=False),
-            sa.Column('password_hash', sa.String(length=255), nullable=True),
             sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
             sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-            sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+            sa.ForeignKeyConstraint(['user_id'], ['users.id'], onupdate='CASCADE', ondelete='CASCADE'),
             sa.PrimaryKeyConstraint('id'),
             sa.UniqueConstraint('provider', 'provider_user_id', name='uq_provider_user')
     )
     op.create_index('idx_identities_user_id', 'user_identities', ['user_id'], unique=False)
+    op.execute("ALTER TABLE profiles SET (fillfactor = 85);")
     # ### end Alembic commands ###
 
 

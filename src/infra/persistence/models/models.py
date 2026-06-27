@@ -92,5 +92,5 @@ class ProfilesModel(Base, TimestampMixin):
 
     __table_args__ = (
         Index("uq_profiles_username_lowercase", func.lower(username), unique=True),
-        {"postgresql_with": {"fillfactor": 85}},  # consider HOT ratio
+        # !!! SET FILLFACTOR IN ALLEMBIC SCRIPTS !!!
     )
