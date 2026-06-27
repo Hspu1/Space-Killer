@@ -19,7 +19,7 @@ class TimestampMixin:
         onupdate=func.now(),
         nullable=False,
         sort_order=1000,
-    )
+    )  # manual use (if needed)
 
 
 class UUIDv7Mixin:

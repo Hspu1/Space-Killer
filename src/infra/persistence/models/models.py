@@ -53,11 +53,12 @@ class UserIdentitiesModel(Base, TimestampMixin, UUIDv7Mixin):
     __tablename__ = "user_identities"
 
     user_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+        Uuid,
+        ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"),
+        nullable=False,
     )
     provider: Mapped[str] = mapped_column(String(255), nullable=False)
     provider_user_id: Mapped[str] = mapped_column(String(255), nullable=False)
-    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     user: Mapped["UsersModel"] = relationship("UsersModel", back_populates="identities")
 
@@ -74,11 +75,13 @@ class UserIdentitiesModel(Base, TimestampMixin, UUIDv7Mixin):
     )
 
 
-class ProfilesModel(Base, TimestampMixin, UUIDv7Mixin):
+class ProfilesModel(Base, TimestampMixin):
     __tablename__ = "profiles"
 
     user_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True
+        Uuid,
+        ForeignKey("users.id", ondelete="CASCADE", onupdate="CASCADE"),
+        primary_key=True,
     )
     nickname: Mapped[str] = mapped_column(String(50), nullable=False)
     username: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -89,4 +92,5 @@ class ProfilesModel(Base, TimestampMixin, UUIDv7Mixin):
 
     __table_args__ = (
         Index("uq_profiles_username_lowercase", func.lower(username), unique=True),
+        {"postgresql_with": {"fillfactor": 85}},  # consider HOT ratio
     )
