@@ -1,6 +1,6 @@
 from time import perf_counter
 
-from sqlalchemy import case, func, literal, select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql.expression import Insert, Select
 
@@ -31,11 +31,6 @@ def _build_fast_way(provider_name: str, provider_user_id: str) -> Select:
 def _build_upsert_stmt(user_info: SafeUserInfo) -> Insert:
     verify_at = func.now() if user_info.email_verified else None
 
-    safe_status = case(
-        (UsersModel.status == UserStatus.BANNED, UsersModel.status),
-        else_=literal(UserStatus.ACTIVE, type_=UsersModel.status.type),
-    )
-
     return (
         insert(UsersModel)
         .values(
@@ -47,9 +42,7 @@ def _build_upsert_stmt(user_info: SafeUserInfo) -> Insert:
         .on_conflict_do_update(
             index_elements=[UsersModel.email],
             set_={
-                UsersModel.name: user_info.name,
-                UsersModel.status: safe_status,
-                UsersModel.updated_at: func.now(),
+                UsersModel.email: UsersModel.email,
             },
         )
         .returning(UsersModel.id, UsersModel.status)
