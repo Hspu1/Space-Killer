@@ -42,7 +42,7 @@ geo = [
 ]
 
 dev = [
-    "ruff>=0.15.15",
+    "ruff>=0.15.20",
     "ty>=0.0.40",  # uvx ty check
 ]
 
